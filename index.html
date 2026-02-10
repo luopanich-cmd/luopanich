@@ -1099,14 +1099,27 @@ function safeHideLoading(fromTimeout = false) {
 
 
 // ---------- fetchWithTimeout ----------
-async function fetchWithTimeout(input, init = {}, ms = 15000) {
+async function fetchWithTimeout(input, init = {}, ms = 30000) {
   const controller = new AbortController();
   const signal = controller.signal;
   const id = setTimeout(() => controller.abort(), ms);
 
   try {
     const res = await fetch(input, { ...init, signal });
+
+    // 🔒 เช็ค HTTP status ชัดเจน
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`HTTP ${res.status}: ${text}`);
+    }
+
     return res;
+
+  } catch (err) {
+    if (err.name === "AbortError") {
+      throw new Error("การเชื่อมต่อช้าเกินไป กรุณาลองใหม่อีกครั้ง");
+    }
+    throw err;
   } finally {
     clearTimeout(id);
   }
@@ -1163,9 +1176,24 @@ async function createOrder() {
   const res = await fetchWithTimeout(API_URL, {
     method: "POST",
     body: form
-  }, 15000); // 15s timeout
+  }, 15000);
 
-  return await res.json();
+  // 🔴 FIX: เช็ค HTTP status ก่อน
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(
+      `CreateOrder HTTP ${res.status}: ${text}`
+    );
+  }
+
+  const json = await res.json();
+
+  // 🔴 FIX: validate response shape
+  if (!json || json.success !== true || !json.data?.orderId) {
+    throw new Error("Invalid createOrder response");
+  }
+
+  return json;
 }
 
 function openOverlay(el){
@@ -1477,14 +1505,13 @@ function openImageViewer(url){
 
   sheet.innerHTML = `
     <!-- overlay background (รับ click เพื่อปิด) -->
-    <div
-      onclick="closeImageViewer()"
-      style="
-        position:absolute;
-        inset:0;
-        background:#000;
-      ">
-    </div>
+ <div
+   style="
+     position:absolute;
+     inset:0;
+     background:#000;
+   ">
+ </div>
 
     <!-- ปุ่มปิด -->
     <button
@@ -1500,19 +1527,18 @@ function openImageViewer(url){
     </button>
 
     <!-- รูปสินค้า -->
-    <img
-      src="${url}"
-      alt="preview"
-      onclick="event.stopPropagation(); closeImageViewer()"
-      style="
-        position:relative;
-        z-index:1;
-        width:100%;
-        height:100%;
-        object-fit:contain;
-        cursor:zoom-out;
-      "
-    >
+ <img
+   src="${url}"
+   alt="preview"
+   style="
+     position:relative;
+     z-index:1;
+     width:100%;
+     height:100%;
+     object-fit:contain;
+     cursor:default;
+   "
+ >
   `;
 
   openOverlay(sheet);
@@ -1892,13 +1918,19 @@ function renderConfirmSheet(){
   confirmSheet.innerHTML += `
     <div class="total">ยอดรวม: ฿${total}</div>
 
-    <button class="btn btn-primary"
-      id="submitBtn"
-      ${state.isSubmitting ? "disabled" : ""}
-      onclick="submitOrder()">
-      ${state.isSubmitting ? "กำลังสร้างใบสั่งซื้อ..." : "ยืนยันสร้างใบสั่งซื้อ"}
-    </button>
+<button class="btn btn-primary"
+  id="submitBtn"
+  ${state.isSubmitting ? "disabled" : ""}>
+  ยืนยันสร้างใบสั่งซื้อ
+</button>
   `;
+  setTimeout(() => {
+  const btn = document.getElementById("submitBtn");
+  if (btn) {
+    btn.onclick = submitOrder; // 🔥 bind กับ DOM จริง
+  }
+}, 0);
+  
 }
 
 /* ================= HEADER RENDER (UPGRADED) ================= */
@@ -2151,6 +2183,15 @@ function handleBackdropClick(){
 
     console.warn('[Backdrop] force unlock');
 
+   // 🔴 FIX: force reset overlay system (emergency exit)
+   state.ui.backdropLocked = false;
+   state.ui.overlayCount = 0;
+
+   // ปิด sheet ที่ค้างทั้งหมด
+   document
+     .querySelectorAll(".sheet.show, .side-menu.show")
+     .forEach(el => el.classList.remove("show"));
+
     safeHideLoading();   // ✅ ไม่มีทาง error
     showToast("ยกเลิกการดำเนินการ", "warning", 1200);
     return;
@@ -2224,12 +2265,13 @@ function openConfirm(){
 
   state.ui.backdropLocked = true; // 🔒 ล็อก backdrop ระหว่าง confirm
 
-  // ❌ ห้าม close ด้วย classList
+  // ปิด cart ก่อน
   closeOverlay(cartSheet);
 
+  // render เนื้อหา
   renderConfirmSheet();
 
-  // ➕ ปุ่มยกเลิก
+  // ปุ่มยกเลิก
   confirmSheet.innerHTML += `
     <button class="btn btn-secondary"
       style="width:100%;margin-top:8px"
@@ -2237,7 +2279,11 @@ function openConfirm(){
       ยกเลิก
     </button>
   `;
-} // ✅ ปิด openConfirm()
+
+  // 🔥 หัวใจ: ต้องเปิด sheet จริง
+  openOverlay(confirmSheet);
+}
+
   
 function cancelConfirm(){
   state.ui.backdropLocked = false;
@@ -3269,41 +3315,25 @@ function closeProduct(){
 }
 
 async function submitOrder(){
+  // ❌ ห้ามใช้ state.loading เป็น guard
   if (state.isSubmitting || state.cart.length === 0) return;
 
   state.isSubmitting = true;
   state.ui.backdropLocked = true;
-
-  let timeoutHit = false;
-
-  // ⛑️ TIMEOUT SAFETY
-  const timeoutId = setTimeout(() => {
-    timeoutHit = true;
-    console.warn('[submitOrder] timeout');
-
-    showToast("การเชื่อมต่อล่าช้า กรุณาลองใหม่", "warning");
-
-    // ❗ ไม่เรียก hideLoading ที่นี่
-    // ให้ flow หลักจัดการ cleanup ที่ finally เท่านั้น
-  }, 15000);
 
   try {
     // ================= STEP 1: CHECK STOCK =================
     showLoading('กำลังตรวจสอบสต๊อก...');
     const stockCheck = await checkStockBeforeSubmit();
 
-    if (timeoutHit) throw new Error("Request timeout");
-
     if (!stockCheck.ok) {
       showToast(stockCheck.message, 'warning');
-      return;
+      throw new Error("STOCK_CHECK_FAILED");
     }
 
     // ================= STEP 2: CREATE ORDER =================
     showLoading('กำลังสร้างใบสั่งซื้อ...');
     const res = await createOrder();
-
-    if (timeoutHit) throw new Error("Request timeout");
 
     if (!res || res.success !== true || !res.data?.orderId) {
       throw new Error("Invalid order response");
@@ -3317,34 +3347,34 @@ async function submitOrder(){
       createdAt: new Date()
     };
 
-    exportOrderPNG();
     showToast('สร้างใบสั่งซื้อเรียบร้อยแล้ว', 'success');
+    showToast("แตะเพื่อดาวน์โหลดใบสั่งซื้อ", "info", 3000);
 
-    // ✅ CLEAR CART (MEMORY + STORAGE)
+    setTimeout(() => {
+      try {
+        exportOrderPNG();
+      } catch (e) {
+        console.warn("export PNG failed", e);
+      }
+    }, 0);
+
     state.cart = [];
     clearCartStorage();
     renderBadge();
 
-    // ✅ UI RESET (delayed for UX)
     setTimeout(() => {
-      hardResetUI();
+      if (!state.ui.backdropLocked) {
+        hardResetUI();
+      }
     }, 300);
 
   } catch(err){
     console.error(err);
-
-    // ❗ timeout จะไม่ซ้ำ toast
-    if (!timeoutHit) {
-      showToast(
-        err.message || 'เกิดข้อผิดพลาดในการสร้างใบสั่งซื้อ',
-        'error'
-      );
-    }
-
+    showToast(
+      err.message || 'เกิดข้อผิดพลาดในการสร้างใบสั่งซื้อ',
+      'error'
+    );
   } finally {
-    // ================= SINGLE CLEANUP POINT =================
-    clearTimeout(timeoutId);
-
     safeHideLoading();
     state.isSubmitting = false;
     state.ui.backdropLocked = false;
@@ -4126,91 +4156,89 @@ function exportOrderPNG(type = "A4") {
     }
   };
 
-const cfg = PRESET[type];
-if (!cfg) throw new Error("Unknown receipt type");
+  const cfg = PRESET[type];
+  if (!cfg) throw new Error("Unknown receipt type");
 
-/* ================= CANVAS SIZE ================= */
-const headerLines = 6;
-const itemLines = order.items.length * 2;
-const footerLines = 4;
+  /* ================= CANVAS SIZE ================= */
+  const headerLines = 6;
+  const itemLines = order.items.length * 2;
+  const footerLines = 4;
 
-const height =
-  cfg.padding * 2 +
-  (headerLines + itemLines + footerLines) * cfg.lineHeight;
+  const height =
+    cfg.padding * 2 +
+    (headerLines + itemLines + footerLines) * cfg.lineHeight;
 
-const canvas = document.createElement("canvas");
-canvas.width = cfg.width;
-canvas.height = height;
+  const canvas = document.createElement("canvas");
+  canvas.width = cfg.width;
+  canvas.height = height;
 
-const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d");
 
-/* ================= BACKGROUND ================= */
-ctx.fillStyle = "#f2f2f7";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
+  /* ================= BACKGROUND ================= */
+  ctx.fillStyle = "#f2f2f7";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-/* ================= CARD ================= */
-ctx.fillStyle = "#ffffff";
-ctx.shadowColor = "rgba(0,0,0,0.08)";
-ctx.shadowBlur = 20;
-ctx.shadowOffsetY = 6;
+  /* ================= CARD ================= */
+  ctx.fillStyle = "#ffffff";
+  ctx.shadowColor = "rgba(0,0,0,0.08)";
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 6;
 
-ctx.beginPath();
+  ctx.beginPath();
 
-if (typeof ctx.roundRect === "function") {
-  // ✅ Modern browsers
-  ctx.roundRect(8, 8, canvas.width - 16, canvas.height - 16, 18);
-} else {
-  // 🔁 Fallback for old Safari / WebView
-  const x = 8;
-  const y = 8;
-  const w = canvas.width - 16;
-  const h = canvas.height - 16;
-  const r = 18;
+  if (typeof ctx.roundRect === "function") {
+    ctx.roundRect(8, 8, canvas.width - 16, canvas.height - 16, 18);
+  } else {
+    const x = 8;
+    const y0 = 8;
+    const w = canvas.width - 16;
+    const h = canvas.height - 16;
+    const r = 18;
 
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-}
+    ctx.moveTo(x + r, y0);
+    ctx.lineTo(x + w - r, y0);
+    ctx.quadraticCurveTo(x + w, y0, x + w, y0 + r);
+    ctx.lineTo(x + w, y0 + h - r);
+    ctx.quadraticCurveTo(x + w, y0 + h, x + w - r, y0 + h);
+    ctx.lineTo(x + r, y0 + h);
+    ctx.quadraticCurveTo(x, y0 + h, x, y0 + h - r);
+    ctx.lineTo(x, y0 + r);
+    ctx.quadraticCurveTo(x, y0, x + r, y0);
+  }
 
-ctx.fill();
-ctx.shadowColor = "transparent";
+  ctx.fill();
+  ctx.shadowColor = "transparent";
 
-/* ================= TEXT ================= */
-let y = cfg.padding + cfg.lineHeight;
-ctx.fillStyle = "#000";
+  /* ================= TEXT ================= */
+  let y = cfg.padding + cfg.lineHeight;
+  ctx.fillStyle = "#000";
 
-/* ===== TITLE ===== */
-ctx.font = `700 ${cfg.titleSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
-ctx.fillText("ใบสั่งซื้อ", cfg.padding, y);
-y += cfg.lineHeight + 8;
+  /* ===== TITLE ===== */
+  ctx.font = `700 ${cfg.titleSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
+  ctx.fillText("ใบสั่งซื้อ", cfg.padding, y);
+  y += cfg.lineHeight + 8;
 
-/* ===== META ===== */
-ctx.font = `${cfg.textSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
-ctx.fillText(`เลขที่: ${order.orderId}`, cfg.padding, y);
-y += cfg.lineHeight;
+  /* ===== META ===== */
+  ctx.font = `${cfg.textSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
+  ctx.fillText(`เลขที่: ${order.orderId}`, cfg.padding, y);
+  y += cfg.lineHeight;
 
-ctx.fillText(
-  `วันที่: ${order.createdAt.toLocaleString()}`,
-  cfg.padding,
-  y
-);
-y += cfg.lineHeight;
+  ctx.fillText(
+    `วันที่: ${order.createdAt.toLocaleString()}`,
+    cfg.padding,
+    y
+  );
+  y += cfg.lineHeight;
 
-/* ===== DIVIDER ===== */
-ctx.strokeStyle = "#dddddd";
-ctx.beginPath();
-ctx.moveTo(cfg.padding, y);
-ctx.lineTo(canvas.width - cfg.padding, y);
-ctx.stroke();
-y += cfg.lineHeight;
+  /* ===== DIVIDER ===== */
+  ctx.strokeStyle = "#dddddd";
+  ctx.beginPath();
+  ctx.moveTo(cfg.padding, y);
+  ctx.lineTo(canvas.width - cfg.padding, y);
+  ctx.stroke();
+  y += cfg.lineHeight;
 
-  /* ================= ITEMS (2 LINES / SAFE WRAP) ================= */
+  /* ================= ITEMS ================= */
   ctx.font = `${cfg.textSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
 
   order.items.forEach(i => {
@@ -4221,7 +4249,6 @@ y += cfg.lineHeight;
     const maxNameWidth = canvas.width - cfg.padding * 2;
     const priceWidth = ctx.measureText(priceText).width;
 
-    // --- Line 1: SKU + NAME (wrap) ---
     let line = "";
     for (const ch of nameText) {
       const test = line + ch;
@@ -4236,14 +4263,12 @@ y += cfg.lineHeight;
     ctx.fillText(line, cfg.padding, y);
     y += cfg.lineHeight;
 
-    // --- Line 2: QTY (left) + PRICE (right) ---
     ctx.fillText(qtyText, cfg.padding, y);
     ctx.fillText(
       priceText,
       canvas.width - cfg.padding - priceWidth,
       y
     );
-
     y += cfg.lineHeight;
   });
 
@@ -4266,11 +4291,15 @@ y += cfg.lineHeight;
     y
   );
 
-  /* ================= DOWNLOAD ================= */
+  /* ================= DOWNLOAD (FIXED) ================= */
   const a = document.createElement("a");
   a.download = `order-${order.orderId}-${type}.png`;
   a.href = canvas.toDataURL("image/png");
-  a.click();
+
+  // 🔴 FIX: ต้อง append เข้า DOM (Mobile Safari / Chrome policy)
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
 }
 
 function finishAdminAction({ refresh = true } = {}) {
