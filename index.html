@@ -1221,8 +1221,7 @@ async function fetchWithTimeout(input, init = {}, ms = 30000) {
   
 
 /* ================= API LAYER ================= */
-const API_URL="https://script.google.com/macros/s/AKfycbzwRXCVX01CSHievxI7NKITMpf2JCYy6VPAZJ9QiGXRf7dgJ4qDHAGqkFnbInUhQNegMw/exec
-";
+const API_URL="https://script.google.com/macros/s/AKfycbzwRXCVX01CSHievxI7NKITMpf2JCYy6VPAZJ9QiGXRf7dgJ4qDHAGqkFnbInUhQNegMw/exec";
 
 const fetchProducts = async () => {
   const res = await fetch(`${API_URL}?action=products`);
