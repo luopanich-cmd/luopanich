@@ -24,8 +24,9 @@
   font-weight:500;
 
   /* 🔹 Visual */
-  background:rgba(255,255,255,.85);
-  backdrop-filter:blur(12px);
+  background:rgba(255,255,255,.72);
+  backdrop-filter:blur(18px) saturate(160%);
+  border-bottom: 1px solid rgba(0,0,0,.06);
 
   /* 🔹 Position */
   position:sticky;
@@ -50,7 +51,6 @@
   .container{padding:16px;display:grid;gap:16px;}
   .card{
     background:#fff;border-radius:18px;
-    box-shadow:0 8px 24px rgba(0,0,0,.06);
     padding:14px;cursor:pointer;
   }
   .name{
@@ -93,7 +93,7 @@
   -webkit-overflow-scrolling: touch;
 
   transform: translateY(100%);
-  transition: transform .3s ease;
+  transition: transform .35s cubic-bezier(.22,.61,.36,1);
 
   z-index: 101;
 }
@@ -168,13 +168,6 @@ select:focus {
   border-color: #007aff;
   outline: none;
 }
-
-  
-
-  .btn{
-    padding:12px;border:none;border-radius:12px;
-    font-weight:600;
-  }
 
   /* ✅ เพิ่มตรงนี้ */
 button:disabled {
@@ -411,9 +404,10 @@ button:disabled {
   background: #fff;
   border-radius: 16px;
   padding: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  box-shadow: var(--shadow-card);
   align-items: center;
   cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease;
 }
 
 .product-card .thumb {
@@ -456,6 +450,11 @@ button:disabled {
   color: #555;
 }
 
+.product-card:active {
+  transform: scale(0.97);
+  box-shadow: var(--shadow-control);
+}  
+
  .product-info-images {
    display: flex;
    gap: 8px;
@@ -483,6 +482,7 @@ button:disabled {
 /* ===== Status Badge (Viewer) ===== */
 .status {
   padding: 3px 10px;
+  min-height: 22px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
@@ -750,6 +750,7 @@ textarea {
   background: #fff;
   padding: 20px 24px;
   border-radius: 12px;
+  box-shadow: var(--shadow-float);
   text-align: center;
   min-width: 200px;
 }
@@ -792,7 +793,7 @@ textarea {
 
    box-shadow:
      inset 0 1px 2px rgba(0,0,0,.05),
-     0 6px 16px rgba(0,0,0,.08);
+     var(--shadow-control);
 
    transition: box-shadow .2s ease, border-color .2s ease;
  }
@@ -831,7 +832,7 @@ textarea {
   margin: 8px auto 12px;   /* กินพื้นที่น้อย */
   display: block;
 
-  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  box-shadow: var(--shadow-image);
 }
 
 /* ลดช่องว่างรอบ ๆ รูป */
@@ -872,7 +873,97 @@ textarea {
   cursor: pointer;
   z-index: 5;
 }
-  
+
+ :root {
+   /* Shadow system (Premium / Consistent) */
+   --shadow-card:    0 10px 30px rgba(0,0,0,.08);
+   --shadow-control: 0 6px 16px rgba(0,0,0,.08);
+   --shadow-image:   0 4px 12px rgba(0,0,0,.12);
+   --shadow-float:   0 12px 36px rgba(0,0,0,.12);
+ }
+
+/* =================================================
+   📦 PRODUCT SHEET – SHARED UI CLASSES
+   ใช้แทน inline-style ใน renderProductSheet
+   (ไม่กระทบ logic / flow)
+   ================================================= */
+
+/* ❌ ปุ่มปิด Sheet (มุมขวาบน) */
+.sheet-close-btn {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 12px);
+  right: 12px;
+
+  width: 36px;
+  height: 36px;
+
+  border-radius: 50%;
+  border: none;
+
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+.sheet-close-btn:active {
+  transform: scale(0.95);
+}
+
+/* 🏷️ ชื่อสินค้าใน Product Sheet */
+.product-title {
+  margin-top: 4px;
+}
+
+/* 🖼️ รูปสินค้า (มาตรฐาน) */
+.product-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+
+  object-fit: cover;
+
+  border-radius: 14px;
+  margin: 12px 0;
+
+  background: #f0f0f0;
+}
+
+/* 📝 หมายเหตุสินค้า (Note) */
+.product-note {
+  margin-top: 10px;
+  padding: 10px 12px;
+
+  font-size: 14px;
+  line-height: 1.45;
+  color: #555;
+
+  background: #f9f9fb;
+  border-radius: 12px;
+  border: 1px dashed rgba(0,0,0,.12);
+}
+
+/* 🔹 Action Zone (ปุ่มล่างสุด) */
+.product-action-zone {
+  margin-top: 20px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+}
+
+/* 🔧 ข้อความโหมดแอดมิน */
+.product-admin-hint {
+  margin-top: 16px;
+  color: #888;
+  font-size: 14px;
+}
+
+ 
 </style>
 </head>
 <body>
@@ -937,6 +1028,9 @@ let allowOpenOrders = false;
 
 const state = {
   mode: "viewer",
+  viewerFilter: {
+    status: "all"
+  },
   search: "",
   products: [],
   selectedProduct: null,
@@ -1127,7 +1221,8 @@ async function fetchWithTimeout(input, init = {}, ms = 30000) {
   
 
 /* ================= API LAYER ================= */
-const API_URL="https://script.google.com/macros/s/AKfycbzwRXCVX01CSHievxI7NKITMpf2JCYy6VPAZJ9QiGXRf7dgJ4qDHAGqkFnbInUhQNegMw/exec";
+const API_URL="https://script.google.com/macros/s/AKfycbzwRXCVX01CSHievxI7NKITMpf2JCYy6VPAZJ9QiGXRf7dgJ4qDHAGqkFnbInUhQNegMw/exec
+";
 
 const fetchProducts = async () => {
   const res = await fetch(`${API_URL}?action=products`);
@@ -1642,6 +1737,7 @@ function renderProducts(){
   let found = false;
 
   state.products.forEach(p => {
+    const stockNum = Number(p.stock);
 
     // ❌ ไม่แสดงสินค้าที่ปิดขาย (viewer เท่านั้น)
     if (state.mode === "viewer" && !p.active) return;
@@ -1649,11 +1745,21 @@ function renderProducts(){
     // 🔍 SEARCH FILTER (ชื่อ + รหัส)
     if (state.search) {
       const text = (p.name + p.productId).toLowerCase();
-      if (!text.includes(state.search)) return;
+      if (!text.includes(String(state.search).toLowerCase())) return;
     }
 
-    found = true;
+   // 🔍 STATUS FILTER (Viewer only, use resolved status)
+   const resolvedStatus =
+     stockNum <= 0 ? "out" : (p.status || "ready");
 
+   if (
+     state.mode === "viewer" &&
+     state.viewerFilter &&
+     state.viewerFilter.status !== "all"
+   ) {
+     if (resolvedStatus !== state.viewerFilter.status) return;
+   }
+    
 /* ================= STATUS LOGIC ================= */
 const statusMap = {
   ready:     "พร้อมส่ง",
@@ -1662,15 +1768,9 @@ const statusMap = {
   out:       "หมด"
 };
 
-const statusKey   = p.status || (Number(p.stock) === 0 ? "out" : "ready");
+const statusKey = resolvedStatus;
 let statusClass = statusKey;
 let statusText  = statusMap[statusKey] || "พร้อมส่ง";
-
-
-    if (Number(p.stock) <= 0) {
-      statusClass = "out";
-      statusText  = "หมด";
-    }
 
     /* ================= CARD ================= */
     const card = document.createElement("div");
@@ -1705,6 +1805,7 @@ let statusText  = statusMap[statusKey] || "พร้อมส่ง";
     `;
 
     app.appendChild(card);
+    found = true;
   });
 
   // ❌ ไม่พบสินค้า
@@ -1727,51 +1828,26 @@ function renderProductSheet(){
 
   productSheet.innerHTML = `
     <!-- ❌ CLOSE BUTTON (TOP-RIGHT) -->
-    <button
-      class="sheet-close"
-      onclick="closeOverlay(productSheet)"
-      aria-label="Close"
-      style="
-        position: absolute;
-        top: calc(env(safe-area-inset-top) + 12px);
-        right: 12px;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border: none;
-        background: rgba(0,0,0,0.55);
-        color: #fff;
-        font-size: 22px;
-        font-weight: 500;
-        line-height: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-      "
-    >
+ <button
+   class="sheet-close sheet-close-btn"
+   onclick="closeOverlay(productSheet)"
+   aria-label="Close"
+ >
       ×
     </button>
 
-    <h3 style="margin-top:4px">${p.name}</h3>
+    <h3 class="product-title">${p.name}</h3>
 
     <div style="color:#888;font-size:13px;margin-bottom:8px">
       รหัสสินค้า: ${p.productId}
     </div>
 
     <!-- ✅ FIX IMAGE -->
-    <img 
-      src="${p.image || ''}"
-      alt="${p.name}"
-      style="
-        width:100%;
-        aspect-ratio: 1 / 1;
-        object-fit: cover;
-        border-radius:14px;
-        margin:12px 0;
-        background:#f0f0f0;
-      "
-    >
+ <img 
+   src="${p.image || ''}"
+   alt="${p.name}"
+   class="product-image"
+ >
 
     <div class="price">฿${p.price}</div>
     <div class="stock">คงเหลือ ${p.stock} ชิ้น</div>
@@ -1792,16 +1868,7 @@ function renderProductSheet(){
      ${
    p.note
      ? `
-       <div style="
-         margin-top:10px;
-         padding:10px 12px;
-         font-size:14px;
-         line-height:1.45;
-         color:#555;
-         background:#f9f9fb;
-         border-radius:12px;
-         border:1px dashed rgba(0,0,0,.12);
-       ">
+<div class="product-note">
          📝 ${String(p.note)
        .replace(/</g, "&lt;")
        .replace(/>/g, "&gt;")}
@@ -1814,10 +1881,7 @@ function renderProductSheet(){
       state.mode === "viewer"
         ? `
           <!-- 🔹 ACTION ZONE -->
-          <div style="
-            margin-top:20px;
-            padding-bottom:calc(env(safe-area-inset-bottom) + 12px);
-          ">
+<div class="product-action-zone">
             <button
               class="btn btn-primary"
               style="width:100%"
@@ -1828,9 +1892,9 @@ function renderProductSheet(){
           </div>
         `
         : `
-          <div style="margin-top:16px;color:#888;font-size:14px">
-            🔧 โหมดแอดมิน
-          </div>
+ <div class="product-admin-hint">
+   🔧 โหมดแอดมิน
+ </div>
         `
     }
   `;
@@ -2093,7 +2157,8 @@ function toggleViewerSearch(){
     input.style.width = "0";
     input.style.opacity = "0";
     input.value = "";
-    handleSearch("");
+    state.search = "";
+    renderProducts();
   }else{
     input.style.width = "100%";
     input.style.opacity = "1";
@@ -3423,7 +3488,7 @@ function openProductEdit(p){
 
     <div class="form-group">
       <label>รหัสสินค้า (SKU)</label>
-      <input value="${p.productId}" disabled>
+      <input id="editProductId" value="${p.productId}">
     </div>
 
     <div class="form-group">
@@ -3501,7 +3566,7 @@ function openProductEdit(p){
                height:80px;
                object-fit:cover;
                border-radius:10px;
-               box-shadow:0 4px 10px rgba(0,0,0,.12)
+               box-shadow: var(--shadow-image)
              ">
         <button
           onclick="removeCompareImage(${idx})"
@@ -3776,6 +3841,8 @@ async function submitProductEdit(){
   const price  = Number(document.getElementById("editPrice").value);
   const stock  = Number(document.getElementById("editStock").value);
   const status = document.getElementById("editStatus").value;
+  const newProductId = document.getElementById("editProductId").value.trim();
+  const oldProductId = p.productId;
   const note   = document.getElementById("editNote")?.value.trim() || "";
   const detailsText =
   document.getElementById("editDetailsText")?.value.trim() || "";
@@ -3786,10 +3853,32 @@ async function submitProductEdit(){
      : "";
 
   // 🔒 Validate
-  if (!name || price < 0 || stock < 0) {
+  if (
+   !name ||
+   !newProductId ||
+   !Number.isFinite(price) ||
+   !Number.isFinite(stock) ||
+   price < 0 ||
+   stock < 0
+ ) {
     showToast("ข้อมูลไม่ถูกต้อง", "error");
 
     // 🔓 คืนสภาพทันที
+    state.isSubmitting = false;
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalText;
+    }
+    return;
+  }
+
+  // 🔒 SKU Duplicate Check (วางตรงนี้เท่านั้น)
+  const duplicate = state.products.find(
+    x => x.productId === newProductId && x.productId !== oldProductId
+  );
+ 
+  if (duplicate) {
+    showToast("รหัสสินค้านี้มีอยู่แล้ว", "error");
     state.isSubmitting = false;
     if (saveBtn) {
       saveBtn.disabled = false;
@@ -3815,7 +3904,8 @@ async function submitProductEdit(){
     const form = new URLSearchParams();
     form.append("action", "updateProduct");
     form.append("token", state.admin.token);
-    form.append("productId", p.productId);
+    form.append("oldProductId", oldProductId);
+    form.append("newProductId", newProductId);
     form.append("name", name);
     form.append("price", price);
     form.append("stock", stock);
@@ -3835,6 +3925,8 @@ async function submitProductEdit(){
     }
 
     showToast("บันทึกการแก้ไขเรียบร้อย", "success");
+
+    state.selectedProduct = null;
 
     // cleanup
     state.editImageFile = null;
@@ -4473,7 +4565,9 @@ async function restoreAdminSessionIfValid() {
     // ✅ RENDER
     renderHeader();
     renderProducts();
-    renderBadge?.();
+    if (typeof renderBadge === "function") {
+      renderBadge();
+    }
 
   } catch (err) {
     console.error("[INIT ERROR]", err);
