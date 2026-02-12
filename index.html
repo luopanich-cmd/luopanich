@@ -4633,15 +4633,20 @@ body {
     padding-bottom: 45mm; /* กันเนื้อหาชนลายเซ็น */
   }
 
-  .sign {
+.sign {
     position: fixed;
     bottom: 20mm;
-    left: 20mm;
-    right: 20mm;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 0 20mm;
+    box-sizing: border-box;
 
     display: flex;
     justify-content: space-between;
-    z-index: 999; /* 🔥 ป้องกันบาง browser ซ้อนทับ */
+    align-items: flex-end;
+
+    z-index: 999;
   }
 }
 
