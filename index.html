@@ -3450,19 +3450,17 @@ async function submitOrder(){
    </button>
  `;
 
- openOverlay(confirmSheet);
+ if (!confirmSheet.classList.contains("show")) {
+    openOverlay(confirmSheet);
+ }
 
     state.cart = [];
     clearCartStorage();
     state.poNumber = "";
     renderBadge();
-
-    setTimeout(() => {
-      if (!state.ui.backdropLocked) {
-        hardResetUI();
-      }
-    }, 300);
-
+    
+  // ❌ ห้าม auto reset หลังสร้าง order สำเร็จ
+    
   } catch(err){
     console.error(err);
     showToast(
