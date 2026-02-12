@@ -7,6 +7,13 @@
 
 <!-- ================= UI STYLE ================= -->
 <style>
+  :root {
+   --shadow-card:    0 10px 30px rgba(0,0,0,.08);
+   --shadow-control: 0 6px 16px rgba(0,0,0,.08);
+   --shadow-image:   0 4px 12px rgba(0,0,0,.12);
+   --shadow-float:   0 12px 36px rgba(0,0,0,.12);
+ }
+  
   html, body {
   margin: 0;
   padding: 0;
@@ -174,8 +181,7 @@ button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
-  .btn-primary{background:#007aff;color:#fff;}
-  .btn-secondary{background:#34c759;color:#fff;}
+
  .btn-remove{
   padding:6px 12px;
   border-radius:10px;
@@ -192,12 +198,6 @@ button:disabled {
   /* ✅ เพิ่มตรงนี้ */
 .btn-remove:active {
   transform: scale(0.95);
-}
-
-/* 🔴 DANGER / DELETE / EXIT */
-.btn-danger {
-  background: #ff3b30;
-  color: #fff;
 }
 
 /* ⚪ OUTLINE / CANCEL */
@@ -237,12 +237,6 @@ button:disabled {
 /* Secondary (soft green) */
 .btn-secondary {
   background: #34c759;
-  color: #fff;
-}
-
-/* Danger (soft red) */
-.btn-danger {
-  background: #ff3b30;
   color: #fff;
 }
 
@@ -605,11 +599,6 @@ button:disabled {
   margin-top: 12px;
 }
 
-.btn-danger {
-  background: #ff3b30;
-  color: #fff;
-}
-
 .btn-danger:active {
   transform: scale(0.97);
 }
@@ -873,14 +862,6 @@ textarea {
   cursor: pointer;
   z-index: 5;
 }
-
- :root {
-   /* Shadow system (Premium / Consistent) */
-   --shadow-card:    0 10px 30px rgba(0,0,0,.08);
-   --shadow-control: 0 6px 16px rgba(0,0,0,.08);
-   --shadow-image:   0 4px 12px rgba(0,0,0,.12);
-   --shadow-float:   0 12px 36px rgba(0,0,0,.12);
- }
 
 /* =================================================
    📦 PRODUCT SHEET – SHARED UI CLASSES
@@ -1230,7 +1211,11 @@ async function fetchWithTimeout(input, init = {}, ms = 30000) {
 const API_URL="https://script.google.com/macros/s/AKfycbzwRXCVX01CSHievxI7NKITMpf2JCYy6VPAZJ9QiGXRf7dgJ4qDHAGqkFnbInUhQNegMw/exec";
 
 const fetchProducts = async () => {
-  const res = await fetch(`${API_URL}?action=products`);
+  const res = await fetchWithTimeout(
+   `${API_URL}?action=products`,
+   {},
+   15000
+ );
   const json = await res.json();
 
   // 🔒 enforce standard response
@@ -1265,7 +1250,10 @@ async function refreshProducts() {
 }
 
 async function createOrder() {
-  const total = state.cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const total = state.cart.reduce(
+   (s,i)=> s + Number(i.price) * Number(i.qty),
+   0
+ );
 
   const form = new URLSearchParams();
   form.append("action", "createOrder");
@@ -1585,8 +1573,13 @@ async function checkStockBeforeSubmit() {
   return { ok:true };
 }
 
-
 /* ================= RENDER FUNCTIONS ================= */
+ // 🔒 Global HTML Escape (XSS Guard)
+ const esc = s =>
+   String(s)
+     .replace(/</g, "&lt;")
+     .replace(/>/g, "&gt;");  
+  
 function openImageViewer(url){
   if (!url) return;
 
@@ -1668,7 +1661,7 @@ function closeImageViewer(){
      : [];
 
    const html = `
-     <h3>${p.name}</h3>
+     <h3>${esc(p.name)}</h3>
 
      ${
        images.length
@@ -1689,7 +1682,7 @@ function closeImageViewer(){
          ? `
            <div class="product-info-block">
              <ul>
-               ${details.map(d => `<li>${d}</li>`).join("")}
+               ${details.map(d => `<li>${esc(d)}</li>`).join("")}
              </ul>
            </div>
          `
@@ -1722,6 +1715,11 @@ function closeProductInfoSheet(){
 }  
   
 function renderProducts(){
+  const app = document.getElementById("app");
+
+  const escapeHTML = (str="") =>
+    str.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  
   // 🔒 GUARD สำคัญที่สุด
   if (!Array.isArray(state.products)) {
     console.error("renderProducts: products is not array", state.products);
@@ -1791,13 +1789,13 @@ let statusText  = statusMap[statusKey] || "พร้อมส่ง";
 
     card.innerHTML = `
       <img class="thumb"
-        src="${p.image || ""}"
+        src="${p.image ? p.image : "about:blank"}"
         alt="${p.name}"
         onerror="this.style.display='none'">
 
       <div class="info">
-        <div class="name">${p.name}</div>
-        <div class="sku">รหัส: ${p.productId}</div>
+        <div class="name">${escapeHTML(p.name)}</div>
+        <div class="sku">รหัส: ${escapeHTML(p.productId)}</div>
         <div class="price">ราคา: ฿${Number(p.price).toLocaleString()}</div>
 
         <div class="meta">
@@ -1830,6 +1828,8 @@ let statusText  = statusMap[statusKey] || "พร้อมส่ง";
 
 function renderProductSheet(){
   const p = state.selectedProduct;
+  const productSheet = document.getElementById("productSheet");
+  if (!productSheet || !p) return;
 
   productSheet.innerHTML = `
     <!-- ❌ CLOSE BUTTON (TOP-RIGHT) -->
@@ -1841,7 +1841,7 @@ function renderProductSheet(){
       ×
     </button>
 
-    <h3 class="product-title">${p.name}</h3>
+    <h3 class="product-title">${esc(p.name)}</h3>
 
     <div style="color:#888;font-size:13px;margin-bottom:8px">
       รหัสสินค้า: ${p.productId}
@@ -1918,7 +1918,7 @@ function renderCart(){
   cartSheet.innerHTML+=`
     <div class="cart-item">
       <div>
-        <div class="name">${i.name}</div>
+        <div class="name">${esc(i.name)}</div>
         <div style="font-size:12px;color:#888">
           รหัส: ${i.productId}
         </div>
@@ -1936,7 +1936,10 @@ function renderCart(){
     </div>`;
   });
 
-const total = state.cart.reduce((s,i)=>s+i.price*i.qty,0);
+const total = state.cart.reduce(
+   (s,i)=> s + Number(i.price) * Number(i.qty),
+   0
+ );
 
 cartSheet.innerHTML += `
   <div class="total">Total: ฿${total}</div>
@@ -1975,7 +1978,7 @@ function renderConfirmSheet(){
     confirmSheet.innerHTML += `
       <div class="cart-item">
         <div>
-          <div class="name">${i.name}</div>
+          <div class="name">${esc(i.name)}</div>
           <div style="font-size:12px;color:#888">รหัส: ${i.productId}</div>
           <div style="font-size:13px">จำนวน ${i.qty}</div>
         </div>
@@ -1987,19 +1990,23 @@ function renderConfirmSheet(){
   confirmSheet.innerHTML += `
     <div class="total">ยอดรวม: ฿${total}</div>
 
+    <div class="form-group" style="margin-top:12px">
+     <label>เลข PO (ถ้ามี)</label>
+     <input
+       id="poInput"
+       placeholder="กรอกเลข PO"
+       oninput="state.poNumber = this.value.trim()">
+   </div>
+
+
 <button class="btn btn-primary"
   id="submitBtn"
-  ${state.isSubmitting ? "disabled" : ""}>
+  ${state.isSubmitting ? "disabled" : ""}
+  onclick="submitOrder()">
   ยืนยันสร้างใบสั่งซื้อ
 </button>
   `;
-  setTimeout(() => {
-  const btn = document.getElementById("submitBtn");
-  if (btn) {
-    btn.onclick = submitOrder; // 🔥 bind กับ DOM จริง
-  }
-}, 0);
-  
+ 
 }
 
 /* ================= HEADER RENDER (UPGRADED) ================= */
@@ -2255,12 +2262,9 @@ function handleBackdropClick(){
 
    // 🔴 FIX: force reset overlay system (emergency exit)
    state.ui.backdropLocked = false;
+   const openEls = document.querySelectorAll(".sheet.show, .side-menu.show");
+   openEls.forEach(el => el.classList.remove("show"));
    state.ui.overlayCount = 0;
-
-   // ปิด sheet ที่ค้างทั้งหมด
-   document
-     .querySelectorAll(".sheet.show, .side-menu.show")
-     .forEach(el => el.classList.remove("show"));
 
     safeHideLoading();   // ✅ ไม่มีทาง error
     showToast("ยกเลิกการดำเนินการ", "warning", 1200);
@@ -3411,7 +3415,7 @@ async function submitOrder(){
     }
 
     // ================= STEP 2: CREATE ORDER =================
-    showLoading('กำลังสร้างใบสั่งซื้อ...');
+    updateLoadingText('กำลังสร้างใบสั่งซื้อ...');
     const res = await createOrder();
 
     if (!res || res.success !== true || !res.data?.orderId) {
@@ -3422,23 +3426,28 @@ async function submitOrder(){
     state.lastOrder = {
       orderId: res.data.orderId,
       items: JSON.parse(JSON.stringify(state.cart)),
-      total: state.cart.reduce((s,i)=>s+i.price*i.qty,0),
-      createdAt: new Date()
+      total: state.cart.reduce(
+        (s,i)=> s + Number(i.price) * Number(i.qty),
+        0
+      ),
+ createdAt: new Date(),
+ poNumber: state.poNumber || ""
     };
 
     showToast('สร้างใบสั่งซื้อเรียบร้อยแล้ว', 'success');
     showToast("แตะเพื่อดาวน์โหลดใบสั่งซื้อ", "info", 3000);
 
-    setTimeout(() => {
-      try {
-        exportOrderPNG();
-      } catch (e) {
-        console.warn("export PNG failed", e);
-      }
-    }, 0);
+   setTimeout(() => {
+   try {
+     exportOrderPrint();
+   } catch (e) {
+     console.warn("export print failed", e);
+   }
+ }, 0);
 
     state.cart = [];
     clearCartStorage();
+    state.poNumber = "";
     renderBadge();
 
     setTimeout(() => {
@@ -4256,50 +4265,32 @@ function isAdminSessionExpired(expiredAt = state.admin.expiredAt) {
 }  
 
 /* ================= EXPORT ORDER PNG (FINAL) ================= */
-function exportOrderPNG(type = "A4") {
+function exportOrderPNG() {
   const order = state.lastOrder;
   if (!order) return;
 
-  /* ================= PRESET ================= */
-  const PRESET = {
-    A4: {
-      width: 794,
-      padding: 48,
-      titleSize: 28,
-      textSize: 16,
-      lineHeight: 32
-    },
-    THERMAL_80: {
-      width: 384,
-      padding: 16,
-      titleSize: 20,
-      textSize: 13,
-      lineHeight: 24
-    },
-    THERMAL_58: {
-      width: 280,
-      padding: 14,
-      titleSize: 18,
-      textSize: 12,
-      lineHeight: 22
-    }
+  /* ================= A4 CONFIG (FIXED) ================= */
+  const cfg = {
+    width: 794,          // A4 width @96dpi
+    height: 1123,        // 🔥 A4 height fixed
+    padding: 64,
+    titleSize: 32,
+    textSize: 18,
+    lineHeight: 34
   };
-
-  const cfg = PRESET[type];
-  if (!cfg) throw new Error("Unknown receipt type");
-
   /* ================= CANVAS SIZE ================= */
-  const headerLines = 6;
-  const itemLines = order.items.length * 2;
-  const footerLines = 4;
+  const items = Array.isArray(order.items) ? order.items : [];
 
-  const height =
-    cfg.padding * 2 +
-    (headerLines + itemLines + footerLines) * cfg.lineHeight;
+  const po = order.poNumber
+    ? String(order.poNumber)
+    : "-";
+
+  const customerName = "บริษัท ออร์เดอร์พลัส 88 จำกัด";
+  const customerTaxId = "0195566000907";
 
   const canvas = document.createElement("canvas");
   canvas.width = cfg.width;
-  canvas.height = height;
+  canvas.height = cfg.height;  // 🔥 FIXED A4
 
   const ctx = canvas.getContext("2d");
 
@@ -4347,17 +4338,71 @@ function exportOrderPNG(type = "A4") {
   ctx.fillText("ใบสั่งซื้อ", cfg.padding, y);
   y += cfg.lineHeight + 8;
 
-  /* ===== META ===== */
-  ctx.font = `${cfg.textSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
-  ctx.fillText(`เลขที่: ${order.orderId}`, cfg.padding, y);
-  y += cfg.lineHeight;
+  /* ===== HEADER BASE LINE ===== */
+  const headerTopY = y;
 
-  ctx.fillText(
-    `วันที่: ${order.createdAt.toLocaleString()}`,
-    cfg.padding,
-    y
-  );
-  y += cfg.lineHeight;
+  /* ===== COMPANY BLOCK ===== */
+ctx.font = `700 ${cfg.textSize + 4}px -apple-system`;
+ctx.fillText("ร้านล้อพาณิชย์", cfg.padding, headerTopY);
+
+ctx.fillText(
+   "7/13 หมู่ 5",
+   cfg.padding,
+   headerTopY + cfg.lineHeight
+ );
+ ctx.fillText(
+   "ต.หนองแขม อ.หนองแค",
+   cfg.padding,
+   headerTopY + cfg.lineHeight * 2
+ );
+ ctx.fillText(
+   "จ.สระบุรี 18140",
+   cfg.padding,
+   headerTopY + cfg.lineHeight * 3
+ );
+
+/* ===== CUSTOMER BLOCK ===== */
+ctx.font = `700 ${cfg.textSize}px -apple-system`;
+ctx.fillText("ลูกค้า:", cfg.padding, headerTopY + cfg.lineHeight * 5);
+
+ctx.font = `${cfg.textSize}px -apple-system`;
+ctx.fillText(customerName, cfg.padding, headerTopY + cfg.lineHeight * 6);
+
+ ctx.fillText(
+   "99 หมู่ 5 ตำบลห้วยทราย",
+   cfg.padding,
+   headerTopY + cfg.lineHeight * 7
+ );
+
+ ctx.fillText(
+   "อำเภอหนองแค จังหวัดสระบุรี 18230",
+   cfg.padding,
+   headerTopY + cfg.lineHeight * 8
+ );
+
+ctx.fillText(
+   `เลขผู้เสียภาษี: ${customerTaxId}`,
+   cfg.padding,
+   headerTopY + cfg.lineHeight * 9
+ );
+
+
+/* ===== DOCUMENT META ===== */
+const rightX = canvas.width - cfg.padding;
+
+  ctx.textAlign = "right";
+  ctx.fillText(`เลขที่: ${order.orderId}`, rightX, headerTopY);
+ ctx.fillText(`PO: ${po}`, rightX, headerTopY + cfg.lineHeight);
+ const docDate = new Date(order.createdAt);
+ ctx.fillText(
+   `วันที่: ${docDate.toLocaleDateString("th-TH")}`,
+   rightX,
+   headerTopY + cfg.lineHeight * 2
+ );
+
+  ctx.textAlign = "left";
+y = headerTopY + cfg.lineHeight * 11;
+
 
   /* ===== DIVIDER ===== */
   ctx.strokeStyle = "#dddddd";
@@ -4367,40 +4412,68 @@ function exportOrderPNG(type = "A4") {
   ctx.stroke();
   y += cfg.lineHeight;
 
-  /* ================= ITEMS ================= */
-  ctx.font = `${cfg.textSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
+/* ================= ITEMS (GRID TABLE) ================= */
+  const tableTopY = y;
+  const rowHeight = 42;
 
-  order.items.forEach(i => {
-    const nameText = `[${i.productId}] ${i.name}`;
-    const qtyText = `x ${i.qty}`;
-    const priceText = `฿${(i.price * i.qty).toLocaleString()}`;
+  const col = {
+    no: cfg.padding,
+    name: cfg.padding + 60,
+    qty: canvas.width - cfg.padding - 260,
+    price: canvas.width - cfg.padding - 180,
+    total: canvas.width - cfg.padding - 90
+  };
 
-    const maxNameWidth = canvas.width - cfg.padding * 2;
-    const priceWidth = ctx.measureText(priceText).width;
+  ctx.font = `700 ${cfg.textSize}px -apple-system`;
 
-    let line = "";
-    for (const ch of nameText) {
-      const test = line + ch;
-      if (ctx.measureText(test).width > maxNameWidth) {
-        ctx.fillText(line, cfg.padding, y);
-        y += cfg.lineHeight;
-        line = ch;
-      } else {
-        line = test;
-      }
+  // HEADER
+  ctx.fillText("ลำดับ", col.no, y);
+  ctx.fillText("รายการสินค้า", col.name, y);
+  ctx.fillText("จำนวน", col.qty, y);
+  ctx.fillText("ราคา", col.price, y);
+  ctx.fillText("รวม", col.total, y);
+
+  y += 16;
+
+  ctx.strokeStyle = "#000";
+  ctx.beginPath();
+  ctx.moveTo(cfg.padding, y);
+  ctx.lineTo(canvas.width - cfg.padding, y);
+  ctx.stroke();
+
+  y += rowHeight - 16;
+
+  ctx.font = `${cfg.textSize}px -apple-system`;
+
+  items.forEach((i, index) => {
+    const total = Number(i.price) * Number(i.qty);
+
+    ctx.fillText(String(index + 1), col.no, y);
+
+    // truncate name (single line grid)
+    let name = `[${i.productId}] ${i.name}`;
+    while (ctx.measureText(name).width > (col.qty - col.name - 20)) {
+      name = name.slice(0, -1);
     }
-    ctx.fillText(line, cfg.padding, y);
-    y += cfg.lineHeight;
 
-    ctx.fillText(qtyText, cfg.padding, y);
-    ctx.fillText(
-      priceText,
-      canvas.width - cfg.padding - priceWidth,
-      y
-    );
-    y += cfg.lineHeight;
+    ctx.fillText(name, col.name, y);
+
+    ctx.textAlign = "right";
+    ctx.fillText(String(i.qty), col.qty + 40, y);
+    ctx.fillText(`฿${Number(i.price).toLocaleString()}`, col.price + 60, y);
+    ctx.fillText(`฿${total.toLocaleString()}`, col.total + 80, y);
+    ctx.textAlign = "left";
+
+    // horizontal line
+    ctx.beginPath();
+    ctx.moveTo(cfg.padding, y + 16);
+    ctx.lineTo(canvas.width - cfg.padding, y + 16);
+    ctx.strokeStyle = "#ddd";
+    ctx.stroke();
+
+    y += rowHeight;
   });
-
+  
   /* ===== DIVIDER ===== */
   y += 4;
   ctx.strokeStyle = "#dddddd";
@@ -4412,7 +4485,8 @@ function exportOrderPNG(type = "A4") {
 
   /* ================= TOTAL ================= */
   ctx.font = `700 ${cfg.textSize + 4}px -apple-system, BlinkMacSystemFont, sans-serif`;
-  const totalText = `ยอดรวม: ฿${order.total.toLocaleString()}`;
+  const safeTotal = Number(order.total) || 0;
+  const totalText = `ยอดรวม: ฿${safeTotal.toLocaleString()}`;
   const tw = ctx.measureText(totalText).width;
   ctx.fillText(
     totalText,
@@ -4420,9 +4494,39 @@ function exportOrderPNG(type = "A4") {
     y
   );
 
+/* ================= SIGNATURE SECTION ================= */
+  const todayText = order.createdAt
+   ? new Date(order.createdAt).toLocaleDateString("th-TH")
+   : new Date().toLocaleDateString("th-TH");
+  y = canvas.height - 200;  // 🔥 ล็อกท้ายหน้า A4
+
+  const signWidth = 260;
+
+  // LEFT SIGN
+  ctx.beginPath();
+  ctx.moveTo(cfg.padding, y);
+  ctx.lineTo(cfg.padding + signWidth, y);
+  ctx.stroke();
+
+  ctx.fillText("ในนาม บริษัท ออร์เดอร์พลัส 88 จำกัด", cfg.padding, y + 28);
+  ctx.fillText("ผู้รับวางบิล", cfg.padding, y + 56);
+  ctx.fillText(`วันที่ ${todayText}`, cfg.padding, y + 84);
+
+  // RIGHT SIGN
+  const rightStart = canvas.width - cfg.padding - signWidth;
+
+  ctx.beginPath();
+  ctx.moveTo(rightStart, y);
+  ctx.lineTo(canvas.width - cfg.padding, y);
+  ctx.stroke();
+
+  ctx.fillText("ในนาม ร้านล้อพาณิชย์", rightStart, y + 28);
+  ctx.fillText("ผู้วางบิล", rightStart, y + 56);
+  ctx.fillText(`วันที่ ${todayText}`, rightStart, y + 84);
+
   /* ================= DOWNLOAD (FIXED) ================= */
   const a = document.createElement("a");
-  a.download = `order-${order.orderId}-${type}.png`;
+  a.download = `order-${order.orderId}.png`;
   a.href = canvas.toDataURL("image/png");
 
   // 🔴 FIX: ต้อง append เข้า DOM (Mobile Safari / Chrome policy)
@@ -4431,6 +4535,212 @@ function exportOrderPNG(type = "A4") {
  document.body.removeChild(a);
 }
 
+function exportOrderPrint() {
+  const order = state.lastOrder;
+  if (!order) return;
+
+  const items = Array.isArray(order.items) ? order.items : [];
+
+  const po = order.poNumber
+    ? String(order.poNumber)
+    : "-";
+
+  const today = order.createdAt
+    ? new Date(order.createdAt).toLocaleDateString("th-TH")
+    : new Date().toLocaleDateString("th-TH");
+
+  const total = Number(order.total || 0).toLocaleString();
+
+  const printWindow = window.open("", "_blank");
+
+  printWindow.document.write(`
+    <html>
+    <head>
+      <title>Order ${order.orderId}</title>
+      <style>
+        @page {
+          size: A4;
+          margin: 20mm;
+        }
+
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+          font-size: 14px;
+          color: #111827; /* Dark Accent */
+          margin: 0;
+
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
+          }
+
+          .content {
+          flex: 1;
+        }
+
+        .header {
+          display: flex;
+          justify-content: space-between;
+        }
+
+        .section {
+          margin-bottom: 24px;
+        }
+
+        h2 {
+          color: #1E3A8A; /* Navy Blue */
+          margin: 0 0 8px 0;
+        }
+        
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        th, td {
+          border-bottom: 1px solid #E5E7EB; /* Soft Gray */
+          padding: 8px;
+          text-align: left;
+        }
+
+        th {
+          font-weight: 600;
+          background: #F9FAFB; /* very soft header tint */
+          color: #1E3A8A; /* Navy Blue */
+        }
+
+        .total {
+          text-align: right;
+          font-weight: bold;
+          font-size: 16px;
+          margin-top: 16px;
+          color: #111827; /* Dark Accent */ 
+        }
+
+.sign {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;   /* 🔥 หัวใจ */
+}
+
+        .sign-block {
+          width: 40%;
+          text-align: center;
+        }
+
+        .line {
+          border-top: 1px solid #E5E7EB; /* Soft Gray */
+          margin-bottom: 8px;
+        }
+
+ .top-meta {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   font-size: 12px;
+   color: #6B7280;
+   margin-bottom: 12px;
+ }
+
+      </style>
+    </head>
+    <body>
+
+  <div class="top-meta">
+    <div>${new Date().toLocaleString("th-TH", {
+  dateStyle: "short",
+  timeStyle: "short"
+})}
+</div>
+    <div>Order ${order.orderId}</div>
+  </div>
+
+     <div class="content">
+     
+      <div class="header section">
+        <div>
+          <h2>ใบสั่งซื้อ</h2>
+          <div>ร้านล้อพาณิชย์</div>
+          <div>7/13 หมู่ 5 ต.หนองแขม</div>
+          <div>อ.หนองแค จ.สระบุรี 18140</div>
+        </div>
+
+        <div>
+          <div>เลขที่: ${order.orderId}</div>
+          <div>PO: ${po}</div>
+          <div>วันที่: ${today}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <strong>ลูกค้า:</strong><br>
+        บริษัท ออร์เดอร์พลัส 88 จำกัด<br>
+        99 หมู่ 5 ต.ห้วยทราย อ.หนองแค<br>
+        จ.สระบุรี 18230<br>
+        เลขผู้เสียภาษี 0195566000907
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>รายการ</th>
+            <th>จำนวน</th>
+            <th>ราคา</th>
+            <th>รวม</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map((i, index) => `
+            <tr>
+              <td>${index + 1}</td>
+              <td>[${esc(i.productId)}] ${esc(i.name)}</td>
+              <td>${i.qty}</td>
+              <td>฿${Number(i.price).toLocaleString()}</td>
+              <td>฿${(i.price * i.qty).toLocaleString()}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+
+<div class="total">
+  ยอดรวม: ฿${total}
+</div>
+
+</div> <!-- ปิด content -->
+
+      <div class="sign">
+        <div class="sign-block">
+          <div class="line"></div>
+          ในนาม บริษัท ออร์เดอร์พลัส 88 จำกัด<br>
+          ผู้รับวางบิล<br>
+          วันที่ ${today}
+        </div>
+
+        <div class="sign-block">
+          <div class="line"></div>
+          ในนาม ร้านล้อพาณิชย์<br>
+          ผู้วางบิล<br>
+          วันที่ ${today}
+        </div>
+      </div>
+
+      <script>
+        window.onload = function() {
+          window.print();
+          window.onafterprint = function() {
+            window.close();
+          }
+        }
+      <\/script>
+
+    </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+}
+  
 function finishAdminAction({ refresh = true } = {}) {
   // 🔒 ปิดทุก overlay ผ่านศูนย์กลาง (Overlay Manager)
   document.querySelectorAll(".sheet.show, .side-menu.show")
@@ -4497,8 +4807,8 @@ window.forceUnlockUI = function(){
   // reset flags
   state.isSubmitting = false;
   state.ui.backdropLocked = false;
-  state.ui.overlayCount = 0;
-
+  state.ui.overlayCount =
+    document.querySelectorAll(".sheet.show, .side-menu.show").length;
   // close all overlays
   document
     .querySelectorAll(".sheet.show, .side-menu.show")
