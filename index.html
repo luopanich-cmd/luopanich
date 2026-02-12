@@ -3434,23 +3434,17 @@ async function submitOrder(){
  poNumber: state.poNumber || ""
     };
 
- showToast('สร้างใบสั่งซื้อเรียบร้อยแล้ว', 'success');
- 
- const toastContainer = document.getElementById("toast-container");
- if (toastContainer) {
-   const downloadToast = document.createElement("div");
-   downloadToast.className = "toast info";
-   downloadToast.textContent = "แตะที่นี่เพื่อดาวน์โหลดใบสั่งซื้อ";
-   downloadToast.style.cursor = "pointer";
+    showToast('สร้างใบสั่งซื้อเรียบร้อยแล้ว', 'success');
+    showToast("แตะเพื่อดาวน์โหลดใบสั่งซื้อ", "info", 3000);
 
-   downloadToast.onclick = () => {
+   setTimeout(() => {
+   try {
      exportOrderPrint();
-     downloadToast.remove();
-   };
+   } catch (e) {
+     console.warn("export print failed", e);
+   }
+ }, 0);
 
-   toastContainer.appendChild(downloadToast);
- }
- 
     state.cart = [];
     clearCartStorage();
     state.poNumber = "";
