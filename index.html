@@ -4569,20 +4569,12 @@ function exportOrderPrint() {
           margin: 20mm;
         }
 
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-          font-size: 14px;
-          color: #111827; /* Dark Accent */
-          margin: 0;
-
-          display: flex;
-          flex-direction: column;
-          min-height: 100vh;
-          }
-
-          .content {
-          flex: 1;
-        }
+body {
+   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+   font-size: 14px;
+   color: #111827;
+   margin: 0;
+ }
 
         .header {
           display: flex;
@@ -4601,12 +4593,14 @@ function exportOrderPrint() {
         table {
           width: 100%;
           border-collapse: collapse;
+          page-break-inside: auto;
         }
 
         th, td {
           border-bottom: 1px solid #E5E7EB; /* Soft Gray */
           padding: 8px;
           text-align: left;
+          page-break-inside: avoid;
         }
 
         th {
@@ -4626,13 +4620,30 @@ function exportOrderPrint() {
 .sign {
   display: flex;
   justify-content: space-between;
-  margin-top: auto;   /* 🔥 หัวใจ */
-}
+ }
 
         .sign-block {
-          width: 40%;
-          text-align: center;
-        }
+   width: 40%;
+   text-align: center;
+ }
+
+@media print {
+
+  body {
+    padding-bottom: 45mm; /* กันเนื้อหาชนลายเซ็น */
+  }
+
+  .sign {
+    position: fixed;
+    bottom: 20mm;
+    left: 20mm;
+    right: 20mm;
+
+    display: flex;
+    justify-content: space-between;
+    z-index: 999; /* 🔥 ป้องกันบาง browser ซ้อนทับ */
+  }
+}
 
         .line {
           border-top: 1px solid #E5E7EB; /* Soft Gray */
@@ -4715,21 +4726,21 @@ function exportOrderPrint() {
 
 </div> <!-- ปิด content -->
 
-      <div class="sign">
-        <div class="sign-block">
-          <div class="line"></div>
-          ในนาม บริษัท ออร์เดอร์พลัส 88 จำกัด<br>
-          ผู้รับวางบิล<br>
-          วันที่ ${today}
-        </div>
+<div class="sign">
+     <div class="sign-block">
+       <div class="line"></div>
+       ในนาม บริษัท ออร์เดอร์พลัส 88 จำกัด<br>
+       ผู้รับวางบิล<br>
+       วันที่ ${today}
+     </div>
 
-        <div class="sign-block">
-          <div class="line"></div>
-          ในนาม ร้านล้อพาณิชย์<br>
-          ผู้วางบิล<br>
-          วันที่ ${today}
-        </div>
-      </div>
+     <div class="sign-block">
+       <div class="line"></div>
+       ในนาม ร้านล้อพาณิชย์<br>
+       ผู้วางบิล<br>
+       วันที่ ${today}
+     </div>
+   </div>
 
       <script>
         window.onload = function() {
