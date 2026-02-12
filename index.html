@@ -3450,9 +3450,7 @@ async function submitOrder(){
    </button>
  `;
 
- if (!confirmSheet.classList.contains("show")) {
-    openOverlay(confirmSheet);
- }
+// confirmSheet เปิดอยู่แล้ว ไม่ต้อง reopen
 
     state.cart = [];
     clearCartStorage();
