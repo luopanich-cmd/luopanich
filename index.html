@@ -26,19 +26,27 @@
   background: #f2f2f7;
 }
   header{
-  padding:16px;
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 20px)
+    16px
+    18px;
   font-size:22px;
-  font-weight:500;
+  font-weight:600;
 
   /* 🔹 Visual */
-  background:rgba(255,255,255,.72);
-  backdrop-filter:blur(18px) saturate(160%);
-  border-bottom: 1px solid rgba(0,0,0,.06);
+  background:rgba(255,255,255,.65);
+  backdrop-filter:blur(30px) saturate(180%);
+  -webkit-backdrop-filter:blur(30px) saturate(180%);
+  border-bottom: 1px solid rgba(255,255,255,.4);
+
+  box-shadow:
+    0 8px 28px rgba(0,0,0,.06),
+    inset 0 -1px 0 rgba(255,255,255,.35);
 
   /* 🔹 Position */
   position:sticky;
   top:0;
-  z-index:10;
+  z-index:50;
 
   /* 🔹 Layout (สำคัญ) */
   display:flex;
@@ -46,19 +54,66 @@
   align-items:center;
 
   /* 🔴 FIX สำคัญ */
-  min-height:56px;      /* กัน iOS / mobile ไม่ render ปุ่ม */
+  min-height:110px;     /* รองรับ Search + Filter (STEP 5.2) */  
   box-sizing:border-box;
-}
 
+  transition:
+    padding .45s cubic-bezier(.34,1.56,.64,1),
+    min-height .35s ease,
+    background .3s ease,
+    box-shadow .3s ease;
+  }
+
+  header.scrolled{
+   padding:
+     calc(env(safe-area-inset-top, 0px) + 12px)
+     16px
+     10px;
+   min-height: 72px;
+   background: rgba(255,255,255,.85);
+   box-shadow:
+     0 12px 36px rgba(0,0,0,.12),
+     inset 0 -1px 0 rgba(255,255,255,.5);
+ } 
+
+/* ================= SHOP TITLE GLOW ================= */
+ .shop-title{
+   font-weight:700;
+   font-size:22px;
+   color:#fff;
+   letter-spacing:.3px;
+   text-shadow:
+     0 0 8px rgba(255,255,255,.6),
+     0 0 16px rgba(255,255,255,.35);
+ }
+
+/* ================= ADMIN TITLE GLOW ================= */
+.admin-title{
+  font-weight:700;
+  font-size:22px;
+  color:#fff;
+  letter-spacing:.3px;
+  text-shadow:
+    0 0 6px rgba(255,255,255,.65),
+    0 0 18px rgba(255,255,255,.35);
+  margin-left:7px;
+}
+  
   .badge{
     background:#ff3b30;color:#fff;
     border-radius:12px;padding:2px 8px;
     font-size:12px;
   }
   .container{padding:16px;display:grid;gap:16px;}
+  
   .card{
-    background:#fff;border-radius:18px;
-    padding:14px;cursor:pointer;
+    background: rgba(255,255,255,.72);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-radius:18px;
+  padding:14px;
+  cursor:pointer;
+  box-shadow: var(--shadow-card);
   }
   .name{
   font-weight:600;
@@ -89,8 +144,11 @@
   right: 0;
   bottom: 0;
 
-  background: #fff;
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
   border-radius: 22px 22px 0 0;
+  box-shadow: var(--shadow-float);
 
   padding: 20px 20px 24px; /* เว้นล่างให้หายอึดอัด */
 
@@ -122,8 +180,25 @@ select {
   box-sizing: border-box;
   outline: none;
   font-family: inherit;
-  background: #fff;
+  background: rgba(255,255,255,.9);
+  color: #111;                 /* 🔴 FIX: text มองเห็นชัดใน light mode */
 }
+
+/* 🔴 NEW: textarea base style (Light mode fix) */
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  background: #fff;
+  color: #111;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+}
+  
+input::placeholder,
+textarea::placeholder {
+  color: #999;                 /* 🔴 FIX: placeholder ไม่จางเกินไป */
+}  
 
 input:focus,
 select:focus {
@@ -200,13 +275,6 @@ button:disabled {
   transform: scale(0.95);
 }
 
-/* ⚪ OUTLINE / CANCEL */
-.btn-outline {
-  background: #f2f2f7;
-  color: #333;
-  border: 1px solid #ddd;
-}
-
 /* interaction */
 .btn-danger:active,
 .btn-outline:active {
@@ -226,6 +294,9 @@ button:disabled {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  transition:
+    transform .18s cubic-bezier(.34,1.56,.64,1),
+    box-shadow .18s ease;
 }
 
 /* Primary */
@@ -249,7 +320,7 @@ button:disabled {
 
 /* Interaction */
 .btn:active {
-  transform: scale(0.97);
+  transform: scale(0.94);
 }
 
   .cart-item{
@@ -324,6 +395,10 @@ button:disabled {
   }
 
 /* ================= HEADER SEARCH (iOS-LIKE) ================= */
+.viewer-search-wrap{
+   margin-top:6px;
+   max-width:calc(100% - 44px);
+ }  
 
 .search-wrap {
   display: flex;
@@ -352,33 +427,34 @@ button:disabled {
 }
 
 .search-input {
-  width: 0;
-  opacity: 0;
-  margin-left: 8px;
-  height: 40px;
-  padding: 8px 12px;
+   width: 260px;
+   opacity: 0;
+   margin-left: 8px;
+   height: 40px;
+   padding: 8px 12px;
 
-  font-size: 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,.12);
+   font-size: 16px;
+   border-radius: 12px;
+   border: 1px solid rgba(0,0,0,.12);
 
-  background: rgba(255,255,255,.85);
-  backdrop-filter: blur(14px);
+   background: rgba(255,255,255,.85);
+   color: #111;
+   backdrop-filter: blur(14px);
 
-  transform: translateX(-6px) scale(.96);
   pointer-events: none;
 
+  transform: translateX(-6px) scaleX(.6);
+  transform-origin: left center;
+
   transition:
-    width .35s cubic-bezier(.22,.61,.36,1),
     opacity .18s ease,
-    transform .35s cubic-bezier(.22,.61,.36,1);
+    transform .45s cubic-bezier(.34,1.56,.64,1);
 }
 
 /* 🔥 ACTIVE STATE */
 .search-wrap.active .search-input {
-  width: 100%;
   opacity: 1;
-  transform: translateX(0) scale(1);
+  transform: translateX(0) scaleX(1);
   pointer-events: auto;
 }
 
@@ -390,19 +466,100 @@ button:disabled {
   outline: none;
 }
 
+ /* ================= FILTER ICON DROPDOWN ================= */
+ .filter-wrap{ position:relative; }
+
+ .filter-btn{
+   width:40px;
+   height:40px;
+   border-radius:50%;
+   border:none;
+   background:rgba(255,255,255,.6);
+   backdrop-filter:blur(12px);
+   font-size:18px;
+   cursor:pointer;
+ }
+
+ .filter-dropdown{
+   position:absolute;
+   top:52px;
+   right:0;
+   min-width:200px;
+   padding:10px;
+   border-radius:18px;
+   background:rgba(255,255,255,.85);
+   backdrop-filter:blur(24px);
+   box-shadow:var(--shadow-float);
+   display:none;
+   flex-direction:column;
+   gap:6px;
+ }
+
+ .filter-dropdown.show{ display:flex; }
+
+ .filter-item{
+   padding:8px 12px;
+   border-radius:12px;
+   font-size:14px;
+   cursor:pointer;
+ }
+  
+/* ================= HEADER MENU BUTTON (iOS TACTILE) ================= */
+.menu-btn{
+  width:40px;
+  height:40px;
+  border:none;
+  border-radius:50%;
+  background:transparent;
+  font-size:26px;
+  cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  transition:
+    transform .18s cubic-bezier(.25,.46,.45,.94),
+    background .2s ease;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menu-btn:active{
+  transform: scale(.92);
+  background: rgba(0,0,0,.08);
+}
+
+@media (hover:hover){
+  .menu-btn:hover{
+    background: rgba(0,0,0,.06);
+  }
+}
+  
 
   /* ================= PRODUCT CARD (HORIZONTAL) ================= */
 .product-card {
   display: flex;
   gap: 12px;
-  background: #fff;
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
   border-radius: 16px;
   padding: 12px;
   box-shadow: var(--shadow-card);
   align-items: center;
   cursor: pointer;
-  transition: transform .18s ease, box-shadow .18s ease;
+  transition:
+    transform .25s cubic-bezier(.34,1.56,.64,1),
+    box-shadow .25s ease;
 }
+
+@media (hover:hover){
+  .product-card:hover{
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-float);
+  }
+}  
 
 .product-card .thumb {
   width: 80px;
@@ -445,8 +602,9 @@ button:disabled {
 }
 
 .product-card:active {
-  transform: scale(0.97);
-  box-shadow: var(--shadow-control);
+  transform: scale(0.965);
+  box-shadow:
+    0 4px 14px rgba(0,0,0,.08);
 }  
 
  .product-info-images {
@@ -456,6 +614,10 @@ button:disabled {
    margin: 12px 0;
  }
 
+ .product-info-zoom{
+   cursor: zoom-in;
+ }
+ 
  .product-info-images img {
    height: 120px;
    border-radius: 12px;
@@ -463,7 +625,9 @@ button:disabled {
  }
 
  .product-info-block {
-   background: #f9f9fb;
+   background: rgba(255,255,255,.65);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
    border-radius: 12px;
    padding: 12px;
    font-size: 14px;
@@ -488,14 +652,14 @@ button:disabled {
 
 /* พร้อมส่ง */
 .status.ready {
-  background: #e6f9f0;
-  color: #1e9c6a;
+  background: rgba(52,199,89,.15);
+  color: #34c759;
 }
 
 /* อยู่ระหว่างจัดส่ง */
 .status.shipping {
-  background: #fff4e5;
-  color: #e37400;
+  background: rgba(0,122,255,.15);
+  color: #007aff;
 }
 
 /* อยู่โกดังไทย */
@@ -506,8 +670,8 @@ button:disabled {
 
 /* หมด */
 .status.out {
-  background: #fdecec;
-  color: #d93025;
+  background: rgba(255,59,48,.15);
+  color: #ff3b30;
 }
 
 
@@ -544,7 +708,9 @@ button:disabled {
    /* ✅ ลดลงอีกนิด กำลังพอดี */
   height: 100vh;
 
-  background: #ffffff;
+  background: rgba(255,255,255,.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   box-shadow: -6px 0 20px rgba(0,0,0,.12);
 
   z-index: 102;
@@ -653,10 +819,13 @@ textarea {
 
 /* ===== PREMIUM INPUT STYLE ===== */
 .form-group input,
-#adminLoginSheet input {
+.form-group select,
+#adminLoginSheet input,
+#adminLoginSheet select {
   background: #f9f9fb;
   border: 1px solid #e5e5ea;
   box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+  color: #111; /* 🔴 FIX: บังคับ text ให้มองเห็นแน่นอน */
 }
 
 .form-group input:focus,
@@ -694,16 +863,19 @@ textarea {
   font-size: 14px;
   font-weight: 500;
 
-  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+  box-shadow: var(--shadow-float);              /* 🔴 ใช้ token เดียวกับระบบ */
+
+  backdrop-filter: blur(18px) saturate(160%);   /* 🔴 เพิ่ม glass */
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
 
   animation: toast-slide-down .25s ease;
 }
 
 /* ===== Toast Variants ===== */
-.toast.success { background: #34c759; }
-.toast.error   { background: #ff3b30; }
-.toast.warning { background: #ff9f0a; }
-.toast.info    { background: #007aff; }
+.toast.success { background: rgba(52,199,89,.92); }
+.toast.error   { background: rgba(255,59,48,.92); }
+.toast.warning { background: rgba(255,159,10,.92); }
+.toast.info    { background: rgba(0,122,255,.92); }
 
 /* ===== Animation (namespaced) ===== */
 @keyframes toast-slide-down {
@@ -736,7 +908,9 @@ textarea {
 }
 
 .loading-box {
-  background: #fff;
+  background: rgba(255,255,255,.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   padding: 20px 24px;
   border-radius: 12px;
   box-shadow: var(--shadow-float);
@@ -863,6 +1037,48 @@ textarea {
   z-index: 5;
 }
 
+ .image-viewer-sheet{
+   padding: 0;                 /* 🔴 moved from inline */
+   display: flex;              /* 🔴 moved from inline */
+   align-items: center;        /* 🔴 moved from inline */
+   justify-content: center;    /* 🔴 moved from inline */
+   cursor: zoom-out;           /* 🔴 moved from inline */
+ }
+
+ .image-viewer-fullscreen{
+   position: fixed;
+   inset: 0;
+   padding: 0;
+   border-radius: 0;
+   max-height: 100dvh;
+   transform: none;
+   z-index: 9999;
+   background: transparent;
+ }
+
+ .image-viewer-bg{
+   position:absolute;
+   inset:0;
+   background:#000;
+ }
+
+ .image-viewer-close{
+   position:absolute;
+   top:16px;
+   right:16px;
+   z-index:2;
+ }
+
+ .image-viewer-img{
+   position:relative;
+   z-index:1;
+   width:100%;
+   height:100%;
+   object-fit:contain;
+   cursor:default;
+ }
+
+ 
 /* =================================================
    📦 PRODUCT SHEET – SHARED UI CLASSES
    ใช้แทน inline-style ใน renderProductSheet
@@ -904,6 +1120,21 @@ textarea {
   margin-top: 4px;
 }
 
+.product-sku {
+   color: #888;
+   font-size: 13px;
+   margin-bottom: 8px;
+ }
+
+ .product-detail-btn {
+   margin-top: 12px;
+ }
+
+ .product-info-close-btn{
+   font-size:16px;
+   color:#fff;
+ }
+   
 /* 🖼️ รูปสินค้า (มาตรฐาน) */
 .product-image {
   width: 100%;
@@ -944,7 +1175,243 @@ textarea {
   font-size: 14px;
 }
 
- 
+ .admin-motto{
+   font-size:13px;
+   margin-left:7px;
+   margin-top:4px;
+   color:#ff3b30;
+   opacity:.9;
+   letter-spacing:.3px;
+ }
+
+ @media (prefers-color-scheme: dark){
+   .admin-motto{
+     color:#ff6b6b;
+   }
+ }
+  
+ @media (prefers-color-scheme: dark) {
+   body {
+     background: #0f0f12;
+   }
+
+  /* 🔹 FLOATING BAR (DARK) */
+  #floatingBar{
+    background:rgba(28,28,30,.55);
+    color:#f5f5f7;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+      0 10px 34px rgba(0,0,0,.6),
+      inset 0 1px 0 rgba(255,255,255,.08);
+  } 
+
+   .product-image {
+     background: rgba(44,44,46,.8);
+   }
+   
+   .product-card,
+   .card,
+   .sheet,
+   .side-menu,
+   .loading-box {
+     background: rgba(28,28,30,.72);
+     color: #f5f5f7;
+   }
+
+   .filter-btn{
+   background: rgba(44,44,46,.7);
+ }
+
+ .filter-dropdown{
+   background: rgba(44,44,46,.9);
+   color:#f5f5f7;
+ }
+
+ .filter-item:hover{
+   background: rgba(255,255,255,.08);
+ }
+   
+   .search-btn {
+     background: rgba(44,44,46,.7);
+   }
+
+  .search-input {
+    background: rgba(44,44,46,.9);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+   
+   .product-note {
+    background: rgba(44,44,46,.8);
+    border: 1px dashed rgba(255,255,255,.08);
+    color: #ddd;
+  }
+
+  .product-info-block {
+    background: rgba(44,44,46,.75);
+  }
+
+  .qty-input input[type="number"] {
+    background: rgba(44,44,46,.9);
+    border: 1px solid rgba(255,255,255,.08);
+    color: #fff;
+  }
+
+   input,
+   select,
+   textarea {
+     background: rgba(44,44,46,.8);
+     color: #fff;
+     border: 1px solid rgba(255,255,255,.08);
+   }
+ }
+
+ /* ================= DARK MODE LIQUID HEADER ================= */
+
+@media (prefers-color-scheme: dark){
+  .shop-title{
+    color:#fff;
+  }
+  
+  header{
+    background: rgba(28,28,30,.55);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+
+    box-shadow:
+      0 8px 32px rgba(0,0,0,.5),
+      inset 0 -1px 0 rgba(255,255,255,.06);
+  }
+
+  header.scrolled{
+    background: rgba(28,28,30,.75);
+    box-shadow:
+      0 16px 42px rgba(0,0,0,.65),
+      inset 0 -1px 0 rgba(255,255,255,.08);
+  }
+}
+
+/* ================= FLOATING BOTTOM BAR ================= */
+
+#floatingBar{
+  position:fixed;
+  left:16px;
+  right:16px;
+  transform:translateY(120%);
+  bottom:calc(env(safe-area-inset-bottom) + 18px);
+
+  max-width:520px;
+  margin:0 auto;
+
+  padding:12px 16px;   /* 🔴 smaller + tighter */
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  border-radius:18px;  /* 🔴 proportional */
+
+  background:rgba(255,255,255,.55);
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px);
+
+  border:1px solid rgba(255,255,255,.65); /* 🔴 glass edge */
+
+  box-shadow:
+    0 8px 30px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.7);  /* 🔴 inner highlight */
+
+  z-index:45; /* ต่ำกว่า header (50) และ backdrop (100) */
+
+  transition:
+    transform .48s cubic-bezier(.34,1.56,.64,1),
+    opacity .3s ease;
+  
+  opacity:0;
+  pointer-events:none;
+}
+
+#floatingBar.bounce-in{
+  animation: float-bounce .65s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes float-bounce{
+  0%   { transform:translateY(120%) scale(.94); }
+  60%  { transform:translateY(-6px) scale(1.02); }
+  100% { transform:translateY(0) scale(1); }
+}
+
+#floatingBar .total-animate{
+  animation: total-pop .25s ease;
+}
+
+@keyframes total-pop{
+  0%   { transform:scale(.92); opacity:.6; }
+  100% { transform:scale(1); opacity:1; }
+}
+
+#floatingBar:active{
+  transform: translateY(0) scale(.97);
+} 
+
+#floatingBar.show{
+  transform:translateY(0);
+  opacity:1;
+  pointer-events:auto;
+}
+
+/* 🔴 NEW: Smart Scroll Hide */
+#floatingBar.scroll-hide{
+  transform:translateY(120%);
+  opacity:0;
+  pointer-events:none;
+}  
+
+ /* ================= REDUCED MOTION SUPPORT ================= */
+ @media (prefers-reduced-motion: reduce){
+
+   /* 🔴 Disable global transitions */
+   * {
+     transition: none !important;
+     animation: none !important;   /* 🔴 ADD */
+   }
+
+   /* 🔴 Disable product card motion */
+   .product-card{
+     transition: none !important;
+   }
+
+   .product-card:hover{
+     transform: none !important;
+     box-shadow: var(--shadow-card) !important;
+   }
+
+   .product-card:active{
+     transform: none !important;
+   }
+
+   /* 🔴 Disable floating bar animations */
+   #floatingBar,
+   #floatingBar.bounce-in{
+     transition: none !important;
+     animation: none !important;
+   }
+
+   #floatingBar .total-animate{
+     animation: none !important;
+   }
+
+   /* 🔴 Disable toast slide animation */
+   .toast{
+     animation: none !important;
+   }
+
+   /* 🔴 Disable spinner rotation */
+   .spinner{
+     animation: none !important;
+   }
+ }
+  
 </style>
 </head>
 <body>
@@ -966,15 +1433,7 @@ textarea {
 <div id="stockSheet" class="sheet"></div>  
 
 <!-- 🖼️ IMAGE VIEWER (FULLSCREEN) -->
- <div id="imageViewerSheet" class="sheet"
-   style="
-     background:#000;
-     padding:0;
-     display:flex;
-     align-items:center;
-     justify-content:center;
-     cursor: zoom-out;
-   ">
+<div id="imageViewerSheet" class="sheet image-viewer-sheet">
 </div>
 
 <!-- ================= ADMIN SHEETS ================= -->
@@ -1000,6 +1459,7 @@ textarea {
 <script>
 /* ================= STEP 2: ประกาศ backdrop (UPGRADED) ================= */
 const backdrop = document.getElementById("globalBackdrop");
+const cartSheet = document.getElementById("cartSheet");
 
 // 🔒 ใช้ state.ui.backdropLocked เป็นตัวเดียว (single source of truth)
 let allowOpenOrders = false;
@@ -1013,6 +1473,7 @@ const state = {
     status: "all"
   },
   search: "",
+  viewerSearchOpen: false,
   products: [],
   selectedProduct: null,
   qty: 1,
@@ -1301,6 +1762,10 @@ function closeOverlay(el){
 
   if (state.ui.overlayCount === 0 && !state.ui.backdropLocked) {
     backdrop.style.display = "none";
+
+    // 🔴 FIX: reset floating bar momentum state
+    const bar = document.getElementById("floatingBar");
+    if (bar) bar.classList.remove("scroll-hide");
   }
 }
 
@@ -1587,50 +2052,24 @@ function openImageViewer(url){
   if (!sheet) return;
 
   // 🔥 reset ผลของ .sheet เดิม
-  sheet.style.position = "fixed";
-  sheet.style.inset = "0";
-  sheet.style.padding = "0";
-  sheet.style.borderRadius = "0";
-  sheet.style.maxHeight = "100dvh";
-  sheet.style.transform = "none";
-  sheet.style.zIndex = "9999";
-  sheet.style.background = "transparent";
+  sheet.classList.add("image-viewer-fullscreen");
 
   sheet.innerHTML = `
     <!-- overlay background (รับ click เพื่อปิด) -->
- <div
-   style="
-     position:absolute;
-     inset:0;
-     background:#000;
-   ">
- </div>
+    <div class="image-viewer-bg"></div>
 
     <!-- ปุ่มปิด -->
     <button
-      class="close-btn"
-      onclick="event.stopPropagation(); closeImageViewer()"
-      style="
-        position:absolute;
-        top:16px;
-        right:16px;
-        z-index:2;
-      ">
+       class="close-btn image-viewer-close"
+       onclick="event.stopPropagation(); closeImageViewer()">
       ×
     </button>
 
     <!-- รูปสินค้า -->
- <img
+<img
    src="${url}"
    alt="preview"
-   style="
-     position:relative;
-     z-index:1;
-     width:100%;
-     height:100%;
-     object-fit:contain;
-     cursor:default;
-   "
+   class="image-viewer-img"
  >
   `;
 
@@ -1643,8 +2082,7 @@ function closeImageViewer(){
 
  // 🔒 force close (ไม่สน state ค้าง)
  sheet.innerHTML = "";
- sheet.style.transform = "";
- sheet.style.background = "#000";
+ sheet.classList.remove("image-viewer-fullscreen");
 
  if (sheet.classList.contains("show")) {
    closeOverlay(sheet);
@@ -1668,9 +2106,9 @@ function closeImageViewer(){
          ? `
            <div class="product-info-images">
  ${images.map(url => `
-   <img src="${url}"
-        style="cursor:zoom-in"
-        onclick="openImageViewer('${url}')">
+<img src="${url}"
+      class="product-info-zoom"
+      onclick="openImageViewer('${url}')">
  `).join("")}
            </div>
          `
@@ -1689,8 +2127,7 @@ function closeImageViewer(){
          : ""
      }
 
- <button class="btn btn-secondary"
-   style="color:#fff;font-size:16px"
+<button class="btn btn-secondary product-info-close-btn"
    onclick="closeProductInfoSheet()">
    ปิด
  </button>
@@ -1753,7 +2190,11 @@ function renderProducts(){
 
    // 🔍 STATUS FILTER (Viewer only, use resolved status)
    const resolvedStatus =
-     stockNum <= 0 ? "out" : (p.status || "ready");
+   stockNum <= 0
+     ? "out"
+     : String(p.status || "ready")
+         .trim()
+         .toLowerCase();
 
    if (
      state.mode === "viewer" &&
@@ -1843,7 +2284,7 @@ function renderProductSheet(){
 
     <h3 class="product-title">${esc(p.name)}</h3>
 
-    <div style="color:#888;font-size:13px;margin-bottom:8px">
+    <div class="product-sku">
       รหัสสินค้า: ${p.productId}
     </div>
 
@@ -1861,8 +2302,7 @@ function renderProductSheet(){
       p.detailsText || p.compareImages
         ? `
           <button
-            class="btn btn-outline"
-            style="margin-top:12px"
+            class="btn btn-outline product-detail-btn"
             onclick="openProductInfoSheet(state.selectedProduct)">
             📄 รายละเอียดสินค้า
           </button>
@@ -1889,7 +2329,6 @@ function renderProductSheet(){
 <div class="product-action-zone">
             <button
               class="btn btn-primary"
-              style="width:100%"
               onclick="openQtySheet()"
             >
               เพิ่มลงตะกร้า
@@ -1954,19 +2393,83 @@ function renderBadge(){
   const cartButton = document.getElementById("cartButton");
   const cartBadge  = document.getElementById("cartBadge");
 
-  if (!cartButton || !cartBadge) return;
+  // 🔴 CHANGED: allow floating bar to sync even if header cart button removed
+  if (cartButton && cartBadge) {
+    const count = state.cart.length;
 
-  const count = state.cart.length;
-
-  if (count > 0) {
-    cartButton.style.display = "block";
-    cartBadge.textContent = count;
-  } else {
-    cartButton.style.display = "none";
+    if (count > 0) {
+      cartButton.style.display = "block";
+      cartBadge.textContent = count;
+    } else {
+      cartButton.style.display = "none";
+    }
   }
+  
+  // 🔴 NEW: sync floating bar ทุกครั้งที่ badge update
+  renderFloatingBar();
 }
+
+/* ================= FLOATING BAR RENDER ================= */
+function renderFloatingBar(){
+  const bar = document.getElementById("floatingBar");
+  if (!bar) return;
+
+  // 🔒 แสดงเฉพาะ viewer mode
+  if (state.mode !== "viewer" || state.cart.length === 0){
+    bar.classList.remove("show");
+    bar.innerHTML = "";
+    return;
+  }
+
+  const wasVisible = bar.classList.contains("show"); // 🔴 FIX: declare before use
+  
+  const total = state.cart.reduce(
+    (s,i)=> s + Number(i.price) * Number(i.qty),
+    0
+  );
+
+  bar.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;font-weight:600">
+      🛒 ${state.cart.length} รายการ
+    </div>
+    <div id="floatingTotal"
+         style="font-weight:700;color:#007aff">
+      รวม ฿${total.toLocaleString()}
+    </div>
+  `;
+
+  // 🔒 ไม่ยุ่ง overlay system
+  bar.onclick = openCart;
+
+  bar.classList.remove("scroll-hide"); // 🔴 FIX
+  bar.classList.add("show");
+
+  /* ===== First Appear Bounce ===== */
+  if (!wasVisible){
+    bar.classList.remove("bounce-in");
+    bar.classList.add("bounce-in");
+    setTimeout(()=>{
+      bar.classList.remove("bounce-in");
+    },650);
+  }
+
+  /* ===== Total Change Animation ===== */
+ const totalEl = document.getElementById("floatingTotal");
+ if (totalEl){
+   const prev = bar.dataset.prevTotal;
+   if (prev !== String(total)) {
+     bar.dataset.prevTotal = String(total);
+     totalEl.classList.remove("total-animate");
+     void totalEl.offsetWidth;
+     totalEl.classList.add("total-animate");
+    }
+  }
+}  
+
   
 function renderConfirmSheet(){
+  const confirmSheet = document.getElementById("confirmSheet");
+  if (!confirmSheet) return;
   let total = 0;
 
   confirmSheet.innerHTML = "<h3>ยืนยันใบสั่งซื้อ</h3>";
@@ -2018,30 +2521,16 @@ function renderHeader(){
   if(state.mode === "viewer"){
     h.innerHTML = `
       <div style="flex:1">
-        <div style="font-weight:600; margin-left:7px;">ร้านค้า Luopanich</div>
+        <div class="shop-title">ร้านค้า Luopanich</div>
 
         <!-- 🔍 SEARCH ICON + EXPAND -->
-        <div
-          id="viewerSearchWrap"
-          style="
-            display:flex;
-            align-items:center;
-            margin-top:6px;
-            max-width:calc(100% - 44px); /* 🔴 กันชนปุ่ม ☰ */
-          "
-        >
+<div
+   id="viewerSearchWrap"
+   class="search-wrap viewer-search-wrap"
+ >
           <button
             onclick="toggleViewerSearch()"
-            style="
-              width:40px;
-              height:40px;
-              border:none;
-              border-radius:50%;
-              background:rgba(255,255,255,.6);
-              backdrop-filter:blur(10px);
-              font-size:18px;
-              cursor:pointer;
-            "
+            class="search-btn"
           >🔍</button>
 
           <input
@@ -2049,66 +2538,37 @@ function renderHeader(){
             placeholder="ค้นหาสินค้า / รหัส"
             oninput="handleSearch(this.value)"
             onfocus="focusInput(this)"
-            style="
-              width:0;
-              opacity:0;
-              margin-left:8px;
-              height:40px;
-              padding:8px 12px;
-              font-size:16px;
-              border-radius:12px;
-              border:1px solid #ddd;
-              background:rgba(255,255,255,.85);
-              backdrop-filter:blur(12px);
-              transition:width .25s ease, opacity .2s ease;
-            "
+            class="search-input"
           >
-        </div>
-      </div>
+        </div>          
+         </div>
 
-      <div style="
-        display:flex;
-        align-items:center;
-        gap:14px;
-        margin-left:12px;
-      ">
+ <div style="
+   display:flex;
+   align-items:center;
+   gap:12px;
+   margin-left:12px;
+ ">
+
+   <div class="filter-wrap">
+     <button class="filter-btn"
+        onclick="toggleFilterDropdown()">🔽</button>
+
+     <div id="filterDropdown" class="filter-dropdown">
+       <div class="filter-item" onclick="selectFilter('all')">📦 ทั้งหมด</div>
+       <div class="filter-item" onclick="selectFilter('ready')">✅ พร้อมส่ง</div>
+       <div class="filter-item" onclick="selectFilter('shipping')">🚚 ระหว่างจัดส่ง</div>
+       <div class="filter-item" onclick="selectFilter('warehouse')">🏬 โกดังไทย</div>
+       <div class="filter-item" onclick="selectFilter('out')">❌ หมด</div>
+     </div>
+   </div>
       
-<div id="cartButton"
-     onclick="openCart()"
-     style="
-       cursor:pointer;
-       display:none;
-       font-size:20px;
-       position:relative;
-     ">
-  <span style="display:inline-block;">🛒</span>
-  <span id="cartBadge"
-        class="badge"
-        style="
-          position:absolute;
-          top:-6px;
-          right:-10px;
-          font-size:11px;
-          line-height:1;
-          padding:2px 6px;
-          border-radius:999px;
-        ">
-    0
-  </span>
-</div>
-
-        <button
-          onclick="openAdminEntry()"
-          style="
-            width:40px;
-            height:40px;
-            border:none;
-            background:none;
-            font-size:26px;
-            cursor:pointer;
-          ">
-          ☰
-        </button>
+ <button
+   class="menu-btn"
+   onclick="openAdminEntry()"
+   aria-label="Admin Menu">
+   ☰
+ </button>
       </div>
     `;
   }
@@ -2117,8 +2577,10 @@ function renderHeader(){
   h.innerHTML = `
     <div class="header-left">
       <div style="flex:1">
-        <div style="font-weight:600; margin-left:7px;">การจัดการสินค้า</div>
- <div style="font-size:15px;margin-left:7px;color:#ff3b30">
+        <div class="admin-title">
+   การจัดการสินค้า
+ </div>
+ <div class="admin-motto">
    ❤️ สู้ ๆ ที่รัก
  </div>
       </div>
@@ -2139,19 +2601,13 @@ function renderHeader(){
       </div>
     </div>
 
-    <button
-      onclick="openAdminMenu()"
-      style="
-        width:40px;
-        height:40px;
-        border:none;
-        background:none;
-        font-size:26px;
-        cursor:pointer;
-        margin-left:12px;
-      ">
-      ☰
-    </button>
+ <button
+   class="menu-btn"
+   style="margin-left:12px"
+   onclick="openAdminMenu()"
+   aria-label="Open Admin Menu">
+   ☰
+ </button>
   `;
 }
 
@@ -2163,17 +2619,17 @@ function toggleViewerSearch(){
   const input = document.getElementById("viewerSearchInput");
   if(!wrap || !input) return;
 
-  const opened = input.style.width && input.style.width !== "0px";
+  const opened = wrap.classList.contains("active");
 
   if(opened){
-    input.style.width = "0";
-    input.style.opacity = "0";
     input.value = "";
     state.search = "";
+    state.viewerSearchOpen = false;
     renderProducts();
+    wrap.classList.remove("active");
   }else{
-    input.style.width = "100%";
-    input.style.opacity = "1";
+    state.viewerSearchOpen = true;
+    wrap.classList.add("active");
     setTimeout(()=>input.focus(),80);
   }
 }
@@ -2194,16 +2650,62 @@ function toggleAdminSearch(){
     setTimeout(() => input && input.focus(), 120);
   }
 }
-
-
   
 function handleSearch(keyword){
   state.search = keyword.toLowerCase();
   renderProducts();
 }
 
+// ================= VIEWER FILTER =================
+function setViewerStatus(status){
+  // 🔒 guard: ใช้เฉพาะ viewer mode
+  if(state.mode !== "viewer") return;
 
+  // 🔒 guard: ป้องกันค่า undefined
+  if(!status) return;
 
+  state.viewerFilter.status = status;
+
+  // 🔄 sync UI pill
+  renderHeader();
+
+  // 🔄 re-filter product list
+  renderProducts();
+}
+
+ function toggleFilterDropdown(){
+   const el = document.getElementById("filterDropdown");
+   if(!el) return;
+
+ const isOpen = el.classList.contains("show");
+
+ document.querySelectorAll(".filter-dropdown.show")
+   .forEach(d => d.classList.remove("show"));
+
+ if(!isOpen){
+   el.classList.add("show");
+
+   // 🔴 auto close on outside click
+   setTimeout(()=>{
+     document.addEventListener("click", closeFilterOnOutside, { once:true });
+   }, 0);
+ }
+}
+
+  function closeFilterOnOutside(e){
+   const wrap = document.querySelector(".filter-wrap");
+   if(!wrap || wrap.contains(e.target)) return;
+
+   const el = document.getElementById("filterDropdown");
+   if(el) el.classList.remove("show");
+ }
+
+ function selectFilter(status){
+   setViewerStatus(status); // 🔒 ไม่แตะ logic เดิม
+   const el = document.getElementById("filterDropdown");
+   if(el) el.classList.remove("show");
+ }
+  
 function openAdminEntry(){
   // 🔒 ถ้ามี session อยู่แล้ว → เข้า admin ทันที
   if (state.admin.loggedIn && state.admin.token) {
@@ -2219,6 +2721,7 @@ function openAdminEntry(){
 function enterAdmin(){
   state.mode = "admin";
   state.search = ""; // ✅ reset
+  state.viewerSearchOpen = false;
   renderHeader();
   renderProducts();
 }
@@ -3689,7 +4192,7 @@ function removeCompareImage(index){
              height:80px;
              object-fit:cover;
              border-radius:10px;
-             box-shadow:0 4px 10px rgba(0,0,0,.12)
+             box-shadow: var(--shadow-image)
            ">
       <button
         onclick="removeCompareImage(${idx})"
@@ -3759,7 +4262,7 @@ async function handleCompareImagesUpload(input){
                 height:80px;
                 object-fit:cover;
                 border-radius:10px;
-                box-shadow:0 4px 10px rgba(0,0,0,.12)
+                box-shadow: var(--shadow-image)
               ">
          <button
            onclick="removeCompareImage(${idx})"
@@ -4736,6 +5239,30 @@ function exportOrderPrint() {
           window.print();
           window.onafterprint = function() {
             window.close();
+
+// 🔥 ปิด confirmSheet อัตโนมัติ (Safe + Clear State)
+    if (window.opener && window.opener.closeOverlay) {
+      const sheet = window.opener.document.getElementById("confirmSheet");
+      if (sheet) {
+        window.opener.closeOverlay(sheet);
+      }
+
+      // 🔴 NEW: clear lastOrder เพื่อกัน reopen state ค้าง
+      if (window.opener.state) {
+        window.opener.state.lastOrder = null;
+      }
+
+      // 🔴 NEW: reset backdrop lock กันค้าง
+      if (window.opener.state?.ui) {
+        window.opener.state.ui.backdropLocked = false;
+      }
+
+      // 🔥 เลื่อนกลับบนสุดอย่างนุ่มนวล
+      window.opener.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    }
           }
         }
       <\/script>
@@ -4863,6 +5390,75 @@ async function restoreAdminSessionIfValid() {
 }
   
 /* ================= INIT APP (CLEAN / SAFE) ================= */
+ /* ================= LIQUID HEADER SCROLL EFFECT ================= */
+ let _lastScrollY = 0;
+ let _lastScrollTime = performance.now(); // 🔴 NEW: velocity time base
+ let _headerTicking = false;
+
+ const VELOCITY_HIDE = 0.6;   // px per ms
+ const VELOCITY_SHOW = -0.6;  // px per ms 
+ const VELOCITY_DEADZONE = 0.05; // 🔴 NEW: jitter guard 
+ 
+ function handleHeaderScroll(){
+   const header = document.getElementById("appHeader");
+   const bar    = document.getElementById("floatingBar");
+   
+   const currentY = Math.max(0, window.scrollY); // 🔴 FIX: clamp negative scroll (iOS bounce)
+   const now = performance.now();                       // 🔴 NEW
+   const delta = currentY - _lastScrollY;
+   const deltaTime = now - _lastScrollTime || 16;      // 🔴 NEW
+   const velocity = delta / deltaTime;                 // 🔴 NEW
+
+  // 🔴 NEW: micro scroll noise guard
+  if (Math.abs(delta) < 1) {
+    _lastScrollY = currentY;
+    _lastScrollTime = now;
+    _headerTicking = false;
+    return;
+  }  
+   
+if (header){
+    if (currentY > 10) {
+      header.classList.add("scrolled");
+    } else {
+      header.classList.remove("scrolled");
+    }
+  }
+
+  /* ================= FLOATING BAR SMART HIDE ================= */
+  if (
+   bar &&
+   bar.classList.contains("show") &&
+   state.ui.overlayCount === 0 // 🔴 CHANGED: disable momentum when overlay open
+ ) {
+
+    if (currentY <= 10) {
+      // 📍 อยู่บนสุด → แสดงเสมอ
+      bar.classList.remove("scroll-hide");
+    }
+    else if (velocity > VELOCITY_HIDE + VELOCITY_DEADZONE) {
+      // ⬇️ scroll ลง
+      bar.classList.add("scroll-hide");
+    }
+    else if (velocity < VELOCITY_SHOW - VELOCITY_DEADZONE) {
+      // ⬆️ scroll ขึ้น
+      bar.classList.remove("scroll-hide");
+    }
+  }
+
+   _lastScrollY = currentY;
+   _lastScrollTime = now; // 🔴 NEW
+   _headerTicking = false;
+ }
+
+ window.addEventListener("scroll", () => {
+   
+   if (!_headerTicking) {
+     window.requestAnimationFrame(handleHeaderScroll);
+     _headerTicking = true;
+   }
+ });
+  
 (async () => {
   try {
     state.search = "";
@@ -4935,6 +5531,9 @@ async function restoreAdminSessionIfValid() {
   
 <!-- Toast Container -->
 <div id="toast-container"></div>
+
+<!-- Floating Bottom Bar -->
+<div id="floatingBar"></div>  
 
 <!-- Loading Overlay -->
 <div id="loading-overlay" class="hidden">
