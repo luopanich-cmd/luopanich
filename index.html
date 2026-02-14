@@ -1711,6 +1711,25 @@ async function refreshProducts() {
 }
 
 async function createOrder() {
+  // 🔴 HARDENING: reload stock snapshot before submit
+  const latestProducts = await fetchProducts();
+
+  for (const item of state.cart) {
+    const product = latestProducts.find(
+      p => p.productId === item.productId
+    );
+
+    if (!product) {
+      throw new Error(`ไม่พบสินค้า ${item.name}`);
+    }
+
+    if (Number(product.stock) < Number(item.qty)) {
+      throw new Error(
+        `${item.name} คงเหลือ ${product.stock} ชิ้น (คุณเลือก ${item.qty})`
+      );
+    }
+  }
+
   const total = state.cart.reduce(
    (s,i)=> s + Number(i.price) * Number(i.qty),
    0
@@ -4773,6 +4792,47 @@ function isAdminSessionExpired(expiredAt = state.admin.expiredAt) {
   return Date.now() > new Date(expiredAt).getTime();
 }  
 
+/* =========================================================
+   🔤 THAI BAHT TEXT CONVERTER
+========================================================= */
+function numberToThaiText(num) {
+  if (isNaN(num)) return "";
+
+  const digit = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"];
+  const position = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน", "ล้าน"];
+
+  function convert(n) {
+    let result = "";
+    const str = parseInt(n, 10).toString();
+    const len = str.length;
+
+    for (let i = 0; i < len; i++) {
+      const d = parseInt(str.charAt(i));
+      const pos = len - i - 1;
+
+      if (d === 0) continue;
+
+      if (pos === 0 && d === 1 && len > 1) {
+        result += "เอ็ด";
+      } else if (pos === 1 && d === 2) {
+        result += "ยี่";
+      } else if (pos === 1 && d === 1) {
+        result += "";
+      } else {
+        result += digit[d];
+      }
+
+      result += position[pos];
+    }
+
+    return result;
+  }
+
+  if (num === 0) return "ศูนย์บาทถ้วน";
+
+  return convert(num) + "บาทถ้วน";
+}
+  
 /* ================= EXPORT ORDER PNG (FINAL) ================= */
 function exportOrderPNG() {
   const order = state.lastOrder;
@@ -4793,9 +4853,6 @@ function exportOrderPNG() {
   const po = order.poNumber
     ? String(order.poNumber)
     : "-";
-
-  const customerName = "บริษัท ออร์เดอร์พลัส 88 จำกัด";
-  const customerTaxId = "0195566000907";
 
   const canvas = document.createElement("canvas");
   canvas.width = cfg.width;
@@ -4870,32 +4927,6 @@ ctx.fillText(
    headerTopY + cfg.lineHeight * 3
  );
 
-/* ===== CUSTOMER BLOCK ===== */
-ctx.font = `700 ${cfg.textSize}px -apple-system`;
-ctx.fillText("ลูกค้า:", cfg.padding, headerTopY + cfg.lineHeight * 5);
-
-ctx.font = `${cfg.textSize}px -apple-system`;
-ctx.fillText(customerName, cfg.padding, headerTopY + cfg.lineHeight * 6);
-
- ctx.fillText(
-   "99 หมู่ 5 ตำบลห้วยทราย",
-   cfg.padding,
-   headerTopY + cfg.lineHeight * 7
- );
-
- ctx.fillText(
-   "อำเภอหนองแค จังหวัดสระบุรี 18230",
-   cfg.padding,
-   headerTopY + cfg.lineHeight * 8
- );
-
-ctx.fillText(
-   `เลขผู้เสียภาษี: ${customerTaxId}`,
-   cfg.padding,
-   headerTopY + cfg.lineHeight * 9
- );
-
-
 /* ===== DOCUMENT META ===== */
 const rightX = canvas.width - cfg.padding;
 
@@ -4910,7 +4941,7 @@ const rightX = canvas.width - cfg.padding;
  );
 
   ctx.textAlign = "left";
-y = headerTopY + cfg.lineHeight * 11;
+  y = headerTopY + cfg.lineHeight * 5;
 
 
   /* ===== DIVIDER ===== */
@@ -5003,35 +5034,16 @@ y = headerTopY + cfg.lineHeight * 11;
     y
   );
 
-/* ================= SIGNATURE SECTION ================= */
-  const todayText = order.createdAt
-   ? new Date(order.createdAt).toLocaleDateString("th-TH")
-   : new Date().toLocaleDateString("th-TH");
-  y = canvas.height - 200;  // 🔥 ล็อกท้ายหน้า A4
-
-  const signWidth = 260;
-
-  // LEFT SIGN
-  ctx.beginPath();
-  ctx.moveTo(cfg.padding, y);
-  ctx.lineTo(cfg.padding + signWidth, y);
-  ctx.stroke();
-
-  ctx.fillText("ในนาม บริษัท ออร์เดอร์พลัส 88 จำกัด", cfg.padding, y + 28);
-  ctx.fillText("ผู้รับวางบิล", cfg.padding, y + 56);
-  ctx.fillText(`วันที่ ${todayText}`, cfg.padding, y + 84);
-
-  // RIGHT SIGN
-  const rightStart = canvas.width - cfg.padding - signWidth;
-
-  ctx.beginPath();
-  ctx.moveTo(rightStart, y);
-  ctx.lineTo(canvas.width - cfg.padding, y);
-  ctx.stroke();
-
-  ctx.fillText("ในนาม ร้านล้อพาณิชย์", rightStart, y + 28);
-  ctx.fillText("ผู้วางบิล", rightStart, y + 56);
-  ctx.fillText(`วันที่ ${todayText}`, rightStart, y + 84);
+  /* ===== THAI TEXT TOTAL ===== */
+  y += cfg.lineHeight;
+  ctx.font = `${cfg.textSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
+  const thaiText = `(${numberToThaiText(safeTotal)})`;
+  const thaiWidth = ctx.measureText(thaiText).width;
+  ctx.fillText(
+    thaiText,
+    canvas.width - cfg.padding - thaiWidth,
+    y
+  );
 
   /* ================= DOWNLOAD (FIXED) ================= */
   const a = document.createElement("a");
@@ -5181,14 +5193,6 @@ function exportOrderPrint() {
         </div>
       </div>
 
-      <div class="section">
-        <strong>ลูกค้า:</strong><br>
-        บริษัท ออร์เดอร์พลัส 88 จำกัด<br>
-        99 หมู่ 5 ต.ห้วยทราย อ.หนองแค<br>
-        จ.สระบุรี 18230<br>
-        เลขผู้เสียภาษี 0195566000907
-      </div>
-
       <table>
         <thead>
           <tr>
@@ -5213,26 +5217,13 @@ function exportOrderPrint() {
       </table>
 
 <div class="total">
-  ยอดรวม: ฿${total}
+  ยอดรวม: ฿${total}<br>
+  <span style="font-weight:500; font-size:14px;">
+    (${numberToThaiText(Number(order.total || 0))})
+  </span>
 </div>
 
 </div> <!-- ปิด content -->
-
-      <div class="sign">
-        <div class="sign-block">
-          <div class="line"></div>
-          ในนาม บริษัท ออร์เดอร์พลัส 88 จำกัด<br>
-          ผู้รับวางบิล<br>
-          วันที่ ${today}
-        </div>
-
-        <div class="sign-block">
-          <div class="line"></div>
-          ในนาม ร้านล้อพาณิชย์<br>
-          ผู้วางบิล<br>
-          วันที่ ${today}
-        </div>
-      </div>
 
       <script>
         window.onload = function() {
