@@ -1425,6 +1425,48 @@ textarea {
      animation: none !important;
    }
  }
+
+/* ================= BACK TO TOP (FLOAT) ================= */
+.btnTop{
+  position: fixed;
+  right: 14px;
+  bottom: calc(env(safe-area-inset-bottom) + 84px); /* ✅ ลอยเหนือ floatingBar */
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  z-index: 46; /* ✅ สูงกว่า floatingBar (45) แต่ต่ำกว่า backdrop (100) */
+
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: var(--shadow-float);
+  color: #111;
+  font-size: 18px;
+  font-weight: 700;
+
+  opacity: 0;
+  transform: translateY(10px) scale(.96);
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.btnTop.show{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.btnTop:active{
+  transform: translateY(1px) scale(.97);
+}
+
+@media (prefers-color-scheme: dark){
+  .btnTop{
+    background: rgba(28,28,30,.65);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.08);
+  }
+} 
   
 </style>
 </head>
@@ -5447,6 +5489,25 @@ async function restoreAdminSessionIfValid() {
  let _lastScrollTime = performance.now(); // 🔴 NEW: velocity time base
  let _headerTicking = false;
 
+// ================= BACK TO TOP =================
+let btnTop = null; // 🔴 must bind after DOM parsed (button is below this <script>)
+const prefersReducedMotion =
+  window.matchMedia &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+window.addEventListener("DOMContentLoaded", () => {
+  btnTop = document.getElementById("btnTop");
+  if (!btnTop) return;
+
+  btnTop.addEventListener("click", () => {
+    if (prefersReducedMotion) {
+      window.scrollTo(0, 0);
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, { passive: true });
+});
+  
  const VELOCITY_HIDE = 0.6;   // px per ms
  const VELOCITY_SHOW = -0.6;  // px per ms 
  const VELOCITY_DEADZONE = 0.05; // 🔴 NEW: jitter guard 
@@ -5454,6 +5515,7 @@ async function restoreAdminSessionIfValid() {
  function handleHeaderScroll(){
    const header = document.getElementById("appHeader");
    const bar    = document.getElementById("floatingBar");
+   const topBtn = btnTop;
    
    const currentY = Math.max(0, window.scrollY); // 🔴 FIX: clamp negative scroll (iOS bounce)
    const now = performance.now();                       // 🔴 NEW
@@ -5475,6 +5537,13 @@ if (header){
     } else {
       header.classList.remove("scrolled");
     }
+  }
+   
+  /* ================= BACK TO TOP SHOW/HIDE ================= */
+  if (topBtn){
+    // ✅ โผล่เมื่อเลื่อนลงพอสมควร และไม่มี overlay เปิดอยู่
+    const shouldShow = currentY > 600 && state.ui.overlayCount === 0;
+    topBtn.classList.toggle("show", shouldShow);
   }
 
   /* ================= FLOATING BAR SMART HIDE ================= */
@@ -5585,7 +5654,12 @@ if (header){
 <div id="toast-container"></div>
 
 <!-- Floating Bottom Bar -->
-<div id="floatingBar"></div>  
+<div id="floatingBar"></div> 
+
+<!-- Back to Top -->
+<button id="btnTop" class="btnTop" type="button" aria-label="กลับขึ้นด้านบน" title="กลับขึ้นด้านบน">
+  ↑
+</button>  
 
 <!-- Loading Overlay -->
 <div id="loading-overlay" class="hidden">
