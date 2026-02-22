@@ -28,8 +28,9 @@
   header{
   padding:
     calc(env(safe-area-inset-top, 0px) + 20px)
-    16px
-    18px;
+    calc(env(safe-area-inset-right, 0px) + 16px)
+    18px
+    calc(env(safe-area-inset-left, 0px) + 16px);
   font-size:22px;
   font-weight:600;
 
@@ -66,9 +67,10 @@
 
   header.scrolled{
    padding:
-     calc(env(safe-area-inset-top, 0px) + 12px)
-     16px
-     10px;
+    calc(env(safe-area-inset-top, 0px) + 12px)
+    calc(env(safe-area-inset-right, 0px) + 16px)
+    10px
+    calc(env(safe-area-inset-left, 0px) + 16px);
    min-height: 72px;
    background: rgba(255,255,255,.85);
    box-shadow:
@@ -438,7 +440,7 @@ button:disabled {
    border: 1px solid rgba(0,0,0,.12);
 
    background: rgba(255,255,255,.85);
-   color: #ffffff; /* 🔴 เปลี่ยนข้อความเป็นสีขาว */
+   color: #111;    /* ✅ อ่านชัดใน light mode */
    backdrop-filter: blur(14px);
 
   pointer-events: none;
@@ -1241,6 +1243,7 @@ textarea {
   .search-input {
     background: rgba(44,44,46,.9);
     border: 1px solid rgba(255,255,255,.08);
+    color: #fff; /* ✅ ค่อยบังคับขาวเฉพาะ dark */
   }
    
    .product-note {
@@ -1461,6 +1464,38 @@ textarea {
 /* ================= STEP 2: ประกาศ backdrop (UPGRADED) ================= */
 const backdrop = document.getElementById("globalBackdrop");
 const cartSheet = document.getElementById("cartSheet");
+  
+// ✅ SINGLE SOURCE OF TRUTH: sheet refs (กัน ReferenceError + กันพึ่ง global id)
+const productSheet = document.getElementById("productSheet");
+const qtySheet = document.getElementById("qtySheet");
+const confirmSheet = document.getElementById("confirmSheet");
+const stockSheet = document.getElementById("stockSheet");
+const adminLoginSheet = document.getElementById("adminLoginSheet");
+const adminDashboardSheet = document.getElementById("adminDashboardSheet");
+const adminOrderSheet = document.getElementById("adminOrderSheet");
+const adminStockSheet = document.getElementById("adminStockSheet");
+const adminMenuSheet = document.getElementById("adminMenuSheet");
+const adminProductActionSheet = document.getElementById("adminProductActionSheet");
+const adminProductEditSheet = document.getElementById("adminProductEditSheet");
+const adminStockActionSheet = document.getElementById("adminStockActionSheet");
+const adminAddProductSheet = document.getElementById("adminAddProductSheet");
+
+// ✅ expose for inline onclick handlers (ปลอดภัยสุด)
+Object.assign(window, {
+  productSheet,
+  qtySheet,
+  confirmSheet,
+  stockSheet,
+  adminLoginSheet,
+  adminDashboardSheet,
+  adminOrderSheet,
+  adminStockSheet,
+  adminMenuSheet,
+  adminProductActionSheet,
+  adminProductEditSheet,
+  adminStockActionSheet,
+  adminAddProductSheet
+});
 
 // 🔒 ใช้ state.ui.backdropLocked เป็นตัวเดียว (single source of truth)
 let allowOpenOrders = false;
@@ -1623,7 +1658,10 @@ function safeHideLoading(fromTimeout = false) {
       }
 
       state.isSubmitting = false;
-      state.ui.backdropLocked = false;
+      // 🔒 ปลด lock เฉพาะเมื่อไม่มี overlay เปิดอยู่ (กัน confirm/flow หลุด)
+      if (state.ui.overlayCount === 0) {
+        state.ui.backdropLocked = false;
+      }
 
       if (state.ui.overlayCount === 0 && backdrop) {
         backdrop.style.display = "none";
@@ -2125,11 +2163,14 @@ function closeImageViewer(){
        images.length
          ? `
            <div class="product-info-images">
- ${images.map(url => `
+ ${images.map(url => {
+   const safeUrl = String(url).replace(/'/g, "%27");
+   return `
 <img src="${url}"
       class="product-info-zoom"
-      onclick="openImageViewer('${url}')">
- `).join("")}
+      onclick="openImageViewer('${safeUrl}')">
+   `;
+ }).join("")}
            </div>
          `
          : ""
@@ -2289,14 +2330,13 @@ let statusText  = statusMap[statusKey] || "พร้อมส่ง";
 
 function renderProductSheet(){
   const p = state.selectedProduct;
-  const productSheet = document.getElementById("productSheet");
   if (!productSheet || !p) return;
 
   productSheet.innerHTML = `
     <!-- ❌ CLOSE BUTTON (TOP-RIGHT) -->
  <button
    class="sheet-close sheet-close-btn"
-   onclick="closeOverlay(productSheet)"
+   onclick="closeOverlay(window.productSheet)"
    aria-label="Close"
  >
       ×
@@ -2800,21 +2840,22 @@ function handleBackdropClick(){
 function closeTopSheet(){
   const sheets = [
     // 🔴 ADMIN FLOW (top → bottom)
-    imageViewerSheet,
-    adminMenuSheet,           // side menu
-    adminProductActionSheet,
-    adminProductEditSheet,
-    adminStockActionSheet,
-    adminOrderSheet,
-    adminDashboardSheet,
-    adminStockSheet,
+    document.getElementById("imageViewerSheet"),
+    document.getElementById("productInfoSheet"),
+    document.getElementById("adminMenuSheet"),           // side menu
+    document.getElementById("adminProductActionSheet"),
+    document.getElementById("adminProductEditSheet"),
+    document.getElementById("adminStockActionSheet"),
+    document.getElementById("adminOrderSheet"),
+    document.getElementById("adminDashboardSheet"),
+    document.getElementById("adminStockSheet"),
 
     // 🔵 VIEWER FLOW
-    confirmSheet,
-    cartSheet,
-    qtySheet,
-    productSheet,
-    stockSheet
+    document.getElementById("confirmSheet"),
+    document.getElementById("cartSheet"),
+    document.getElementById("qtySheet"),
+    document.getElementById("productSheet"),
+    document.getElementById("stockSheet")
   ];
 
   for (const sheet of sheets) {
@@ -3971,6 +4012,15 @@ async function submitOrder(){
      onclick="exportOrderPrint()">
      ดาวน์โหลดใบสั่งซื้อ
    </button>
+
+   <button class="btn btn-secondary"
+    style="margin-top:8px"
+    onclick="
+      state.ui.backdropLocked = false;
+      closeOverlay(confirmSheet);
+    ">
+    ปิด
+  </button>
  `;
 
 // confirmSheet เปิดอยู่แล้ว ไม่ต้อง reopen
