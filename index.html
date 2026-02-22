@@ -399,14 +399,16 @@ button:disabled {
 /* ================= HEADER SEARCH (iOS-LIKE) ================= */
 .viewer-search-wrap{
    margin-top:6px;
-   max-width:calc(100% - 44px);
+   max-width:100%;
  }  
 
 .search-wrap {
   display: flex;
   align-items: center;
   position: relative;
-  max-width: calc(100% - 44px);
+  max-width: 100%;
+  min-width: 0;          /* 🔴 กันดัน layout */
+  overflow: hidden;      /* 🔴 กันกินพื้นที่ตอนพับ search */
 }
 
 .search-btn {
@@ -429,15 +431,15 @@ button:disabled {
 }
 
 .search-input {
-   width: 260px;
+   width: 0;             /* 🔴 สำคัญ: ตอนยังไม่ active ต้องไม่กินพื้นที่ */
    opacity: 0;
-   margin-left: 8px;
+   margin-left: 0;
    height: 40px;
-   padding: 8px 12px;
+   padding: 0;
 
    font-size: 16px;
    border-radius: 12px;
-   border: 1px solid rgba(0,0,0,.12);
+   border: 0;
 
    background: rgba(255,255,255,.85);
    color: #111;    /* ✅ อ่านชัดใน light mode */
@@ -450,7 +452,10 @@ button:disabled {
 
   transition:
     opacity .18s ease,
-    transform .45s cubic-bezier(.34,1.56,.64,1);
+    transform .45s cubic-bezier(.34,1.56,.64,1),
+    width .35s ease,
+    margin-left .35s ease,
+    padding .35s ease;
 }
 
 /* 🔥 ACTIVE STATE */
@@ -458,6 +463,10 @@ button:disabled {
   opacity: 1;
   transform: translateX(0) scaleX(1);
   pointer-events: auto;
+  width: 260px;                          /* ✅ ค่อยขยายตอน active */
+  margin-left: 8px;
+  padding: 8px 12px;
+  border: 1px solid rgba(0,0,0,.12);
 }
 
 /* 🔹 subtle focus glow (iOS feel) */
@@ -515,6 +524,7 @@ button:disabled {
   background:transparent;
   font-size:26px;
   color:#ffffff; /* 🔴 ทำให้สามขีดเป็นสีขาว */
+  line-height:1;         /* 🔴 กัน glyph ☰ โดนตัดบน iOS */
   cursor:pointer;
 
   display:flex;
