@@ -463,7 +463,7 @@ button:disabled {
   opacity: 1;
   transform: translateX(0) scaleX(1);
   pointer-events: auto;
-  width: 260px;                          /* ✅ ค่อยขยายตอน active */
+  width: min(220px, calc(100vw - 200px)); /* 🔴 ลด/ยืดตามจอ ไม่ดัน filter+menu */
   margin-left: 8px;
   padding: 8px 12px;
   border: 1px solid rgba(0,0,0,.12);
