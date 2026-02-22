@@ -1429,7 +1429,7 @@ textarea {
 /* ================= BACK TO TOP (FLOAT) ================= */
 .btnTop{
   position: fixed;
-  right: 14px;
+  left: 50%;
   bottom: calc(env(safe-area-inset-bottom) + 84px); /* ✅ ลอยเหนือ floatingBar */
   width: 44px;
   height: 44px;
@@ -1438,26 +1438,30 @@ textarea {
   cursor: pointer;
   z-index: 46; /* ✅ สูงกว่า floatingBar (45) แต่ต่ำกว่า backdrop (100) */
 
-  background: rgba(255,255,255,.55);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  box-shadow: var(--shadow-float);
+  /* iOS glass */
+  background: rgba(255,255,255,.38);
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(255,255,255,.55);
+  box-shadow:
+    0 10px 28px rgba(0,0,0,.14),
+    inset 0 1px 0 rgba(255,255,255,.75);
   color: #111;
   font-size: 18px;
   font-weight: 700;
 
   opacity: 0;
-  transform: translateY(10px) scale(.96);
+  transform: translateX(-50%) translateY(10px) scale(.96);
   pointer-events: none;
   transition: opacity .18s ease, transform .18s ease;
 }
 .btnTop.show{
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translateX(-50%) translateY(0) scale(1);
   pointer-events: auto;
 }
 .btnTop:active{
-  transform: translateY(1px) scale(.97);
+  transform: translateX(-50%) translateY(1px) scale(.97);
 }
 
 @media (prefers-color-scheme: dark){
