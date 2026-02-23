@@ -24,7 +24,14 @@
 
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   background: #f2f2f7;
+  height: 100%;  
+  min-height: 100%;
 }
+
+  body{
+   min-height: 100dvh;
+  }
+  
   header{
   padding:
     calc(env(safe-area-inset-top, 0px) + 20px)
@@ -1268,9 +1275,9 @@ textarea {
  }
   
  @media (prefers-color-scheme: dark) {
-   body {
-     background: #0f0f12;
-   }
+   html, body {
+    background: #0f0f12;
+  }
 
   /* 🔹 FLOATING BAR (DARK) */
   #floatingBar{
