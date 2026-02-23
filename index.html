@@ -931,6 +931,70 @@ textarea {
   min-width: 200px;
 }
 
+.skeleton-list{
+  display:grid;
+  gap:16px;
+}
+.skeleton-card{
+  height:104px;
+  border-radius:16px;
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow:hidden;
+}
+.skeleton-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(90deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,.55) 45%,
+      rgba(255,255,255,0) 90%);
+  transform: translateX(-120%);
+  animation: shimmer 1.15s infinite;
+}
+.skeleton-row{
+  display:flex;
+  gap:12px;
+  padding:12px;
+}
+.skeleton-thumb{
+  width:80px;height:80px;border-radius:12px;
+  background: rgba(0,0,0,.06);
+  flex-shrink:0;
+}
+.skeleton-lines{flex:1;display:flex;flex-direction:column;gap:10px;padding-top:6px;}
+.skeleton-line{
+  height:12px;border-radius:999px;
+  background: rgba(0,0,0,.06);
+}
+.skeleton-line.w70{width:70%}
+.skeleton-line.w45{width:45%}
+.skeleton-line.w30{width:30%}
+
+@keyframes shimmer{
+  to { transform: translateX(120%); }
+}
+
+@media (prefers-color-scheme: dark){
+  .skeleton-card{
+    background: rgba(28,28,30,.72);
+  }
+  .skeleton-thumb,
+  .skeleton-line{
+    background: rgba(255,255,255,.08);
+  }
+  .skeleton-card::before{
+    background: linear-gradient(90deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,.16) 45%,
+      rgba(255,255,255,0) 90%);
+  }
+}  
 .spinner {
   width: 32px;
   height: 32px;
@@ -1801,10 +1865,44 @@ function sortProducts(products) {
 }
   
 async function refreshProducts() {
-  const list = await fetchProducts();
+  const app = document.getElementById("app");
 
-  state.products = sortProducts(list); // ✅ เพิ่มบรรทัดเดียว
-  renderProducts();
+  // ✅ Premium Skeleton เฉพาะตอน "ยังไม่มีรายการ" (ลดอาการวูบ/กระพริบ)
+  if (app && (!Array.isArray(state.products) || state.products.length === 0)) {
+    const skeleton = Array.from({ length: 6 }).map(() => `
+      <div class="skeleton-card" aria-hidden="true">
+        <div class="skeleton-row">
+          <div class="skeleton-thumb"></div>
+          <div class="skeleton-lines">
+            <div class="skeleton-line w70"></div>
+            <div class="skeleton-line w45"></div>
+            <div class="skeleton-line w30"></div>
+          </div>
+        </div>
+      </div>
+    `).join("");
+    app.innerHTML = `<div class="skeleton-list">${skeleton}</div>`;
+  }
+
+  try {
+    const list = await fetchProducts();
+    state.products = sortProducts(list);
+    renderProducts();
+  } catch (err) {
+    console.error("refreshProducts failed:", err);
+    if (app) {
+      app.innerHTML = `
+        <div style="
+          text-align:center;
+          color:#d93025;
+          margin-top:40px;
+          font-size:15px;
+        ">
+          ไม่สามารถโหลดรายการสินค้าได้
+        </div>
+      `;
+    }
+  }
 }
 
 async function createOrder() {
