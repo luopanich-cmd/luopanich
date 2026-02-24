@@ -1542,6 +1542,34 @@ textarea {
     border: 1px solid rgba(255,255,255,.08);
   }
 } 
+
+/* ================= CONTINUE MODE (ADMIN ADD PRODUCT) ================= */
+/* 🔴 FIX: กันข้อความ "เพิ่มต่อเนื่อง..." ชิดขอบ/ไม่ wrap ในมือถือ */
+#adminAddProductSheet .continue-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  min-width:0;
+}
+
+/* 🔴 FIX: checkbox ห้ามโดน input{width:100%} */
+#adminAddProductSheet .continue-row input[type="checkbox"]{
+  width:18px !important;
+  height:18px !important;
+  flex:0 0 18px;
+  margin:0;
+}
+
+/* 🔴 FIX: ข้อความต้อง wrap ได้ + ไม่ชิดขอบ */
+#adminAddProductSheet .continue-row .continue-text{
+  min-width:0;
+  flex:1;
+  white-space:normal;
+  word-break:break-word;
+  line-height:1.25;
+  padding-right:6px; /* กันชิดขอบขาว */
+}
   
 </style>
 </head>
@@ -4057,6 +4085,9 @@ function openAddProduct(force = false){
 
   state.addImageFile = null;
   const draft = state.smartAddDraft || {};
+  // 🔒 guard: กัน textarea ปิดแท็กเอง (DOM แตก)
+  const safeNote = String(draft.note || "").replace(/<\/textarea>/gi, "");
+
 
   adminAddProductSheet.innerHTML = `
     <h3>➕ เพิ่มสินค้าใหม่</h3>
@@ -4105,12 +4136,11 @@ function openAddProduct(force = false){
     placeholder="เช่น ของแถม / ตำหนิเล็กน้อย / หมายเหตุถึงลูกค้า"
     style="
       resize:none;
-      font-size:14px;
       line-height:1.4;
       border-radius:12px;
       padding:10px 12px;
     "
-  >${draft.note || ""}</textarea>
+  >${safeNote}</textarea>
 </div>
 
     <div class="form-group">
@@ -4124,9 +4154,9 @@ function openAddProduct(force = false){
 
     <!-- 🔁 CONTINUE MODE -->
     <div class="form-group">
-      <label style="display:flex;align-items:center;gap:8px;">
+      <label class="continue-row">
         <input type="checkbox" id="addContinueMode">
-        เพิ่มต่อเนื่อง (คัดลอกข้อมูลเดิม)
+        <span class="continue-text">เพิ่มต่อเนื่อง (คัดลอกข้อมูลเดิม)</span>
       </label>
     </div>
 
