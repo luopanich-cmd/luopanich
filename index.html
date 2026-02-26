@@ -8,10 +8,46 @@
 <!-- ================= UI STYLE ================= -->
 <style>
   :root {
-   --shadow-card:    0 10px 30px rgba(0,0,0,.08);
-   --shadow-control: 0 6px 16px rgba(0,0,0,.08);
-   --shadow-image:   0 4px 12px rgba(0,0,0,.12);
-   --shadow-float:   0 12px 36px rgba(0,0,0,.12);
+  /* ================= PHASE 3: TYPOGRAPHY / HIERARCHY ================= */
+  --text-primary:   rgba(17,17,17,.92);
+  --text-secondary: rgba(60,60,67,.68); /* iOS secondary-ish */
+  --title-size:     22px;
+  --subtitle-size:  12.5px;
+  --title-weight:   700;
+  --subtitle-weight:500;
+    
+  /* ================= STEP 2: SHADOW/DEPTH TOKENS (UNIFIED) ================= */
+  --shadow-card:            0 10px 30px rgba(0,0,0,.08);
+  --shadow-control:         0 6px 16px rgba(0,0,0,.08);
+  --shadow-image:           0 4px 12px rgba(0,0,0,.12);  
+  --shadow-header:          0 8px 28px rgba(0,0,0,.06);
+  --shadow-header-scrolled: 0 12px 36px rgba(0,0,0,.12);
+  /* card pressed should be card semantics (not control) */
+  --shadow-card-pressed:    0 6px 18px rgba(0,0,0,.06);
+  /* canvas export card shadow should follow tokens */
+  --shadow-canvas-card:     var(--shadow-card);
+  --shadow-side:            -6px 0 20px rgba(0,0,0,.12);
+  --shadow-floating:        0 12px 36px rgba(0,0,0,.12);
+  --shadow-fab:             0 10px 28px rgba(0,0,0,.14); 
+  
+  /* legacy alias (keep old refs working + follow unified override) */
+  --shadow-float:           var(--shadow-floating);  
+   
+   /* ================= STEP 1: INTERACTION TOKENS ================= */
+   /* Tap scale */
+   --tap-scale-primary: .97;   /* primary / confirm */
+   --tap-scale-icon:    .95;   /* icon circle buttons */
+   --tap-scale-card:    .98;   /* cards should feel heavier */
+
+   /* Durations */
+   --dur-tap:   140ms;
+   --dur-sheet: 300ms;
+   --dur-chrome:360ms;
+
+   /* Easings (keep minimal, iOS-like) */
+   --ease-tap:   cubic-bezier(.2,.8,.2,1);
+   --ease-out:   cubic-bezier(.22,.61,.36,1);
+   --ease-chrome:cubic-bezier(.22,.61,.36,1); 
  }
   
   html, body {
@@ -38,8 +74,8 @@
     calc(env(safe-area-inset-right, 0px) + 16px)
     18px
     calc(env(safe-area-inset-left, 0px) + 16px);
-  font-size:22px;
-  font-weight:600;
+  font-size: inherit;
+  font-weight: inherit;
 
   /* 🔹 Visual */
   background:rgba(255,255,255,.65);
@@ -48,7 +84,7 @@
   border-bottom: 1px solid rgba(255,255,255,.4);
 
   box-shadow:
-    0 8px 28px rgba(0,0,0,.06),
+    var(--shadow-header),
     inset 0 -1px 0 rgba(255,255,255,.35);
 
   /* 🔹 Position */
@@ -66,10 +102,10 @@
   box-sizing:border-box;
 
   transition:
-    padding .45s cubic-bezier(.34,1.56,.64,1),
-    min-height .35s ease,
-    background .3s ease,
-    box-shadow .3s ease;
+    padding var(--dur-chrome) var(--ease-chrome),
+    min-height var(--dur-chrome) var(--ease-chrome),
+    background var(--dur-chrome) ease,
+    box-shadow var(--dur-chrome) ease;
   }
 
   header.scrolled{
@@ -81,37 +117,116 @@
    min-height: 72px;
    background: rgba(255,255,255,.85);
    box-shadow:
-     0 12px 36px rgba(0,0,0,.12),
-     inset 0 -1px 0 rgba(255,255,255,.5);
+    var(--shadow-header-scrolled),
+    inset 0 -1px 0 rgba(255,255,255,.5);
  } 
 
 /* ================= SHOP TITLE GLOW ================= */
- .shop-title{
-   font-weight:700;
-   font-size:22px;
-   color:#fff;
-   letter-spacing:.3px;
-   text-shadow:
-     0 0 8px rgba(255,255,255,.6),
-     0 0 16px rgba(255,255,255,.35);
+ .shop-title,
+ .admin-title{
+   font-weight: var(--title-weight);
+  font-size: var(--title-size);
+  letter-spacing: .15px;
+  color: var(--text-primary);
+
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+
+  /* ✅ Match filter/menu/search: Apple-nimble glass */
+  background: rgba(255,255,255,.55);
+  border: 1px solid rgba(255,255,255,.45);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  /* ✅ add inner rim + same depth language as buttons */
+  box-shadow:
+    var(--shadow-control),
+    inset 0 1px 0 rgba(255,255,255,.70),
+    inset 0 -1px 0 rgba(255,255,255,.28);
+
+  /* Apple-nimble: เงาเบามาก ไม่ glow */
+  text-shadow: 0 1px 0 rgba(255,255,255,.35);
  }
 
-/* ================= ADMIN TITLE GLOW ================= */
-.admin-title{
-  font-weight:700;
-  font-size:22px;
-  color:#fff;
-  letter-spacing:.3px;
-  text-shadow:
-    0 0 6px rgba(255,255,255,.65),
-    0 0 18px rgba(255,255,255,.35);
-  margin-left:7px;
+/* ✅ Glass highlight (top-left glare) */
+  .shop-title::before,
+  .admin-title::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  z-index:0;
+  background:
+    radial-gradient(70% 55% at 28% 22%,
+      rgba(255,255,255,.95) 0%,
+      rgba(255,255,255,.55) 26%,
+      rgba(255,255,255,0) 60%);
+  opacity:.45;
+  pointer-events:none;
+  mix-blend-mode: screen;
+}
+/* ✅ ensure text always above highlight (even when no child elements) */
+.shop-title,
+.admin-title{ z-index: 0; }
+  
+/* PHASE 3: Supporting line under title */
+.shop-subtitle{
+  margin-top: 6px;
+  font-size: var(--subtitle-size);
+  font-weight: var(--subtitle-weight);
+  color: var(--text-secondary);
+  letter-spacing: .2px;
+}
+
+/* ================= PHASE 3: HEADER HIERARCHY LAYOUT ================= */
+.header-left{
+  flex: 1;
+  min-width: 0;
+}
+.header-stack{
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.header-actions{
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 12px;
+}  
+  
+/* ================= ADMIN TITLE (only delta) ================= */
+ .admin-title{
+   /* 🔴 CHANGED: ให้เหมือน shop-title 100% → ไม่ดันซ้ายด้วย margin */
+   margin-left: 0;
+ }
+  
+@media (prefers-color-scheme: dark){
+  .admin-title{
+    /* 🔴 CHANGED: ทำให้ rgba ถูกต้องตามมาตรฐาน (กัน rule หลุดในบาง browser) */
+    color: rgba(255,255,255,.92);
+    text-shadow:
+      0 0 10px rgba(0,0,0,.70),
+      0 0 22px rgba(0,0,0,.45);
+  }
 }
   
   .badge{
-    background:#ff3b30;color:#fff;
-    border-radius:12px;padding:2px 8px;
-    font-size:12px;
+    color:#fff;
+  border-radius:999px;
+  padding:3px 10px;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.2px;
+  background: rgba(255,59,48,.88);
+  border: 1px solid rgba(255,255,255,.28);
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.14),
+    inset 0 1px 0 rgba(255,255,255,.35);
   }
   .container{padding:16px;display:grid;gap:16px;}
   
@@ -167,7 +282,7 @@
   -webkit-overflow-scrolling: touch;
 
   transform: translateY(100%);
-  transition: transform .35s cubic-bezier(.22,.61,.36,1);
+  transition: transform var(--dur-sheet) var(--ease-out);
 
   z-index: 101;
 }
@@ -281,14 +396,10 @@ button:disabled {
  }
   /* ✅ เพิ่มตรงนี้ */
 .btn-remove:active {
-  transform: scale(0.95);
+  transform: scale(var(--tap-scale-icon));
 }
 
-/* interaction */
-.btn-danger:active,
-.btn-outline:active {
-  transform: scale(0.97);
-}
+/* interaction: use .btn:active as single source of truth */
   
 /* ================= BUTTON SYSTEM ================= */
 
@@ -304,8 +415,8 @@ button:disabled {
   justify-content: center;
   gap: 8px;
   transition:
-    transform .18s cubic-bezier(.34,1.56,.64,1),
-    box-shadow .18s ease;
+    transform var(--dur-tap) var(--ease-tap),
+    box-shadow var(--dur-tap) ease;
 }
 
 /* Primary */
@@ -327,9 +438,18 @@ button:disabled {
   border: 1px solid #ddd;
 }
 
+/* Danger (logout / destructive) */
+.btn-danger{
+  background:#ff3b30;
+  color:#fff;
+}
+.btn-danger:active{
+  transform: scale(var(--tap-scale-primary));
+}
+
 /* Interaction */
 .btn:active {
-  transform: scale(0.94);
+  transform: scale(var(--tap-scale-primary));
 }
 
   .cart-item{
@@ -415,28 +535,70 @@ button:disabled {
   position: relative;
   max-width: 100%;
   min-width: 0;          /* 🔴 กันดัน layout */
-  overflow: hidden;      /* 🔴 กันกินพื้นที่ตอนพับ search */
+  overflow: visible;     /* ✅ ให้เงาปุ่มวงกลมไม่โดนตัดเป็นเหลี่ยม */
 }
 
 .search-btn {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: none;
-  background: rgba(255,255,255,.6);
-  backdrop-filter: blur(10px);
-  font-size: 18px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.45);
+  position: relative;
+  overflow: hidden;
+
+  /* ✅ Match filter/menu: Apple-nimble glass */
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+
+  box-shadow: var(--shadow-control);
   cursor: pointer;
+  color: rgba(17,17,17,.92); /* svg uses currentColor */
+  -webkit-tap-highlight-color: transparent;
 
   transition:
-    transform .18s cubic-bezier(.25,.46,.45,.94),
-    background .2s ease;
+    transform var(--dur-tap) var(--ease-tap),
+    background var(--dur-tap) ease,
+    box-shadow var(--dur-tap) ease;
 }
 
+/* ✅ Glass highlight (same language as filter/menu) */
+.search-btn::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  z-index:0;
+  background:
+    radial-gradient(70% 55% at 28% 22%,
+      rgba(255,255,255,.95) 0%,
+      rgba(255,255,255,.55) 26%,
+      rgba(255,255,255,0) 60%);
+  opacity:.45;
+  pointer-events:none;
+  mix-blend-mode: screen;
+}
+.search-btn::after{
+  content:none;
+}
+.search-btn > *{ position: relative; z-index: 2; }
+  
 .search-btn:active {
-  transform: scale(.92);
+  transform: scale(var(--tap-scale-icon));
+  background: rgba(0,0,0,.08);
+  box-shadow: var(--shadow-card-pressed);
 }
 
+@media (hover:hover){
+  .search-btn:hover{
+    background: rgba(0,0,0,.06);
+  }
+}
+  
 .search-input {
    width: 0;             /* 🔴 สำคัญ: ตอนยังไม่ active ต้องไม่กินพื้นที่ */
    opacity: 0;
@@ -484,6 +646,18 @@ button:disabled {
   outline: none;
 }
 
+/* ✅ STEP 3+4: SVG icon (monochrome) */
+.icon-sf{
+  width: 18px;
+  height: 18px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .92;
+}
  /* ================= FILTER ICON DROPDOWN ================= */
  .filter-wrap{ position:relative; }
 
@@ -492,12 +666,71 @@ button:disabled {
    height:40px;
    border-radius:50%;
    border:none;
-   background:rgba(255,255,255,.6);
-   backdrop-filter:blur(12px);
-   font-size:18px;
+   position: relative;          /* ✅ needed for glass layers */
+   overflow: hidden;            /* ✅ clip highlight rim */
+   
+   /* ✅ Apple-nimble glass (less "3D") */
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
    cursor:pointer;
+   color: rgba(17,17,17,.92);
+   display:flex;
+   align-items:center;
+   justify-content:center;
+   -webkit-tap-highlight-color: transparent;
+   transition:
+     transform var(--dur-tap) var(--ease-tap),
+     background var(--dur-tap) ease,
+     box-shadow var(--dur-tap) ease;
+
+   /* ✅ Token shadow (unified depth) */
+  border: 1px solid rgba(255,255,255,.45);
+  box-shadow: var(--shadow-control);
  }
 
+ /* ✅ Glass highlight (top-left glare) */
+.filter-btn::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  z-index: 0;
+  background: radial-gradient(70% 55% at 28% 22%,
+    rgba(255,255,255,.65) 0%,
+    rgba(255,255,255,0) 58%);
+  opacity:.45;
+  pointer-events:none;
+  mix-blend-mode: screen;
+}
+
+/* ✅ Inner rim (second ring) */
+.filter-btn::after{
+  content:none;
+} 
+  
+ .filter-btn:active{
+   transform: scale(var(--tap-scale-icon));
+   /* ✅ press = simpler, less 3D */
+   background: rgba(0,0,0,.08);
+  box-shadow: var(--shadow-card-pressed);
+ }
+
+ @media (hover:hover){
+  .filter-btn:hover{
+    background: rgba(0,0,0,.06);
+  }
+}
+  
+ .filter-btn .icon{
+   position: relative;
+   z-index: 2;
+   width:18px;
+   height:18px;
+   fill: currentColor;
+   opacity:.9;
+ }
+  
  .filter-dropdown{
    position:absolute;
    top:52px;
@@ -528,10 +761,17 @@ button:disabled {
   height:40px;
   border:none;
   border-radius:50%;
-  background:transparent;
-  font-size:26px;
-  color:#ffffff; /* 🔴 ทำให้สามขีดเป็นสีขาว */
-  line-height:1;         /* 🔴 กัน glyph ☰ โดนตัดบน iOS */
+  position: relative;
+  overflow: hidden;
+
+  /* ✅ Match filter-btn: Apple-nimble glass (less 3D) */
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255,255,255,.45);
+  box-shadow: var(--shadow-control);
+
+  color: rgba(17,17,17,.92); /* ✅ correct in light */
   cursor:pointer;
 
   display:flex;
@@ -539,15 +779,40 @@ button:disabled {
   justify-content:center;
 
   transition:
-    transform .18s cubic-bezier(.25,.46,.45,.94),
-    background .2s ease;
+    transform var(--dur-tap) var(--ease-tap),
+    background var(--dur-tap) ease,
+    box-shadow var(--dur-tap) ease;
 
   -webkit-tap-highlight-color: transparent;
 }
 
+
+/* ✅ Glass highlight (like filter) */
+.menu-btn::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  z-index:0;
+  background:
+    radial-gradient(70% 55% at 28% 22%,
+      rgba(255,255,255,.95) 0%,
+      rgba(255,255,255,.55) 26%,
+      rgba(255,255,255,0) 60%);
+  opacity:.45;
+  pointer-events:none;
+  mix-blend-mode: screen;
+}
+.menu-btn::after{
+  content:none;
+}
+  
+.menu-btn > *{ position: relative; z-index: 2; }  
+  
 .menu-btn:active{
-  transform: scale(.92);
+  transform: scale(var(--tap-scale-icon));
   background: rgba(0,0,0,.08);
+  box-shadow: var(--shadow-card-pressed);
 }
 
 @media (hover:hover){
@@ -556,7 +821,19 @@ button:disabled {
   }
 }
   
-
+@media (prefers-color-scheme: dark){
+  .menu-btn{
+    background:
+      radial-gradient(120% 120% at 30% 25%,
+        rgba(255,255,255,.18) 0%,
+        rgba(44,44,46,.62) 45%,
+        rgba(0,0,0,.28) 100%);
+    color: rgba(255,255,255,.92);
+    border: 1px solid rgba(255,255,255,.14);
+    box-shadow: var(--shadow-control);
+  }
+  .menu-btn::before{ opacity: .55; }
+}
   /* ================= PRODUCT CARD (HORIZONTAL) ================= */
 .product-card {
   display: flex;
@@ -570,8 +847,8 @@ button:disabled {
   align-items: center;
   cursor: pointer;
   transition:
-    transform .25s cubic-bezier(.34,1.56,.64,1),
-    box-shadow .25s ease;
+    transform var(--dur-chrome) var(--ease-chrome),
+    box-shadow var(--dur-chrome) ease;
 }
 
 @media (hover:hover){
@@ -622,9 +899,8 @@ button:disabled {
 }
 
 .product-card:active {
-  transform: scale(0.965);
-  box-shadow:
-    0 4px 14px rgba(0,0,0,.08);
+  transform: scale(var(--tap-scale-card));
+  box-shadow: var(--shadow-card-pressed);
 }  
 
  .product-info-images {
@@ -715,7 +991,7 @@ button:disabled {
 
 .btn-approve:active,
 .btn-reject:active {
-  transform: scale(0.97);
+  transform: scale(var(--tap-scale-primary));
 }
 
 /* ================= SIDE ADMIN MENU ================= */
@@ -731,13 +1007,13 @@ button:disabled {
   background: rgba(255,255,255,.82);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  box-shadow: -6px 0 20px rgba(0,0,0,.12);
+  box-shadow: var(--shadow-side);
 
   z-index: 102;
   padding: 16px;            /* ✅ ลด padding ให้ดูไม่อึดอัด */
 
   transform: translateX(100%);
-  transition: transform .28s ease;
+  transition: transform var(--dur-sheet) var(--ease-out);
   will-change: transform;
 }
 
@@ -783,10 +1059,6 @@ button:disabled {
 
 .menu-group.danger {
   margin-top: 12px;
-}
-
-.btn-danger:active {
-  transform: scale(0.97);
 }
 
 /* 🔒 iOS SAFARI ZOOM FIX */
@@ -1196,7 +1468,7 @@ textarea {
 }
 
 .sheet-close-btn:active {
-  transform: scale(0.95);
+  transform: scale(var(--tap-scale-icon));
 }
 
 /* 🏷️ ชื่อสินค้าใน Product Sheet */
@@ -1279,6 +1551,25 @@ textarea {
     background: #0f0f12;
   }
 
+  :root{
+    /* STEP 2: dark shadow harmony */
+    --shadow-card:            0 10px 34px rgba(0,0,0,.65);
+    --shadow-control:         0 8px 22px rgba(0,0,0,.60);
+    --shadow-image:           0 6px 18px rgba(0,0,0,.65);
+    --shadow-header:          0 8px 32px rgba(0,0,0,.5);
+    --shadow-header-scrolled: 0 16px 42px rgba(0,0,0,.65);
+    --shadow-floating:        0 10px 34px rgba(0,0,0,.6);
+    --shadow-side:            -6px 0 24px rgba(0,0,0,.6);
+    --shadow-fab:             0 12px 34px rgba(0,0,0,.6);
+    /* keep pressed + canvas consistent in dark */
+    --shadow-card-pressed:    0 6px 18px rgba(0,0,0,.55);
+    --shadow-canvas-card:     var(--shadow-card);
+
+    /* legacy alias */
+    --shadow-float:           var(--shadow-floating);
+  }
+} 
+
   /* 🔹 FLOATING BAR (DARK) */
   #floatingBar{
     background:rgba(28,28,30,.55);
@@ -1287,7 +1578,7 @@ textarea {
     border:1px solid rgba(255,255,255,.08);
 
     box-shadow:
-      0 10px 34px rgba(0,0,0,.6),
+      var(--shadow-floating),
       inset 0 1px 0 rgba(255,255,255,.08);
   } 
 
@@ -1304,30 +1595,53 @@ textarea {
      color: #f5f5f7;
    }
 
-   .filter-btn{
-   background: rgba(44,44,46,.7);
- }
+.filter-btn{
+    background:
+      radial-gradient(120% 120% at 30% 25%,
+        rgba(255,255,255,.18) 0%,
+        rgba(44,44,46,.62) 45%,
+        rgba(0,0,0,.28) 100%);
+    color: rgba(255,255,255,.92);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    border: 1px solid rgba(255,255,255,.14);
+    box-shadow:
+      0 12px 26px rgba(0,0,0,.55),
+      inset 0 1px 0 rgba(255,255,255,.12),
+      inset 0 -10px 18px rgba(0,0,0,.35);
+  }
 
- .filter-dropdown{
-   background: rgba(44,44,46,.9);
-   color:#f5f5f7;
- }
+  /* ✅ ลด glare (highlight) ของแก้วในโหมดมืด */
+  .filter-btn::before{ opacity: .55; }
+ } /* end @media (prefers-color-scheme: dark) */
 
- .filter-item:hover{
-   background: rgba(255,255,255,.08);
- }
-   
-   .search-btn {
-     background: rgba(44,44,46,.7);
-   }
+@media (prefers-color-scheme: dark){
+  .filter-dropdown{
+    background: rgba(44,44,46,.9);
+    color:#f5f5f7;
+  }
+
+  .filter-item:hover{
+    background: rgba(255,255,255,.08);
+  }
+
+  .search-btn {
+    background:
+      radial-gradient(120% 120% at 30% 25%,
+        rgba(255,255,255,.18) 0%,
+        rgba(44,44,46,.62) 45%,
+        rgba(0,0,0,.28) 100%);
+    color: rgba(255,255,255,.92);
+    border: 1px solid rgba(255,255,255,.14);
+    box-shadow: var(--shadow-control);
+  }
 
   .search-input {
     background: rgba(44,44,46,.9);
     border: 1px solid rgba(255,255,255,.08);
-    color: #fff; /* ✅ ค่อยบังคับขาวเฉพาะ dark */
+    color: #fff;
   }
-   
-   .product-note {
+  
+.product-note {
     background: rgba(44,44,46,.8);
     border: 1px dashed rgba(255,255,255,.08);
     color: #ddd;
@@ -1343,35 +1657,50 @@ textarea {
     color: #fff;
   }
 
-   input,
-   select,
-   textarea {
-     background: rgba(44,44,46,.8);
-     color: #fff;
-     border: 1px solid rgba(255,255,255,.08);
-   }
- }
+  input,
+  select,
+  textarea {
+    background: rgba(44,44,46,.8);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,.08);
+  }
+} /* end @media (prefers-color-scheme: dark) */
 
  /* ================= DARK MODE LIQUID HEADER ================= */
 
 @media (prefers-color-scheme: dark){
-  .shop-title{
-    color:#fff;
+  .shop-title,
+  .admin-title{
+    
+    color: rgba(255,255,255,.92);
+    background:
+      radial-gradient(120% 120% at 30% 25%,
+        rgba(255,255,255,.18) 0%,
+        rgba(44,44,46,.62) 45%,
+        rgba(0,0,0,.28) 100%);
+    border: 1px solid rgba(255,255,255,.14);
+    box-shadow: var(--shadow-control);
+    text-shadow:
+      0 0 10px rgba(0,0,0,.70),
+      0 0 22px rgba(0,0,0,.45);
   }
+  .shop-title::before,
+  .admin-title::before{ opacity: .55; }
+ }
   
   header{
     background: rgba(28,28,30,.55);
     border-bottom: 1px solid rgba(255,255,255,.06);
 
     box-shadow:
-      0 8px 32px rgba(0,0,0,.5),
+      var(--shadow-header),
       inset 0 -1px 0 rgba(255,255,255,.06);
   }
 
   header.scrolled{
     background: rgba(28,28,30,.75);
     box-shadow:
-      0 16px 42px rgba(0,0,0,.65),
+      var(--shadow-header-scrolled),
       inset 0 -1px 0 rgba(255,255,255,.08);
   }
 }
@@ -1403,8 +1732,8 @@ textarea {
   border:1px solid rgba(255,255,255,.65); /* 🔴 glass edge */
 
   box-shadow:
-    0 8px 30px rgba(0,0,0,.12),
-    inset 0 1px 0 rgba(255,255,255,.7);  /* 🔴 inner highlight */
+    var(--shadow-floating),
+    inset 0 1px 0 rgba(255,255,255,.7);
 
   z-index:45; /* ต่ำกว่า header (50) และ backdrop (100) */
 
@@ -1515,7 +1844,7 @@ textarea {
   -webkit-backdrop-filter: blur(22px) saturate(180%);
   border: 1px solid rgba(255,255,255,.55);
   box-shadow:
-    0 10px 28px rgba(0,0,0,.14),
+    var(--shadow-fab),
     inset 0 1px 0 rgba(255,255,255,.75);
   color: #111;
   font-size: 18px;
@@ -1662,9 +1991,16 @@ Object.assign(window, {
 
 const state = {
   mode: "viewer",
+
   viewerFilter: {
     status: "all"
   },
+
+  // 🔴 CHANGED: เพิ่ม admin filter แยกจาก viewer (กันชน/กัน flow ปนกัน)
+  adminFilter: {
+    status: "all"
+  },
+
   search: "",
   viewerSearchOpen: false,
   products: [],
@@ -2288,11 +2624,17 @@ async function checkStockBeforeSubmit() {
 }
 
 /* ================= RENDER FUNCTIONS ================= */
- // 🔒 Global HTML Escape (XSS Guard)
- const esc = s =>
-   String(s)
+// 🔒 Global HTML Escape (XSS Guard) — micro polish: escape &, <, >, ", '
+ const esc = (s) =>
+   String(s ?? "")
+     .replace(/&/g, "&amp;")
      .replace(/</g, "&lt;")
-     .replace(/>/g, "&gt;");  
+     .replace(/>/g, "&gt;")
+     .replace(/"/g, "&quot;")
+     .replace(/'/g, "&#39;");
+
+ // 🔒 Attribute-safe (สำหรับ src/alt/href)
+ const escAttr = (s) => esc(s);
   
 function openImageViewer(url){
   if (!url) return;
@@ -2316,7 +2658,7 @@ function openImageViewer(url){
 
     <!-- รูปสินค้า -->
 <img
-   src="${url}"
+   src="${escAttr(url)}"
    alt="preview"
    class="image-viewer-img"
  >
@@ -2354,12 +2696,13 @@ function closeImageViewer(){
        images.length
          ? `
            <div class="product-info-images">
- ${images.map(url => {
-   const safeUrl = String(url).replace(/'/g, "%27");
+ ${images.map((url) => {
+   // ✅ embed JS arg safely + keep src attribute safe
+   const jsArg = JSON.stringify(String(url ?? ""));
    return `
-<img src="${url}"
-      class="product-info-zoom"
-      onclick="openImageViewer('${safeUrl}')">
+<img src="${escAttr(url)}"
+     class="product-info-zoom"
+     onclick="openImageViewer(${jsArg})">
    `;
  }).join("")}
            </div>
@@ -2407,7 +2750,12 @@ function renderProducts(){
   const app = document.getElementById("app");
 
   const escapeHTML = (str="") =>
-    str.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    String(str ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#39;");
   
   // 🔒 GUARD สำคัญที่สุด
   if (!Array.isArray(state.products)) {
@@ -2431,6 +2779,12 @@ function renderProducts(){
   state.products.forEach(p => {
     const stockNum = Number(p.stock);
 
+  // 🔍 STATUS RESOLVE (ต้องมาก่อน filter ทุกครั้ง)
+    const resolvedStatus =
+      stockNum <= 0
+        ? "out"
+        : String(p.status || "ready").trim().toLowerCase();  
+
     // ❌ ไม่แสดงสินค้าที่ปิดขาย (viewer เท่านั้น)
     if (state.mode === "viewer" && !p.active) return;
 
@@ -2440,21 +2794,23 @@ function renderProducts(){
       if (!text.includes(String(state.search).toLowerCase())) return;
     }
 
-   // 🔍 STATUS FILTER (Viewer only, use resolved status)
-   const resolvedStatus =
-   stockNum <= 0
-     ? "out"
-     : String(p.status || "ready")
-         .trim()
-         .toLowerCase();
+// 🔍 STATUS FILTER (Viewer/Admin use resolved status)
+if (
+  state.mode === "viewer" &&
+  state.viewerFilter &&
+  state.viewerFilter.status !== "all"
+) {
+  if (resolvedStatus !== state.viewerFilter.status) return;
+}
 
-   if (
-     state.mode === "viewer" &&
-     state.viewerFilter &&
-     state.viewerFilter.status !== "all"
-   ) {
-     if (resolvedStatus !== state.viewerFilter.status) return;
-   }
+// 🔴 CHANGED: admin filter (ต้องอยู่หลัง resolvedStatus เสมอ)
+    if (
+      state.mode === "admin" &&
+      state.adminFilter &&
+      state.adminFilter.status !== "all"
+    ) {
+      if (resolvedStatus !== state.adminFilter.status) return;
+    }    
     
 /* ================= STATUS LOGIC ================= */
 const statusMap = {
@@ -2482,8 +2838,8 @@ let statusText  = statusMap[statusKey] || "พร้อมส่ง";
 
     card.innerHTML = `
       <img class="thumb"
-        src="${p.image ? p.image : "about:blank"}"
-        alt="${p.name}"
+        src="${p.image ? escapeHTML(p.image) : "about:blank"}"
+        alt="${escapeHTML(p.name)}"
         onerror="this.style.display='none'">
 
       <div class="info">
@@ -2536,13 +2892,13 @@ function renderProductSheet(){
     <h3 class="product-title">${esc(p.name)}</h3>
 
     <div class="product-sku">
-      รหัสสินค้า: ${p.productId}
+      รหัสสินค้า: ${esc(p.productId)}
     </div>
 
     <!-- ✅ FIX IMAGE -->
  <img 
-   src="${p.image || ''}"
-   alt="${p.name}"
+   src="${escAttr(p.image || '')}"
+   alt="${escAttr(p.name)}"
    class="product-image"
  >
 
@@ -2555,7 +2911,7 @@ function renderProductSheet(){
           <button
             class="btn btn-outline product-detail-btn"
             onclick="openProductInfoSheet(state.selectedProduct)">
-            📄 รายละเอียดสินค้า
+            รายละเอียดสินค้า
           </button>
         `
         : ""
@@ -2681,7 +3037,7 @@ function renderFloatingBar(){
 
   bar.innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;font-weight:600">
-      🛒 ${state.cart.length} รายการ
+      ${state.cart.length} รายการ
     </div>
     <div id="floatingTotal"
          style="font-weight:700;color:#007aff">
@@ -2771,8 +3127,10 @@ function renderHeader(){
 
   if(state.mode === "viewer"){
     h.innerHTML = `
-      <div style="flex:1">
+      <div class="header-left">
+      <div class="header-stack">
         <div class="shop-title">ร้านค้า Luopanich</div>
+        <div class="shop-subtitle">ค้นหา · กรองสถานะ · เพิ่มลงตะกร้า</div>
 
         <!-- 🔍 SEARCH ICON + EXPAND -->
 <div
@@ -2782,7 +3140,12 @@ function renderHeader(){
           <button
             onclick="toggleViewerSearch()"
             class="search-btn"
-          >🔍</button>
+          >
+            <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <circle cx="11" cy="11" r="6"></circle>
+              <path d="M20 20l-3.2-3.2"></path>
+            </svg>
+          </button>
 
           <input
             id="viewerSearchInput"
@@ -2793,24 +3156,28 @@ function renderHeader(){
           >
         </div>          
          </div>
+    </div>
 
- <div style="
-   display:flex;
-   align-items:center;
-   gap:12px;
-   margin-left:12px;
- ">
+<div class="header-actions">
 
    <div class="filter-wrap">
      <button class="filter-btn"
-        onclick="toggleFilterDropdown()">🔽</button>
+        onclick="toggleFilterDropdown()"
+        aria-label="Filter">
+        <!-- iOS-like: line.3.horizontal.decrease (stroke, SF-style) -->
+        <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 7h16"></path>
+          <path d="M7 12h10"></path>
+          <path d="M10 17h4"></path>
+        </svg>
+     </button>
 
      <div id="filterDropdown" class="filter-dropdown">
-       <div class="filter-item" onclick="selectFilter('all')">📦 ทั้งหมด</div>
-       <div class="filter-item" onclick="selectFilter('ready')">✅ พร้อมส่ง</div>
-       <div class="filter-item" onclick="selectFilter('shipping')">🚚 ระหว่างจัดส่ง</div>
-       <div class="filter-item" onclick="selectFilter('warehouse')">🏬 โกดังไทย</div>
-       <div class="filter-item" onclick="selectFilter('out')">❌ หมด</div>
+       <div class="filter-item" onclick="selectFilter('all')">ทั้งหมด</div>
+       <div class="filter-item" onclick="selectFilter('ready')">พร้อมส่ง</div>
+       <div class="filter-item" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</div>
+       <div class="filter-item" onclick="selectFilter('warehouse')">โกดังไทย</div>
+       <div class="filter-item" onclick="selectFilter('out')">หมด</div>
      </div>
    </div>
       
@@ -2818,22 +3185,27 @@ function renderHeader(){
    class="menu-btn"
    onclick="openMainMenu()"
    aria-label="Main Menu">
-   ☰
+   <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+     <path d="M4 7h16"></path>
+     <path d="M4 12h16"></path>
+     <path d="M4 17h16"></path>
+   </svg>
  </button>
-      </div>
+
+   </div>   
     `;
   }
 
  if(state.mode === "admin"){
   h.innerHTML = `
     <div class="header-left">
-      <div style="flex:1">
+      <div class="header-stack">
         <div class="admin-title">
-   การจัดการสินค้า
- </div>
- <div class="admin-motto">
-   ❤️ สู้ ๆ ที่รัก
- </div>
+          การจัดการสินค้า
+          <span class="badge" style="margin-left:8px;">ADMIN</span>
+          <!-- 🔴 CHANGED: เพิ่ม Mode Indicator (badge) ให้ชัด -->
+        </div>
+        <div class="shop-subtitle">Admin · แก้ไข · ปรับสต๊อก · ตรวจออเดอร์</div>
       </div>
 
       <!-- 🔍 SEARCH (ICON EXPAND LIKE VIEWER) -->
@@ -2842,7 +3214,10 @@ function renderHeader(){
           class="search-btn"
           onclick="toggleAdminSearch()"
           aria-label="Search">
-          🔍
+          <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="11" cy="11" r="6"></circle>
+            <path d="M20 20l-3.2-3.2"></path>
+          </svg>
         </button>
         <input
           class="search-input"
@@ -2851,14 +3226,42 @@ function renderHeader(){
         />
       </div>
     </div>
+  
+    <!-- 🔴 CHANGED: Admin ใช้ filter + menu เหมือน Viewer -->
+    <div class="header-actions">
 
- <button
-   class="menu-btn"
-   style="margin-left:12px"
-   onclick="openMainMenu()"
-   aria-label="Open Main Menu">
-   ☰
- </button>
+      <div class="filter-wrap">
+        <button class="filter-btn"
+          onclick="toggleFilterDropdown()"
+          aria-label="Filter">
+          <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4 7h16"></path>
+            <path d="M7 12h10"></path>
+            <path d="M10 17h4"></path>
+          </svg>
+        </button>
+
+        <div id="filterDropdown" class="filter-dropdown">
+          <div class="filter-item" onclick="selectFilter('all')">ทั้งหมด</div>
+          <div class="filter-item" onclick="selectFilter('ready')">พร้อมส่ง</div>
+          <div class="filter-item" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</div>
+          <div class="filter-item" onclick="selectFilter('warehouse')">โกดังไทย</div>
+          <div class="filter-item" onclick="selectFilter('out')">หมด</div>
+        </div>
+      </div>
+
+      <button
+        class="menu-btn"
+        onclick="openMainMenu()"
+        aria-label="Open Main Menu">
+        <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M4 7h16"></path>
+          <path d="M4 12h16"></path>
+          <path d="M4 17h16"></path>
+        </svg>
+      </button>
+
+    </div>
   `;
 }
 
@@ -2907,7 +3310,8 @@ function handleSearch(keyword){
   renderProducts();
 }
 
-// ================= VIEWER FILTER =================
+// ================= VIEWER + ADMIN FILTER =================
+
 function setViewerStatus(status){
   // 🔒 guard: ใช้เฉพาะ viewer mode
   if(state.mode !== "viewer") return;
@@ -2924,38 +3328,57 @@ function setViewerStatus(status){
   renderProducts();
 }
 
- function toggleFilterDropdown(){
-   const el = document.getElementById("filterDropdown");
-   if(!el) return;
+// 🔴 CHANGED: เพิ่ม admin version (รูปแบบเดียวกับ viewer)
+function setAdminStatus(status){
+  // 🔒 guard: ใช้เฉพาะ admin mode
+  if(state.mode !== "admin") return;
 
- const isOpen = el.classList.contains("show");
+  if(!status) return;
 
- document.querySelectorAll(".filter-dropdown.show")
-   .forEach(d => d.classList.remove("show"));
+  state.adminFilter.status = status;
 
- if(!isOpen){
-   el.classList.add("show");
-
-   // 🔴 auto close on outside click
-   setTimeout(()=>{
-     document.addEventListener("click", closeFilterOnOutside, { once:true });
-   }, 0);
- }
+  renderHeader();
+  renderProducts();
 }
 
-  function closeFilterOnOutside(e){
-   const wrap = document.querySelector(".filter-wrap");
-   if(!wrap || wrap.contains(e.target)) return;
+function toggleFilterDropdown(){
+  const el = document.getElementById("filterDropdown");
+  if(!el) return;
 
-   const el = document.getElementById("filterDropdown");
-   if(el) el.classList.remove("show");
- }
+  const isOpen = el.classList.contains("show");
 
- function selectFilter(status){
-   setViewerStatus(status); // 🔒 ไม่แตะ logic เดิม
-   const el = document.getElementById("filterDropdown");
-   if(el) el.classList.remove("show");
- }
+  document.querySelectorAll(".filter-dropdown.show")
+    .forEach(d => d.classList.remove("show"));
+
+  if(!isOpen){
+    el.classList.add("show");
+
+    // 🔴 auto close on outside click
+    setTimeout(()=>{
+      document.addEventListener("click", closeFilterOnOutside, { once:true });
+    }, 0);
+  }
+}
+
+function closeFilterOnOutside(e){
+  const wrap = document.querySelector(".filter-wrap");
+  if(!wrap || wrap.contains(e.target)) return;
+
+  const el = document.getElementById("filterDropdown");
+  if(el) el.classList.remove("show");
+}
+
+// 🔴 CHANGED: route ตาม mode แทนการ fix viewer อย่างเดียว
+function selectFilter(status){
+  if (state.mode === "admin") {
+    setAdminStatus(status);
+  } else {
+    setViewerStatus(status);
+  }
+
+  const el = document.getElementById("filterDropdown");
+  if(el) el.classList.remove("show");
+}  
   
 function openAdminEntry(){
   // 🔒 ถ้ามี session อยู่แล้ว → ต้อง valid ก่อนค่อยเข้า admin
@@ -2977,13 +3400,34 @@ function openAdminEntry(){
   renderAdminLogin();
 }
 
-
 function enterAdmin(){
   state.mode = "admin";
   state.search = ""; // ✅ reset
   state.viewerSearchOpen = false;
   renderHeader();
   renderProducts();
+}
+
+// ✅ STEP 1: UI-only mode switch (ไม่ยุ่ง session/token)
+function leaveAdminMode(){
+  // 🔒 ปิด overlay ทั้งหมดแบบเดิม (UI layer)
+  document
+    .querySelectorAll(".sheet.show, .side-menu.show")
+    .forEach(el => closeOverlay(el));
+
+  // กัน intent เด้งซ้ำ (UI guard)
+  allowOpenOrders = false;
+  allowOpenStockTimeline = false;
+  allowOpenAddProduct = false;
+
+  // ✅ กลับสู่ viewer mode (UI state only)
+  state.mode = "viewer";
+  state.search = "";
+  state.viewerSearchOpen = false;
+
+  renderHeader();
+  renderProducts();
+  if (typeof renderBadge === "function") renderBadge();
 }
 
 function exitAdmin(){
@@ -3017,7 +3461,7 @@ function exitAdmin(){
   // 🔄 render viewer ใหม่แบบ clean
   renderHeader();
   renderProducts();
-  renderBadge();
+  if (typeof renderBadge === "function") renderBadge();
 }
 
 function handleBackdropClick(){
@@ -3217,7 +3661,7 @@ function confirmAddToCart(){
     });
   }
 
-  renderBadge();
+  if (typeof renderBadge === "function") renderBadge();
   saveCart();
 
   // ✅ Feedback สำเร็จ (หัวใจของ STEP 2️⃣)
@@ -3699,7 +4143,21 @@ async function openStockTimeline(force = false) {
 
 
 function openAdminOrder(orderId){
-  const order = state.admin.orders.find(o => o.orderId === orderId);
+  // 🔒 A6 GUARD: ห้ามเปิด Admin Order UI ถ้าไม่ได้อยู่ admin หรือ session ไม่พร้อม
+  if (
+    state.mode !== "admin" ||
+    !state.admin.loggedIn ||
+    !state.admin.token ||
+    isAdminSessionExpired()
+  ) {
+    // ใช้มาตรฐานเดียวกับ admin dashboard
+    exitAdmin();
+    return;
+  }
+
+   // 🔒 A6 HARDEN: กัน orders ยังไม่พร้อม/ไม่ใช่ array (กัน throw → กัน UI leak)
+  const orders = Array.isArray(state.admin.orders) ? state.admin.orders : [];
+  const order = orders.find(o => o.orderId === orderId);
   if (!order) return;
 
   state.admin.selectedOrder = order;
@@ -3859,7 +4317,7 @@ async function submitStockIn(){
 
 async function submitStockAdjust(){
   // 🔒 guard
-  if (state.mode !== "admin" || !state.selectedProduct) {
+  if (state.mode !== "admin" || !state.admin.loggedIn || !state.selectedProduct) {
     alert("Unauthorized");
     return;
   }
@@ -4012,6 +4470,9 @@ function openMainMenu(){
     return;
   }
 
+  // ✅ STEP A2: เงื่อนไข "ล็อกอินแล้ว" ต้องอิงสิทธิ์ (adminValid) ไม่ใช่โหมด UI
+  const isAuthed = !!adminValid;
+
   // ✅ STEP 2: Main Menu v1 = Login only (ถ้ายังไม่อยู่ admin mode)
   mainMenuSheet.innerHTML = `
     <h3>Main Menu</h3>
@@ -4019,23 +4480,40 @@ function openMainMenu(){
     <!-- 🔹 MAIN ACTIONS -->
     <div class="menu-group">
       ${
-        (state.mode === "admin" && adminValid)
-          ? `
-              <button class="btn btn-primary"
-                onclick="closeMainMenu(); handleOpenOrders();">
-                📦 Orders
-              </button>
+        (isAuthed)
+          ? (state.mode === "admin")
+            ? `
+                <button class="btn btn-secondary"
+                  onclick="closeMainMenu(); leaveAdminMode();">
+                  👁 กลับสู่ Viewer
+                </button>
 
-              <button class="btn btn-secondary"
-                onclick="closeMainMenu(); handleOpenStockTimeline();">
-                📦 Stock Timeline
-              </button>
+                <button class="btn btn-primary"
+                  onclick="closeMainMenu(); handleOpenOrders();">
+                  📦 Orders
+                </button>
 
-              <button class="btn btn-secondary"
-                onclick="closeMainMenu(); handleOpenAddProduct();">
-                ➕ เพิ่มสินค้าใหม่
-              </button>
-            `
+                <button class="btn btn-secondary"
+                  onclick="closeMainMenu(); handleOpenStockTimeline();">
+                  📦 Stock Timeline
+                </button>
+
+                <button class="btn btn-secondary"
+                  onclick="closeMainMenu(); handleOpenAddProduct();">
+                  ➕ เพิ่มสินค้าใหม่
+                </button>
+              `
+            : `
+                <button class="btn btn-primary"
+                  onclick="closeMainMenu(); enterAdmin();">
+                 🧭 ไป Admin Dashboard
+                </button>
+
+                <button class="btn btn-secondary" disabled
+                  style="opacity:.8; cursor:default;">
+                  👁 อยู่ใน Viewer
+                </button>
+              `
           : `
               <button class="btn btn-primary"
                 onclick="closeMainMenu(); openAdminEntry();">
@@ -4046,14 +4524,14 @@ function openMainMenu(){
     </div>
 
     ${
-      (state.mode === "admin" && adminValid)
+      (isAuthed)
         ? `
           <hr>
           <div class="menu-group danger">
             <button class="btn btn-danger"
-              onclick="exitAdmin();">
-              🚪 ออกจากโหมดแอดมิน
-            </button>
+               onclick="closeMainMenu(); exitAdmin();">
+               🚪 Logout
+             </button>
           </div>
         `
         : ``
@@ -4176,7 +4654,6 @@ function openAddProduct(force = false){
   openOverlay(adminAddProductSheet);
 }
 
-
 function handleAddImagePreview(input){
   const file = input.files[0];
   if(!file) return;
@@ -4200,7 +4677,7 @@ function closeAddProduct(){
 function closeMainMenu(){
   closeOverlay(mainMenuSheet);
  }
-   
+
 /* ================= VIEWER FLOW ================= */
 function openProduct(p){
   // 🔴 ADMIN FLOW
@@ -4296,12 +4773,15 @@ async function submitOrder(){
     state.cart = [];
     clearCartStorage();
     state.poNumber = "";
-    renderBadge();
+    if (typeof renderBadge === "function") renderBadge();
     
   // ❌ ห้าม auto reset หลังสร้าง order สำเร็จ
     
   } catch(err){
     console.error(err);
+    // 🔒 ถ้า fail เพราะ stock-check เรา toast ไปแล้ว ไม่ต้องซ้ำ
+    if (err && err.message === "STOCK_CHECK_FAILED") return;
+
     showToast(
       err.message || 'เกิดข้อผิดพลาดในการสร้างใบสั่งซื้อ',
       'error'
@@ -4334,7 +4814,7 @@ function removeItem(idx){
   // ✅ PERSIST: บันทึก cart ทุกครั้งที่มีการเปลี่ยน
   saveCart();
 
-  renderBadge();
+  if (typeof renderBadge === "function") renderBadge();
 
   // 🔔 Feedback: แจ้งผู้ใช้ทันทีว่าลบแล้ว
   showToast("ลบสินค้าออกจากตะกร้าแล้ว", "warning");
@@ -4347,6 +4827,9 @@ function removeItem(idx){
 }
 
 function openProductEdit(p){
+  // 🔒 A6 guard: ป้องกัน admin UI leak ตอนอยู่ Viewer
+  if (state.mode !== "admin" || !state.admin?.loggedIn || !state.admin?.token) return;
+
   state.selectedProduct = p;
   state.compareImagesDraft = (p.compareImages || "")
     .split(",")
@@ -5183,11 +5666,50 @@ function exportOrderPNG() {
   ctx.fillStyle = "#f2f2f7";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  /* ================= CARD ================= */
+/* ================= CARD ================= */
   ctx.fillStyle = "#ffffff";
-  ctx.shadowColor = "rgba(0,0,0,0.08)";
-  ctx.shadowBlur = 20;
-  ctx.shadowOffsetY = 6;
+
+  // ✅ Canvas shadow uses token (sync light/dark)
+  const getToken = (name) =>
+    getComputedStyle(document.documentElement)
+      .getPropertyValue(name)
+      .trim();
+
+  const parseShadowToken = (v) => {
+    // expects: "0 10px 30px rgba(0,0,0,.08)" (single shadow)
+    const m = String(v).match(
+      /^\s*(-?\d+(?:\.\d+)?)px?\s+(-?\d+(?:\.\d+)?)px?\s+(\d+(?:\.\d+)?)px?\s+(.+)\s*$/i
+    );
+    if (!m) return null;
+    return {
+      x: Number(m[1]) || 0,
+      y: Number(m[2]) || 0,
+      blur: Number(m[3]) || 0,
+      color: (m[4] || "rgba(0,0,0,.08)").trim()
+    };
+  };
+
+  let canvasShadowRaw =
+    getToken("--shadow-canvas-card") || getToken("--shadow-card");
+
+  // ✅ resolve var(--shadow-*) for custom properties (Safari/Chrome may return literal "var(...)")
+  const varMatch = String(canvasShadowRaw).match(/var\((--[^)]+)\)/);
+  if (varMatch && varMatch[1]) {
+    canvasShadowRaw = getToken(varMatch[1]) || canvasShadowRaw;
+  }
+  const sh = parseShadowToken(canvasShadowRaw);
+  if (sh) {
+    ctx.shadowColor = sh.color;
+    ctx.shadowBlur = sh.blur;
+    ctx.shadowOffsetX = sh.x;
+    ctx.shadowOffsetY = sh.y;
+  } else {
+    // fallback (should rarely happen)
+    ctx.shadowColor = "rgba(0,0,0,0.08)";
+    ctx.shadowBlur = 20;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 6;
+  }
 
   ctx.beginPath();
 
@@ -5640,8 +6162,62 @@ function loadAdminSession() {
   }
 }
 
-function clearAdminSession() {
-  localStorage.removeItem("admin_session");
+// ================= STEP A7: SINGLE LOGOUT SOURCE OF TRUTH =================
+function clearAdminSession(){
+  try {
+    // ล้าง storage ที่ใช้ restore
+    localStorage.removeItem("admin_session");
+    localStorage.removeItem("adminSession"); // เผื่อของเก่าที่เคยใช้
+  } catch(e) {}
+
+  // ล้าง state ที่เกี่ยวกับ admin ทั้งหมด
+  state.admin.loggedIn = false;
+  state.admin.user = "";
+  state.admin.token = "";
+  state.admin.expiredAt = "";
+  state.admin.isSubmitting = false;
+}
+
+function exitAdmin(opts = {}){
+  const { silent = false } = opts;
+
+  // 1) ปลดล็อก backdrop / loading เสมอ (กันค้าง)
+  state.ui.backdropLocked = false;
+  safeHideLoading();
+
+  // 2) ปิด overlay/sheet ทุกตัวแบบ force (กัน overlayCount เพี้ยน)
+  const sheets = [
+    mainMenuSheet,
+    adminLoginSheet,
+    adminDashboardSheet,
+    adminStockSheet,
+    adminAddProductSheet,
+    productSheet,
+    adminProductEditSheet,
+    confirmSheet
+  ].filter(Boolean);
+
+  sheets.forEach(el => el.classList.remove("show"));
+  state.ui.overlayCount = 0;
+  backdrop.style.display = "none";
+
+  // 3) ล้าง session (จุดเดียว)
+  clearAdminSession();
+
+  // 4) กลับสู่ viewer mode เสมอ (ตามตัวเลือก A)
+  state.mode = "viewer";
+
+  // 5) เคลียร์ selection/admin draft ที่อาจทำให้หลุด flow
+  state.selectedProduct = null;
+  state.editImageFile = null;
+  state.addImageFile = null;
+
+  // 6) rerender เฉพาะที่จำเป็น (ไม่แตะ flow อื่น)
+  renderHeader();
+  renderProducts();
+  if (typeof renderBadge === "function") renderBadge();
+
+  if (!silent) showToast("ออกจากโหมดแอดมินแล้ว", "info");
 }
 
 // ================= EMERGENCY UI UNLOCK =================
@@ -5673,28 +6249,36 @@ async function restoreAdminSessionIfValid() {
   const restored = loadAdminSession();
   if (!restored?.token || !restored?.expiredAt) return false;
 
+  // expired guard
   if (Date.now() > new Date(restored.expiredAt).getTime()) {
     clearAdminSession();
     return false;
   }
 
   try {
-    // lightweight validate
-    const res = await fetch(
-      `${API_URL}?action=orders&token=${restored.token}`
-    );
+    // ✅ lightweight validate (POST ให้ตรง backend)
+    const form = new URLSearchParams();
+    form.append("action", "orders");
+    form.append("token", restored.token);
+
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: form
+    });
+
     const json = await res.json();
 
     if (json?.success === true) {
       state.admin.loggedIn = true;
-      state.admin.user = restored.username;
+      state.admin.user = restored.username || null;
       state.admin.token = restored.token;
       state.admin.expiredAt = restored.expiredAt;
-      state.mode = "admin";
+
+      // ❗ ไม่ set state.mode ที่นี่ (กันกระทบ flow)
       return true;
     }
   } catch (e) {
-    console.warn("restore admin failed");
+    console.warn("restore admin failed", e);
   }
 
   clearAdminSession();
@@ -5737,8 +6321,8 @@ window.addEventListener("DOMContentLoaded", () => {
    
    const currentY = Math.max(0, window.scrollY); // 🔴 FIX: clamp negative scroll (iOS bounce)
    const now = performance.now();                       // 🔴 NEW
-   const delta = currentY - _lastScrollY;
-   const deltaTime = now - _lastScrollTime || 16;      // 🔴 NEW
+   const delta = currentY - (_lastScrollY ?? currentY);
+   const deltaTime = (now - (_lastScrollTime ?? now)) || 16;      // 🔴 NEW
    const velocity = delta / deltaTime;                 // 🔴 NEW
 
   // 🔴 NEW: micro scroll noise guard
@@ -5800,6 +6384,8 @@ if (header){
   
 (async () => {
   try {
+    // 🔴 CHANGED (STEP A5): Reload ต้องกลับ Viewer เสมอ (แม้ restore admin สำเร็จ)
+    state.mode = "viewer";
     state.search = "";
 
     const restored = loadAdminSession();
@@ -5840,7 +6426,7 @@ if (header){
     // ❌ invalid / expired
     if (!adminRestored) {
       clearAdminSession();
-      state.mode = "viewer";
+      // 🔴 CHANGED (STEP A5): mode ถูกบังคับเป็น viewer แล้วด้านบน ไม่ต้อง set ซ้ำ
     }
 
     // ✅ RESTORE VIEWER STATE ก่อน render ทุกอย่าง
@@ -5853,7 +6439,7 @@ if (header){
     renderHeader();
     renderProducts();
     if (typeof renderBadge === "function") {
-      renderBadge();
+      if (typeof renderBadge === "function") renderBadge();
     }
 
   } catch (err) {
