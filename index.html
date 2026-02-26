@@ -1736,8 +1736,7 @@ textarea {
   }
   .shop-title::before,
   .admin-title::before{ opacity: .55; }
- }
-  
+ 
   header{
     background: rgba(28,28,30,.55);
     border-bottom: 1px solid rgba(255,255,255,.06);
@@ -1754,83 +1753,91 @@ textarea {
       inset 0 -1px 0 rgba(255,255,255,.08);
   }
 }
-
 /* ================= FLOATING BOTTOM BAR ================= */
 
+/* 🔴 CHANGED: Clean + deterministic cascade (กัน opacity สลับทิศ) */
 #floatingBar{
-  position:fixed;
-  left:16px;
-  right:16px;
-  transform:translateY(120%);
-  bottom:calc(env(safe-area-inset-bottom) + 18px);
+  position: fixed !important;
+  left: 16px;
+  right: 16px;
+  bottom: calc(env(safe-area-inset-bottom) + 18px) !important;
+  max-width: 520px;
+  margin: 0 auto;
 
-  max-width:520px;
-  margin:0 auto;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 18px;
 
-  padding:12px 16px;   /* 🔴 smaller + tighter */
-
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-
-  border-radius:18px;  /* 🔴 proportional */
-
-  background:rgba(255,255,255,.55);
-  backdrop-filter:blur(28px) saturate(180%);
-  -webkit-backdrop-filter:blur(28px);
-
-  border:1px solid rgba(255,255,255,.65); /* 🔴 glass edge */
-
+  background: rgba(255,255,255,.78);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255,255,255,.85);
   box-shadow:
     var(--shadow-floating),
-    inset 0 1px 0 rgba(255,255,255,.7);
+    inset 0 1px 0 rgba(255,255,255,.85);
 
-  z-index:45; /* ต่ำกว่า header (50) และ backdrop (100) */
+  z-index: 999;
+
+  /* default = hidden */
+  transform: translateY(120%);
+  opacity: 0;
+  pointer-events: none;
 
   transition:
     transform .48s cubic-bezier(.34,1.56,.64,1),
     opacity .3s ease;
-  
-  opacity:0;
-  pointer-events:none;
+  will-change: transform, opacity;
 }
 
 #floatingBar.bounce-in{
   animation: float-bounce .65s cubic-bezier(.34,1.56,.64,1);
 }
-
 @keyframes float-bounce{
   0%   { transform:translateY(120%) scale(.94); }
   60%  { transform:translateY(-6px) scale(1.02); }
   100% { transform:translateY(0) scale(1); }
 }
 
-#floatingBar .total-animate{
-  animation: total-pop .25s ease;
-}
-
+#floatingBar .total-animate{ animation: total-pop .25s ease; }
 @keyframes total-pop{
   0%   { transform:scale(.92); opacity:.6; }
   100% { transform:scale(1); opacity:1; }
 }
 
-#floatingBar:active{
-  transform: translateY(0) scale(.97);
-} 
-
+/* ✅ SHOW = only show */
 #floatingBar.show{
-  transform:translateY(0);
-  opacity:1;
-  pointer-events:auto;
+  transform: translateY(0) !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
-/* 🔴 NEW: Smart Scroll Hide */
+/* ✅ HIDE (scroll) */
 #floatingBar.scroll-hide{
-  transform:translateY(120%);
-  opacity:0;
-  pointer-events:none;
-}  
+  transform: translateY(120%) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
 
+/* ✅ HIGHEST PRIORITY: show + scroll-hide must hide */
+#floatingBar.show.scroll-hide{
+  transform: translateY(120%) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+@media (prefers-color-scheme: dark){
+  #floatingBar{
+    background: rgba(28,28,30,.72);
+    color: #f5f5f7;
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow:
+      var(--shadow-floating),
+      inset 0 1px 0 rgba(255,255,255,.10);
+  }
+}
+  
  /* ================= REDUCED MOTION SUPPORT ================= */
  @media (prefers-reduced-motion: reduce){
 
@@ -2395,12 +2402,26 @@ function closeOverlay(el){
   el.classList.remove("show");
   state.ui.overlayCount = Math.max(0, state.ui.overlayCount - 1);
 
+  // 🔴 CHANGED: จำว่าเราปิด "cartSheet" อยู่ไหม (เพราะบางครั้งปิดผ่าน backdrop จะไม่เรียก closeCart)
+  const closedCartSheet = (el.id === "cartSheet");
+
   if (state.ui.overlayCount === 0 && !state.ui.backdropLocked) {
     backdrop.style.display = "none";
 
     // 🔴 FIX: reset floating bar momentum state
     const bar = document.getElementById("floatingBar");
     if (bar) bar.classList.remove("scroll-hide");
+
+    // 🔴 CHANGED: ถ้าเพิ่งปิด cartSheet และกลับสู่ viewer จริง → ต้องคืน floatingBar ถ้า cart ยังมีของ
+    // ใช้ rAF เพื่อให้ DOM/overlayCount settle ก่อน (กันเคสปิดแล้ว bar ไม่กลับ)
+    if (closedCartSheet && typeof renderFloatingBar === "function") {
+      requestAnimationFrame(() => {
+        // กันเคส user เปิด overlay อื่นทันทีระหว่างเฟรม
+        if (state.mode === "viewer" && state.ui.overlayCount === 0) {
+          renderFloatingBar();
+        }
+      });
+    }
   }
 }
 
@@ -3715,6 +3736,8 @@ function confirmAddToCart(){
 
   if (typeof renderBadge === "function") renderBadge();
   saveCart();
+  // 🔴 CHANGED: ให้ floating cart bar อัปเดตทันทีหลังเพิ่มตะกร้า
+  if (typeof renderFloatingBar === "function") renderFloatingBar();
 
   // ✅ Feedback สำเร็จ (หัวใจของ STEP 2️⃣)
   showToast(
@@ -3738,6 +3761,8 @@ function hardResetUI({ refresh = false } = {}){
 
 // 🔓 reset backdrop lock
 state.ui.backdropLocked = false;
+// 🔴 CHANGED: reset UI แล้วต้อง sync floating bar ตาม cart ปัจจุบัน
+if (typeof renderFloatingBar === "function") renderFloatingBar();  
 
   // 🔄 reset state
   state.selectedProduct = null;
@@ -4826,6 +4851,8 @@ async function submitOrder(){
     clearCartStorage();
     state.poNumber = "";
     if (typeof renderBadge === "function") renderBadge();
+    // 🔴 CHANGED: เคลียร์ตะกร้าแล้วต้องซ่อน/รีเฟรช floating bar
+    if (typeof renderFloatingBar === "function") renderFloatingBar();
     
   // ❌ ห้าม auto reset หลังสร้าง order สำเร็จ
     
@@ -4852,12 +4879,24 @@ async function submitOrder(){
 function openCart(){
   renderCart();
 
+  // 🔴 CHANGED: เมื่อเปิด cart sheet → ซ่อน floatingBar ไม่ให้บัง
+  const bar = document.getElementById("floatingBar");
+  if (bar) bar.classList.remove("show");
+
   // ✅ เปิดผ่าน Overlay Manager เท่านั้น
   openOverlay(cartSheet);
 }
 
 function closeCart(){
   closeOverlay(cartSheet);
+
+  // 🔴 CHANGED: ปิดตะกร้าแล้วต้อง "คืน" floatingBar ถ้ายังมีสินค้าอยู่
+  // ใช้ rAF เพื่อให้ overlayCount/state UI ปรับเสร็จก่อน แล้วค่อย render
+  if (typeof renderFloatingBar === "function") {
+    requestAnimationFrame(() => {
+      renderFloatingBar();
+    });
+  }
 }
 
 function removeItem(idx){
@@ -4867,6 +4906,8 @@ function removeItem(idx){
   saveCart();
 
   if (typeof renderBadge === "function") renderBadge();
+  // 🔴 CHANGED: sync floating bar หลังลบ item
+  if (typeof renderFloatingBar === "function") renderFloatingBar();
 
   // 🔔 Feedback: แจ้งผู้ใช้ทันทีว่าลบแล้ว
   showToast("ลบสินค้าออกจากตะกร้าแล้ว", "warning");
@@ -6377,13 +6418,22 @@ window.addEventListener("DOMContentLoaded", () => {
    const deltaTime = (now - (_lastScrollTime ?? now)) || 16;      // 🔴 NEW
    const velocity = delta / deltaTime;                 // 🔴 NEW
 
-  // 🔴 NEW: micro scroll noise guard
-  if (Math.abs(delta) < 1) {
-    _lastScrollY = currentY;
-    _lastScrollTime = now;
-    _headerTicking = false;
-    return;
-  }  
+// 🔴 CHANGED: micro scroll noise guard (แต่ต้อง "โชว์ bar คืน" เมื่อหยุดเลื่อน)
+   if (Math.abs(delta) < 1) {
+     // ✅ ถ้า bar แสดงอยู่แล้ว ให้เอา scroll-hide ออก เพื่อไม่ให้ค้างซ่อน
+     if (
+       bar &&
+       bar.classList.contains("show") &&
+       state.ui.overlayCount === 0
+     ) {
+       bar.classList.remove("scroll-hide");
+     }
+
+     _lastScrollY = currentY;
+     _lastScrollTime = now;
+     _headerTicking = false;
+     return;
+   } 
    
 if (header){
     if (currentY > 10) {
@@ -6401,26 +6451,22 @@ if (header){
   }
 
   /* ================= FLOATING BAR SMART HIDE ================= */
-  if (
-   bar &&
-   bar.classList.contains("show") &&
-   state.ui.overlayCount === 0 // 🔴 CHANGED: disable momentum when overlay open
- ) {
-
+  if (bar && bar.classList.contains("show")) {
+    // 📍 อยู่บนสุด → แสดงเสมอ
     if (currentY <= 10) {
-      // 📍 อยู่บนสุด → แสดงเสมอ
       bar.classList.remove("scroll-hide");
     }
-    else if (velocity > VELOCITY_HIDE + VELOCITY_DEADZONE) {
-      // ⬇️ scroll ลง
+    // 🔴 CHANGED: direction-based
+    else if (delta > 2) {
+      // ⬇️ เลื่อนลง = ซ่อน (กันบังเวลาเลือกสินค้าเพิ่ม)
       bar.classList.add("scroll-hide");
     }
-    else if (velocity < VELOCITY_SHOW - VELOCITY_DEADZONE) {
-      // ⬆️ scroll ขึ้น
+    else if (delta < -2) {
+      // ⬆️ เลื่อนขึ้น = โชว์
       bar.classList.remove("scroll-hide");
     }
   }
-
+   
    _lastScrollY = currentY;
    _lastScrollTime = now; // 🔴 NEW
    _headerTicking = false;
@@ -6433,6 +6479,27 @@ if (header){
      _headerTicking = true;
    }
  });
+
+ // 🔴 ADD: Smart hide เมื่อ scroll ภายใน .sheet (เพราะ window.scrollY ไม่เปลี่ยน)
+(function bindSheetScrollSmartHide(){
+  const lastTop = new WeakMap(); // เก็บ scrollTop ล่าสุดของแต่ละ sheet
+
+  document.addEventListener("scroll", (e) => {
+    const t = e.target;
+    if (!t || !t.classList || !t.classList.contains("sheet")) return;
+
+    const bar = document.getElementById("floatingBar");
+    if (!bar || !bar.classList.contains("show")) return;
+
+    const prev = lastTop.get(t) ?? t.scrollTop;
+    const d = t.scrollTop - prev;
+    lastTop.set(t, t.scrollTop);
+
+    if (Math.abs(d) < 1) return;
+    if (d > 2) bar.classList.add("scroll-hide");        // ⬇️ เลื่อนลงใน sheet = ซ่อน
+    else if (d < -2) bar.classList.remove("scroll-hide"); // ⬆️ เลื่อนขึ้นใน sheet = โชว์
+  }, true); // capture=true เพื่อจับ element scroll
+})(); 
   
 (async () => {
   try {
@@ -6493,6 +6560,8 @@ if (header){
     if (typeof renderBadge === "function") {
       if (typeof renderBadge === "function") renderBadge();
     }
+    // 🔴 CHANGED: ให้ floating bar แสดงตาม cart ที่ restore มา
+    if (typeof renderFloatingBar === "function") renderFloatingBar();
 
   } catch (err) {
     console.error("[INIT ERROR]", err);
@@ -6502,7 +6571,65 @@ if (header){
   }
 })();
 
-  
+  // =========================
+  // 🔍 DEBUG: Floating Bar
+  // (ใช้เฉพาะตรวจปัญหา bar ไหลไปท้ายหน้า)
+  // =========================
+  window.debugBar = function debugBar(){
+    const bar = document.getElementById('floatingBar');
+    if(!bar){ console.warn('[debugBar] #floatingBar not found'); return; }
+
+    const cs = getComputedStyle(bar);
+    const rect = bar.getBoundingClientRect();
+
+    console.log('===== #floatingBar runtime =====');
+    console.table({
+      position: cs.position,
+      bottom: cs.bottom,
+      zIndex: cs.zIndex,
+      transform: cs.transform,
+      opacity: cs.opacity,
+      pointerEvents: cs.pointerEvents,
+      display: cs.display,
+      visibility: cs.visibility,
+      rectTop: Math.round(rect.top),
+      rectBottom: Math.round(rect.bottom),
+      viewportH: window.innerHeight
+    });
+
+    // test fixed-ness
+    const b1 = bar.getBoundingClientRect().bottom;
+    window.scrollBy(0, 240);
+    const b2 = bar.getBoundingClientRect().bottom;
+    window.scrollBy(0, -240);
+    console.log('[debugBar] fixed test diff (should be ~0):', (b2 - b1));
+
+    // detect ancestor transform/filter/perspective
+    let el = bar.parentElement;
+    const chain = [];
+    while(el){
+      const s = getComputedStyle(el);
+      if(s.transform !== 'none' || s.filter !== 'none' || s.perspective !== 'none'){
+        chain.push({
+          node: el.tagName + (el.id?('#'+el.id):'') + (el.className?('.'+String(el.className).replace(/\s+/g,'.')):''),
+          transform: s.transform,
+          filter: s.filter,
+          perspective: s.perspective
+        });
+      }
+      el = el.parentElement;
+    }
+    if(chain.length){
+      console.warn('[debugBar] ancestors with transform/filter/perspective (may break fixed):');
+      console.table(chain);
+    } else {
+      console.log('[debugBar] no transform/filter/perspective ancestors found');
+    }
+
+    // check overlay
+    const p = document.elementFromPoint(Math.min(rect.left+10, window.innerWidth-1), Math.min(rect.top+10, window.innerHeight-1));
+    console.log('[debugBar] elementFromPoint near bar:', p);
+  }
 </script>
   
 <!-- Toast Container -->
