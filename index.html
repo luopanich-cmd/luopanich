@@ -903,36 +903,86 @@ button:disabled {
   box-shadow: var(--shadow-card-pressed);
 }  
 
- .product-info-images {
-   display: flex;
-   gap: 8px;
-   overflow-x: auto;
-   margin: 12px 0;
- }
+ /* ================= PRODUCT INFO SHEET (DETAILS) ================= */
+/* 🔴 CHANGED: wrap rules + readability (กันข้อความ/URL ล้นกรอบ + อ่านชัด iOS) */
 
- .product-info-zoom{
-   cursor: zoom-in;
- }
- 
- .product-info-images img {
-   height: 120px;
-   border-radius: 12px;
-   object-fit: cover;
- }
+.product-info-images {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 12px 0;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
 
- .product-info-block {
-   background: rgba(255,255,255,.65);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-   border-radius: 12px;
-   padding: 12px;
-   font-size: 14px;
- }
-  
+.product-info-zoom{
+  cursor: zoom-in;
+}
+
+.product-info-images img {
+  height: 120px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.product-info-block {
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border-radius: 14px;
+  padding: 14px;
+
+  /* ✅ iOS readability */
+  color: rgba(17,17,17,.92);
+  font-size: 15px;
+  line-height: 1.58;
+  letter-spacing: .1px;
+
+  /* ✅ HARD FIX: กันข้อความ/URL ยาวล้นกรอบ */
+  max-width: 100%;
+  overflow-wrap: anywhere;   /* ตัวหลักสำหรับ URL ยาว */
+  word-break: break-word;    /* fallback */
+  hyphens: auto;
+}
+
+.product-info-block ul{
+  margin: 0;
+  padding-left: 18px;        /* ไม่ให้ indent ลึกเกินบนมือถือ */
+}
+
+.product-info-block li{
+  margin: 8px 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.product-info-block a{
+  color: #007aff;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.product-info-block a:active{
+  opacity: .75;
+}
+
+@media (prefers-color-scheme: dark){
+  .product-info-block{
+    background: rgba(28,28,30,.72);
+    color: rgba(255,255,255,.92);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .product-info-block a{
+    color: #4da3ff;
+  }
+}
+
+/* คงของเดิม */
 .sheet-product {
   min-height: 60dvh;   /* 🔴 ปรับได้: 65–80 */
-}  
-
+}
 /* ===== Status Badge (Viewer) ===== */
 .status {
   padding: 3px 10px;
@@ -2642,42 +2692,43 @@ function openImageViewer(url){
   const sheet = document.getElementById("imageViewerSheet");
   if (!sheet) return;
 
-  // 🔥 reset ผลของ .sheet เดิม
+  // reset state
   sheet.classList.add("image-viewer-fullscreen");
 
   sheet.innerHTML = `
-    <!-- overlay background (รับ click เพื่อปิด) -->
-    <div class="image-viewer-bg"></div>
+    <!-- overlay background -->
+    <div class="image-viewer-bg" onclick="closeImageViewer(event)"></div>
 
-    <!-- ปุ่มปิด -->
+    <!-- close button -->
     <button
-       class="close-btn image-viewer-close"
-       onclick="event.stopPropagation(); closeImageViewer()">
+      class="close-btn image-viewer-close"
+      onclick="closeImageViewer(event)">
       ×
     </button>
 
-    <!-- รูปสินค้า -->
-<img
-   src="${escAttr(url)}"
-   alt="preview"
-   class="image-viewer-img"
- >
+    <!-- product image -->
+    <img
+      src="${escAttr(url)}"
+      alt="preview"
+      class="image-viewer-img"
+    >
   `;
 
   openOverlay(sheet);
 }
-  
-function closeImageViewer(){
+
+function closeImageViewer(ev){
+  if (ev) ev.stopPropagation();
+
   const sheet = document.getElementById("imageViewerSheet");
- if (!sheet) return;
+  if (!sheet) return;
 
- // 🔒 force close (ไม่สน state ค้าง)
- sheet.innerHTML = "";
- sheet.classList.remove("image-viewer-fullscreen");
+  sheet.innerHTML = "";
+  sheet.classList.remove("image-viewer-fullscreen");
 
- if (sheet.classList.contains("show")) {
-   closeOverlay(sheet);
- }
+  if (sheet.classList.contains("show")) {
+    closeOverlay(sheet);
+  }
 }
  
  function openProductInfoSheet(p){
@@ -2702,7 +2753,7 @@ function closeImageViewer(){
    return `
 <img src="${escAttr(url)}"
      class="product-info-zoom"
-     onclick="openImageViewer(${jsArg})">
+     onclick='openImageViewer(${jsArg})'>
    `;
  }).join("")}
            </div>
@@ -2899,7 +2950,8 @@ function renderProductSheet(){
  <img 
    src="${escAttr(p.image || '')}"
    alt="${escAttr(p.name)}"
-   class="product-image"
+   class="product-image product-info-zoom"
+   onclick='openImageViewer(${JSON.stringify(String(p.image || ""))})'
  >
 
     <div class="price">฿${p.price}</div>
@@ -6070,8 +6122,7 @@ function exportOrderPrint() {
         window.onload = function() {
           window.print();
           window.onafterprint = function() {
-            window.close();
-
+         
 // 🔥 ปิด confirmSheet อัตโนมัติ (Safe + Clear State)
     if (window.opener && window.opener.closeOverlay) {
       const sheet = window.opener.document.getElementById("confirmSheet");
@@ -6095,8 +6146,9 @@ function exportOrderPrint() {
         behavior: "smooth"
       });
     }
-          }
-        }
+             window.close();
+          };
+        };
       <\/script>
 
     </body>
