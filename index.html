@@ -738,9 +738,13 @@ button:disabled {
    min-width:200px;
    padding:10px;
    border-radius:18px;
-   background:rgba(255,255,255,.85);
-   backdrop-filter:blur(24px);
-   box-shadow:var(--shadow-float);
+   /* 🔴 CHANGED: เพิ่ม contrast + ขอบ + แยกชั้นให้ชัด */
+   background: rgba(255,255,255,.92);
+   backdrop-filter: blur(26px) saturate(180%);
+   -webkit-backdrop-filter: blur(26px) saturate(180%);
+   border: 1px solid rgba(0,0,0,.08);
+   box-shadow: var(--shadow-floating);
+   color: rgba(17,17,17,.92);
    display:none;
    flex-direction:column;
    gap:6px;
@@ -749,11 +753,32 @@ button:disabled {
  .filter-dropdown.show{ display:flex; }
 
  .filter-item{
-   padding:8px 12px;
-   border-radius:12px;
-   font-size:14px;
-   cursor:pointer;
+   /* 🔴 CHANGED: ทำให้แต่ละแถวอ่านง่าย + มี state */
+   padding: 10px 12px;
+   border-radius: 12px;
+   font-size: 14px;
+   font-weight: 600;
+   color: rgba(17,17,17,.88);
+   cursor: pointer;
+   user-select: none;
+   transition: background .16s ease, transform .16s ease;
  }
+
+ /* 🔴 CHANGED: เส้นแบ่งแบบ iOS (ช่วยแยก item ไม่ให้กลืน) */
+ .filter-item + .filter-item{
+   border-top: 1px solid rgba(0,0,0,.06);
+ }
+
+ /* 🔴 CHANGED: hover/active ให้รู้ว่ากดได้ */
+ @media (hover:hover){
+   .filter-item:hover{
+     background: rgba(0,0,0,.06);
+   }
+ }
+ .filter-item:active{
+   background: rgba(0,0,0,.10);
+   transform: scale(.985);
+ } 
   
 /* ================= HEADER MENU BUTTON (iOS TACTILE) ================= */
 .menu-btn{
@@ -1667,14 +1692,24 @@ textarea {
 
 @media (prefers-color-scheme: dark){
   .filter-dropdown{
-    background: rgba(44,44,46,.9);
-    color:#f5f5f7;
+    /* 🔴 CHANGED: เพิ่ม contrast + ขอบให้ชัด */
+    background: rgba(44,44,46,.96);
+    color: rgba(245,245,247,.92);
+    border: 1px solid rgba(255,255,255,.12);
   }
 
   .filter-item:hover{
-    background: rgba(255,255,255,.08);
+    /* 🔴 CHANGED: hover ชัดขึ้น */
+    background: rgba(255,255,255,.10);
   }
 
+ 
+  /* 🔴 CHANGED: active ในโหมดมืด */
+  .filter-item:active{
+    background: rgba(255,255,255,.14);
+    transform: scale(.985);
+  }
+  
   .search-btn {
     background:
       radial-gradient(120% 120% at 30% 25%,
