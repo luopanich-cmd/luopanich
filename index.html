@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
@@ -1784,12 +1784,32 @@ textarea {
   transform: translateY(120%);
   opacity: 0;
   pointer-events: none;
-
+  visibility: hidden;            /* 🔍 FIX: บังคับซ่อนจริง (กัน opacity ค้าง) */
+  
   transition:
     transform .48s cubic-bezier(.34,1.56,.64,1),
     opacity .3s ease;
   will-change: transform, opacity;
 }
+
+/* ✅ Cart bar text readability (เฉพาะ floatingBar) */
+#floatingBar .bar-left{
+  min-width: 0;
+}
+#floatingBar .bar-subtext{
+  font-size: 13px;
+  color: rgba(17,17,17,.80); /* ชัดกว่า .65 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+@media (prefers-color-scheme: dark){
+  #floatingBar .bar-subtext{
+    color: rgba(245,245,247,.82);
+  }
+}  
 
 #floatingBar.bounce-in{
   animation: float-bounce .65s cubic-bezier(.34,1.56,.64,1);
@@ -1807,11 +1827,12 @@ textarea {
 }
 
 /* ✅ SHOW = only show */
-#floatingBar.show{
-  transform: translateY(0) !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
+ #floatingBar.show{
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible; /* 🔴 FIX: เพราะ default ตั้ง hidden ไว้ */ 
+ }
 
 /* ✅ HIDE (scroll) */
 #floatingBar.scroll-hide{
@@ -1837,6 +1858,18 @@ textarea {
       inset 0 1px 0 rgba(255,255,255,.10);
   }
 }
+  
+#floatingBar:active{
+  transform: translateY(0) scale(.98);
+}
+  
+/* 🔴 NEW: เมื่อมี sheet เปิดอยู่ → ให้ floatingBar ซ่อน */
+.sheet.show ~ #floatingBar{
+  opacity: 0 !important;
+  transform: translateY(20px) !important;
+  pointer-events: none !important;
+  visibility: hidden !important; /* 🔴 FIX: ซ่อนแบบ deterministic */
+}  
   
  /* ================= REDUCED MOTION SUPPORT ================= */
  @media (prefers-reduced-motion: reduce){
@@ -2706,6 +2739,60 @@ async function checkStockBeforeSubmit() {
 
  // 🔒 Attribute-safe (สำหรับ src/alt/href)
  const escAttr = (s) => esc(s);
+
+
+// 🔴 CHANGED: ADD renderFloatingBar() (fix: cart added but bar never appears because function was missing)
+function renderFloatingBar(){
+  const bar = document.getElementById("floatingBar");
+  if (!bar) return;
+
+  // show เฉพาะ viewer + มีของในตะกร้า
+  const hasItems = Array.isArray(state.cart) && state.cart.length > 0;
+   const isViewer = state.mode === "viewer";
+
+  // ✅ FIX: กัน ReferenceError ถ้าไม่มีตัวแปร cartSheet (หาจาก DOM โดยตรง)
+  const cartSheetEl = document.getElementById("cartSheet");
+  const cartOpen = !!(cartSheetEl && cartSheetEl.classList.contains("show"));
+
+  if (!isViewer || !hasItems || cartOpen) {
+    bar.classList.remove("show","bounce-in");
+    bar.innerHTML = "";
+    return;
+  }
+
+  const total = state.cart.reduce((s,i)=> s + (Number(i.price)||0) * (Number(i.qty)||0), 0);
+  const money = (n) => (Number(n)||0).toLocaleString("th-TH");
+
+  // ✅ แสดงเป็น "รายการ" (ชื่อสินค้าแบบย่อ) ไม่โชว์จำนวน
+  const names = state.cart
+    .map(i => String(i.name || "").trim())
+    .filter(Boolean);
+  const uniqueNames = [...new Set(names)];
+  const itemCount = uniqueNames.length; // ✅ จำนวน "รายการ" (distinct) เช่น qty=3 ก็ยัง = 1 รายการ
+  const preview = uniqueNames.slice(0, 2).join(", ");
+  const more = uniqueNames.length - 2;
+  const listText = itemCount
+    ? `${itemCount} รายการ: ${preview}${more > 0 ? ` +อีก ${more} รายการ` : ""}`
+    : "0 รายการ";
+  
+  bar.innerHTML = `
+    <div class="bar-left" style="width:100%;">
+      <div style="font-weight:700">ตะกร้า</div>
+      <div class="bar-subtext">
+        ${listText} • รวม ฿${money(total)}
+      </div>
+    </div>
+  `;
+
+// 🔴 NEW: ทั้งแถบกดเพื่อเปิดตะกร้า
+bar.onclick = openCart;
+bar.style.cursor = "pointer";
+
+  // ให้โชว์แน่นอน + กันโดน scroll-hide ค้าง
+  bar.classList.remove("scroll-hide");
+  bar.classList.add("show","bounce-in");
+  setTimeout(()=> bar.classList.remove("bounce-in"), 650);
+}  
   
 function openImageViewer(url){
   if (!url) return;
@@ -3088,65 +3175,7 @@ function renderBadge(){
   // 🔴 NEW: sync floating bar ทุกครั้งที่ badge update
   renderFloatingBar();
 }
-
-/* ================= FLOATING BAR RENDER ================= */
-function renderFloatingBar(){
-  const bar = document.getElementById("floatingBar");
-  if (!bar) return;
-
-  // 🔒 แสดงเฉพาะ viewer mode
-  if (state.mode !== "viewer" || state.cart.length === 0){
-    bar.classList.remove("show");
-    bar.innerHTML = "";
-    return;
-  }
-
-  const wasVisible = bar.classList.contains("show"); // 🔴 FIX: declare before use
-  
-  const total = state.cart.reduce(
-    (s,i)=> s + Number(i.price) * Number(i.qty),
-    0
-  );
-
-  bar.innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;font-weight:600">
-      ${state.cart.length} รายการ
-    </div>
-    <div id="floatingTotal"
-         style="font-weight:700;color:#007aff">
-      รวม ฿${total.toLocaleString()}
-    </div>
-  `;
-
-  // 🔒 ไม่ยุ่ง overlay system
-  bar.onclick = openCart;
-
-  bar.classList.remove("scroll-hide"); // 🔴 FIX
-  bar.classList.add("show");
-
-  /* ===== First Appear Bounce ===== */
-  if (!wasVisible){
-    bar.classList.remove("bounce-in");
-    bar.classList.add("bounce-in");
-    setTimeout(()=>{
-      bar.classList.remove("bounce-in");
-    },650);
-  }
-
-  /* ===== Total Change Animation ===== */
- const totalEl = document.getElementById("floatingTotal");
- if (totalEl){
-   const prev = bar.dataset.prevTotal;
-   if (prev !== String(total)) {
-     bar.dataset.prevTotal = String(total);
-     totalEl.classList.remove("total-animate");
-     void totalEl.offsetWidth;
-     totalEl.classList.add("total-animate");
-    }
-  }
-}  
-
-  
+ 
 function renderConfirmSheet(){
   const confirmSheet = document.getElementById("confirmSheet");
   if (!confirmSheet) return;
@@ -6420,15 +6449,11 @@ window.addEventListener("DOMContentLoaded", () => {
 
 // 🔴 CHANGED: micro scroll noise guard (แต่ต้อง "โชว์ bar คืน" เมื่อหยุดเลื่อน)
    if (Math.abs(delta) < 1) {
-     // ✅ ถ้า bar แสดงอยู่แล้ว ให้เอา scroll-hide ออก เพื่อไม่ให้ค้างซ่อน
-     if (
-       bar &&
-       bar.classList.contains("show") &&
-       state.ui.overlayCount === 0
-     ) {
+     // ✅ FIX: ตอน delta เล็ก = "อย่าเปลี่ยนสถานะซ่อน/โชว์"
+     // ยกเว้นกรณีอยู่บนสุดจริง ๆ ค่อยบังคับให้โชว์
+     if (bar && currentY <= 10) {
        bar.classList.remove("scroll-hide");
      }
-
      _lastScrollY = currentY;
      _lastScrollTime = now;
      _headerTicking = false;
@@ -6450,22 +6475,22 @@ if (header){
     topBtn.classList.toggle("show", shouldShow);
   }
 
-  /* ================= FLOATING BAR SMART HIDE ================= */
-  if (bar && bar.classList.contains("show")) {
-    // 📍 อยู่บนสุด → แสดงเสมอ
-    if (currentY <= 10) {
-      bar.classList.remove("scroll-hide");
-    }
-    // 🔴 CHANGED: direction-based
-    else if (delta > 2) {
-      // ⬇️ เลื่อนลง = ซ่อน (กันบังเวลาเลือกสินค้าเพิ่ม)
-      bar.classList.add("scroll-hide");
-    }
-    else if (delta < -2) {
-      // ⬆️ เลื่อนขึ้น = โชว์
-      bar.classList.remove("scroll-hide");
-    }
-  }
+    /* ================= FLOATING BAR SMART HIDE ================= */
+   if (bar && bar.classList.contains("show")) {
+     // 📍 อยู่บนสุด → แสดงเสมอ
+     if (currentY <= 10) {
+       bar.classList.remove("scroll-hide");
+     }
+     // 🔴 CHANGED: direction-based
+    else if (delta > 0) {
+       // ⬇️ เลื่อนลง = ซ่อน (กันบังเวลาเลือกสินค้าเพิ่ม)
+       bar.classList.add("scroll-hide");
+     }
+    else if (delta < 0) {
+       // ⬆️ เลื่อนขึ้น = โชว์
+       bar.classList.remove("scroll-hide");
+     }
+   }
    
    _lastScrollY = currentY;
    _lastScrollTime = now; // 🔴 NEW
@@ -6486,23 +6511,37 @@ if (header){
 
   document.addEventListener("scroll", (e) => {
     const t = e.target;
-    if (!t || !t.classList || !t.classList.contains("sheet")) return;
+    if (!t) return;
+    const sheetEl = (t.closest && t.closest(".sheet")) || (t.classList && t.classList.contains("sheet") ? t : null);
+    if (!sheetEl) return;
 
     const bar = document.getElementById("floatingBar");
     if (!bar || !bar.classList.contains("show")) return;
 
-    const prev = lastTop.get(t) ?? t.scrollTop;
-    const d = t.scrollTop - prev;
-    lastTop.set(t, t.scrollTop);
+   const prev = lastTop.get(sheetEl) ?? sheetEl.scrollTop;
+    const d = sheetEl.scrollTop - prev;
+    lastTop.set(sheetEl, sheetEl.scrollTop);
 
     if (Math.abs(d) < 1) return;
     if (d > 2) bar.classList.add("scroll-hide");        // ⬇️ เลื่อนลงใน sheet = ซ่อน
     else if (d < -2) bar.classList.remove("scroll-hide"); // ⬆️ เลื่อนขึ้นใน sheet = โชว์
   }, true); // capture=true เพื่อจับ element scroll
 })(); 
+
+  
+// ✅ ADD: ensure DOM nodes exist before first render/init
+const __domReady = new Promise((resolve) => {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", resolve, { once: true });
+  } else {
+    resolve();
+  }
+});
   
 (async () => {
   try {
+    // ✅ ADD: wait until #floatingBar / #btnTop / etc are in DOM
+    await __domReady;
     // 🔴 CHANGED (STEP A5): Reload ต้องกลับ Viewer เสมอ (แม้ restore admin สำเร็จ)
     state.mode = "viewer";
     state.search = "";
@@ -6630,6 +6669,171 @@ if (header){
     const p = document.elementFromPoint(Math.min(rect.left+10, window.innerWidth-1), Math.min(rect.top+10, window.innerHeight-1));
     console.log('[debugBar] elementFromPoint near bar:', p);
   }
+
+  // =========================
+// 🔍 DEBUG: Trace CSS winners for #floatingBar
+// เป้าหมาย: หา "rule ไหน" ที่ชนะ opacity/transform จริง
+// =========================
+window.traceBarCSS = function traceBarCSS(){
+  const bar = document.getElementById("floatingBar");
+  if (!bar) { console.warn("[traceBarCSS] #floatingBar not found"); return []; }
+
+  const props = ["opacity","transform","pointer-events"];
+  const out = [];
+
+  const tryPushRule = (sheet, rule, ruleIndex, sel) => {
+    const style = rule.style;
+    const hit = {
+      sheet: sheet.href || "[inline <style>]",
+      ruleIndex,
+      selector: sel,
+      cssText: rule.cssText
+    };
+    // เก็บเฉพาะค่าที่เกี่ยวข้อง
+    props.forEach(p => {
+      const v = style.getPropertyValue(p);
+      if (v) {
+        hit[p] = v.trim();
+        hit[p + "_important"] = style.getPropertyPriority(p) === "important";
+      }
+    });
+    // ดันเฉพาะ rule ที่แตะ props จริง
+    if (props.some(p => hit[p])) out.push(hit);
+  };
+
+  for (const sheet of Array.from(document.styleSheets)) {
+    let rules;
+    try { rules = sheet.cssRules; } catch(e) { continue; } // cross-origin
+    if (!rules) continue;
+
+    for (let i = 0; i < rules.length; i++) {
+      const r = rules[i];
+      if (!r || !r.selectorText) continue;
+      // รองรับ selector หลายตัวคั่นด้วย comma
+      const sels = r.selectorText.split(",").map(s => s.trim()).filter(Boolean);
+      for (const sel of sels) {
+        try {
+          if (bar.matches(sel)) {
+            tryPushRule(sheet, r, i, sel);
+          }
+        } catch(_) {}
+      }
+    }
+  }
+
+  const cs = getComputedStyle(bar);
+  console.log("===== traceBarCSS =====");
+  console.log("className:", bar.className);
+  console.table({
+    computed_opacity: cs.opacity,
+    computed_transform: cs.transform,
+    computed_pointerEvents: cs.pointerEvents
+  });
+  console.table(out);
+  return out;
+};
+
+// =========================
+// 🔍 DEBUG: Watch class changes แล้ว trace ทันที
+// ใช้: watchBarCSS(); แล้วลองเลื่อน/เปิดปิด sheet
+// =========================
+window.watchBarCSS = function watchBarCSS(){
+  const bar = document.getElementById("floatingBar");
+  if (!bar) { console.warn("[watchBarCSS] #floatingBar not found"); return; }
+  if (bar.__watchingCSS) { console.warn("[watchBarCSS] already watching"); return; }
+  bar.__watchingCSS = true;
+
+  const mo = new MutationObserver(() => {
+    // trace หลัง DOM อัปเดตแล้ว 1 เฟรม (กันอ่านค่าก่อน apply)
+    requestAnimationFrame(() => window.traceBarCSS());
+  });
+  mo.observe(bar, { attributes: true, attributeFilter: ["class","style"] });
+  bar.__watchMO = mo;
+  console.log("✅ watching #floatingBar class/style changes");
+  window.traceBarCSS();
+};
+
+// =========================
+// 🕵️ SPY: ใครเป็นคนแก้ class/style ของ #floatingBar
+// ใช้: spyBar(); แล้วลองเลื่อน/เปิดปิด sheet/เพิ่มของในตะกร้า
+// =========================
+window.spyBar = function spyBar(){
+  const bar = document.getElementById("floatingBar");
+  if (!bar) { console.warn("[spyBar] #floatingBar not found"); return; }
+  if (bar.__spyInstalled) { console.warn("[spyBar] already installed"); return; }
+  bar.__spyInstalled = true;
+
+  // 1) spy classList.add/remove/toggle
+  const cl = bar.classList;
+  ["add","remove","toggle"].forEach((m) => {
+    const orig = cl[m].bind(cl);
+    cl[m] = (...args) => {
+      console.groupCollapsed(`🧩 [spyBar] classList.${m}(${args.join(", ")})  | before="${bar.className}"`);
+      console.trace();
+      const r = orig(...args);
+      console.log(`after="${bar.className}"`);
+      console.groupEnd();
+      return r;
+    };
+  });
+
+  // 2) spy style attribute changes (รวมถึง bar.style.opacity/transform ที่ไปลงเป็น inline)
+  const mo = new MutationObserver((list) => {
+    for (const it of list) {
+      if (it.type === "attributes" && it.attributeName === "style") {
+        console.groupCollapsed(`🎨 [spyBar] style changed: ${bar.getAttribute("style") || "(empty)"}`);
+        console.trace();
+        console.groupEnd();
+      }
+    }
+  });
+  mo.observe(bar, { attributes: true, attributeFilter: ["style"] });
+  bar.__spyMO = mo;
+
+  console.log("✅ spyBar installed. Now reproduce the bug.");
+};
+
+window.unspyBar = function unspyBar(){
+  const bar = document.getElementById("floatingBar");
+  if (!bar) return;
+  if (bar.__spyMO) bar.__spyMO.disconnect();
+  bar.__spyMO = null;
+  bar.__spyInstalled = false;
+  console.log("🛑 spyBar removed (note: classList methods won't auto-restore after override)");
+};  
+
+window.unwatchBarCSS = function unwatchBarCSS(){
+  const bar = document.getElementById("floatingBar");
+  if (!bar || !bar.__watchMO) return;
+  bar.__watchMO.disconnect();
+  bar.__watchMO = null;
+  bar.__watchingCSS = false;
+  console.log("🛑 stop watching #floatingBar");
+};
+
+// =========================
+// 🔍 DEBUG: Force test show/hide (พิสูจน์ cascade)
+// ใช้: testBarHide(); แล้วดู console + traceBarCSS
+// =========================
+window.testBarHide = function testBarHide(){
+  const bar = document.getElementById("floatingBar");
+  if (!bar) { console.warn("[testBarHide] #floatingBar not found"); return; }
+
+  bar.className = "show scroll-hide";
+  requestAnimationFrame(() => {
+    const cs1 = getComputedStyle(bar);
+    console.log("[testBarHide] show+scroll-hide => opacity:", cs1.opacity, "transform:", cs1.transform);
+    window.traceBarCSS();
+
+    bar.className = "show";
+    requestAnimationFrame(() => {
+      const cs2 = getComputedStyle(bar);
+      console.log("[testBarHide] show => opacity:", cs2.opacity, "transform:", cs2.transform);
+      window.traceBarCSS();
+    });
+  });
+};  
+ 
 </script>
   
 <!-- Toast Container -->
