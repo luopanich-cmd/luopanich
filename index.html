@@ -11,8 +11,8 @@
   /* ================= PHASE 3: TYPOGRAPHY / HIERARCHY ================= */
   --text-primary:   rgba(17,17,17,.92);
   --text-secondary: rgba(60,60,67,.82); /* 🔴 เพิ่มความคมชัด */
-  --title-size:     24px;
-  --subtitle-size:  14px;
+  --title-size:     22px;
+  --subtitle-size:  12.5px;
   --title-weight:   700;
   --subtitle-weight:500;
     
@@ -58,6 +58,7 @@
   max-width: 100%;
   overflow-x: hidden;   /* 🔴 ตัวนี้คือหัวใจ */
 
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   background: #f2f2f7;
   height: 100%;  
   min-height: 100%;
@@ -500,39 +501,11 @@ button:disabled {
 }
   
   /* ===== Order Preview (Hidden) ===== */
-  /* ================= LOCAL THAI FONT ================= */
-  /* 🔴 CHANGED: use local files (no CDN) */
-  @font-face{
-    font-family: "THSarabunNew";
-    src: url("assets/fonts/THSarabunNew.ttf") format("truetype");
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-  }
-  @font-face{
-    font-family: "THSarabunNew";
-    src: url("assets/fonts/THSarabunNew-Bold.ttf") format("truetype");
-    font-weight: 700;
-    font-style: normal;
-    font-display: swap;
-  }
-
-  :root{
-    /* 🔴 CHANGED: single source of truth */
-    --font-sans: "THSarabunNew", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  html, body{
-    /* 🔴 CHANGED: apply app-wide */
-    font-family: var(--font-sans);
-  }
-  
   #orderPreview {
     width: 360px;
     padding: 16px;
     background: #fff;
-    /* 🔴 CHANGED: keep consistent with app */
-    font-family: var(--font-sans);
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     display: none;
   }
   #orderPreview h2 {
@@ -765,9 +738,13 @@ button:disabled {
    min-width:200px;
    padding:10px;
    border-radius:18px;
-   background:rgba(255,255,255,.85);
-   backdrop-filter:blur(24px);
-   box-shadow:var(--shadow-float);
+   /* 🔴 CHANGED: เพิ่ม contrast + ขอบ + แยกชั้นให้ชัด */
+   background: rgba(255,255,255,.92);
+   backdrop-filter: blur(26px) saturate(180%);
+   -webkit-backdrop-filter: blur(26px) saturate(180%);
+   border: 1px solid rgba(0,0,0,.08);
+   box-shadow: var(--shadow-floating);
+   color: rgba(17,17,17,.92);
    display:none;
    flex-direction:column;
    gap:6px;
@@ -776,11 +753,32 @@ button:disabled {
  .filter-dropdown.show{ display:flex; }
 
  .filter-item{
-   padding:8px 12px;
-   border-radius:12px;
-   font-size:14px;
-   cursor:pointer;
+   /* 🔴 CHANGED: ทำให้แต่ละแถวอ่านง่าย + มี state */
+   padding: 10px 12px;
+   border-radius: 12px;
+   font-size: 14px;
+   font-weight: 600;
+   color: rgba(17,17,17,.88);
+   cursor: pointer;
+   user-select: none;
+   transition: background .16s ease, transform .16s ease;
  }
+
+ /* 🔴 CHANGED: เส้นแบ่งแบบ iOS (ช่วยแยก item ไม่ให้กลืน) */
+ .filter-item + .filter-item{
+   border-top: 1px solid rgba(0,0,0,.06);
+ }
+
+ /* 🔴 CHANGED: hover/active ให้รู้ว่ากดได้ */
+ @media (hover:hover){
+   .filter-item:hover{
+     background: rgba(0,0,0,.06);
+   }
+ }
+ .filter-item:active{
+   background: rgba(0,0,0,.10);
+   transform: scale(.985);
+ } 
   
 /* ================= HEADER MENU BUTTON (iOS TACTILE) ================= */
 .menu-btn{
@@ -1694,14 +1692,24 @@ textarea {
 
 @media (prefers-color-scheme: dark){
   .filter-dropdown{
-    background: rgba(44,44,46,.9);
-    color:#f5f5f7;
+    /* 🔴 CHANGED: เพิ่ม contrast + ขอบให้ชัด */
+    background: rgba(44,44,46,.96);
+    color: rgba(245,245,247,.92);
+    border: 1px solid rgba(255,255,255,.12);
   }
 
   .filter-item:hover{
-    background: rgba(255,255,255,.08);
+    /* 🔴 CHANGED: hover ชัดขึ้น */
+    background: rgba(255,255,255,.10);
   }
 
+ 
+  /* 🔴 CHANGED: active ในโหมดมืด */
+  .filter-item:active{
+    background: rgba(255,255,255,.14);
+    transform: scale(.985);
+  }
+  
   .search-btn {
     background:
       radial-gradient(120% 120% at 30% 25%,
@@ -2385,7 +2393,7 @@ async function refreshProducts() {
           text-align:center;
           color:#d93025;
           margin-top:40px;
-          font-size:16.5px;
+          font-size:15px;
         ">
           ไม่สามารถโหลดรายการสินค้าได้
         </div>
@@ -3054,7 +3062,7 @@ let statusText  = statusMap[statusKey] || "พร้อมส่ง";
         text-align:center;
         color:#888;
         margin-top:40px;
-        font-size:16.5px;
+        font-size:15px;
       ">
         ไม่พบสินค้าที่ค้นหา
       </div>
@@ -5790,14 +5798,6 @@ function exportOrderPNG() {
   const order = state.lastOrder;
   if (!order) return;
 
-// 🔴 CHANGED: ensure fonts are ready before canvas draw (avoid fallback font in PNG)
-  // (safe even if already loaded)
-  if (document.fonts && document.fonts.ready) {
-    // kick-load both weights used in canvas
-    document.fonts.load('400 16px "THSarabunNew"');
-    document.fonts.load('700 16px "THSarabunNew"');
-  }  
-  
   /* ================= A4 CONFIG (FIXED) ================= */
   const cfg = {
     width: 794,          // A4 width @96dpi
@@ -5899,7 +5899,7 @@ function exportOrderPNG() {
   ctx.fillStyle = "#000";
 
   /* ===== TITLE ===== */
-  ctx.font = `700 ${cfg.titleSize}px "THSarabunNew", -apple-system, BlinkMacSystemFont, sans-serif`; // 🔴 CHANGED
+  ctx.font = `700 ${cfg.titleSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
   ctx.fillText("ใบสั่งซื้อ", cfg.padding, y);
   y += cfg.lineHeight + 8;
 
@@ -5907,7 +5907,7 @@ function exportOrderPNG() {
   const headerTopY = y;
 
   /* ===== COMPANY BLOCK ===== */
-ctx.font = `700 ${cfg.textSize + 4}px "THSarabunNew", -apple-system, BlinkMacSystemFont, sans-serif`; // 🔴 CHANGED
+ctx.font = `700 ${cfg.textSize + 4}px -apple-system`;
 ctx.fillText("ร้านล้อพาณิชย์", cfg.padding, headerTopY);
 
 ctx.fillText(
@@ -5963,7 +5963,7 @@ const rightX = canvas.width - cfg.padding;
     total: canvas.width - cfg.padding - 90
   };
 
-  ctx.font = `700 ${cfg.textSize}px "THSarabunNew", -apple-system, BlinkMacSystemFont, sans-serif`; // 🔴 CHANGED
+  ctx.font = `700 ${cfg.textSize}px -apple-system`;
 
   // HEADER
   ctx.fillText("ลำดับ", col.no, y);
@@ -5982,7 +5982,7 @@ const rightX = canvas.width - cfg.padding;
 
   y += rowHeight - 16;
 
-  ctx.font = `${cfg.textSize}px "THSarabunNew", -apple-system, BlinkMacSystemFont, sans-serif`; // 🔴 CHANGED
+  ctx.font = `${cfg.textSize}px -apple-system`;
 
   items.forEach((i, index) => {
     const total = Number(i.price) * Number(i.qty);
@@ -6023,7 +6023,7 @@ const rightX = canvas.width - cfg.padding;
   y += cfg.lineHeight;
 
   /* ================= TOTAL ================= */
-  ctx.font = `700 ${cfg.textSize + 4}px "THSarabunNew", -apple-system, BlinkMacSystemFont, sans-serif`; // 🔴 CHANGED
+  ctx.font = `700 ${cfg.textSize + 4}px -apple-system, BlinkMacSystemFont, sans-serif`;
   const safeTotal = Number(order.total) || 0;
   const totalText = `ยอดรวม: ฿${safeTotal.toLocaleString()}`;
   const tw = ctx.measureText(totalText).width;
@@ -6035,7 +6035,7 @@ const rightX = canvas.width - cfg.padding;
 
   /* ===== THAI TEXT TOTAL ===== */
   y += cfg.lineHeight;
-  ctx.font = `${cfg.textSize}px "THSarabunNew", -apple-system, BlinkMacSystemFont, sans-serif`; // 🔴 CHANGED
+  ctx.font = `${cfg.textSize}px -apple-system, BlinkMacSystemFont, sans-serif`;
   const thaiText = `(${numberToThaiText(safeTotal)})`;
   const thaiWidth = ctx.measureText(thaiText).width;
   ctx.fillText(
@@ -6078,29 +6078,13 @@ function exportOrderPrint() {
     <head>
       <title>Order ${order.orderId}</title>
       <style>
-      /* 🔴 CHANGED: embed local font for print window */
-        @font-face{
-          font-family: "THSarabunNew";
-          src: url("assets/fonts/THSarabunNew.ttf") format("truetype");
-          font-weight: 400;
-          font-style: normal;
-          font-display: swap;
-        }
-        @font-face{
-          font-family: "THSarabunNew";
-          src: url("assets/fonts/THSarabunNew-Bold.ttf") format("truetype");
-          font-weight: 700;
-          font-style: normal;
-          font-display: swap;
-        }
-
         @page {
           size: A4;
           margin: 20mm;
         }
 
         body {
-          font-family: "THSarabunNew", -apple-system, BlinkMacSystemFont, sans-serif; /* 🔴 CHANGED */
+          font-family: -apple-system, BlinkMacSystemFont, sans-serif;
           font-size: 14px;
           color: #111827; /* Dark Accent */
           margin: 0;
