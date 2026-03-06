@@ -2346,6 +2346,32 @@ const fetchProducts = async () => {
   return json.data;
 };
 
+const fetchAdminProducts = async () => {
+  if (!state.admin?.token) {
+    throw new Error("Not authenticated");
+  }
+
+  const form = new URLSearchParams();
+  form.append("action", "adminProducts");
+  form.append("token", state.admin.token);
+
+  const res = await fetchWithTimeout(
+    API_URL,
+    {
+      method: "POST",
+      body: form
+    },
+    15000
+  );
+
+  const json = await res.json();
+  if (!json || json.success !== true || !Array.isArray(json.data)) {
+    throw new Error(json?.error || "โหลดสินค้าแอดมินไม่สำเร็จ");
+  }
+
+  return json.data;
+};  
+
 function sortProducts(products) {
   if (!Array.isArray(products)) return [];
 
@@ -2382,7 +2408,9 @@ async function refreshProducts() {
   }
 
   try {
-    const list = await fetchProducts();
+    const list = state.mode === "admin"
+      ? await fetchAdminProducts()
+      : await fetchProducts();
     state.products = sortProducts(list);
     renderProducts();
   } catch (err) {
@@ -4732,6 +4760,11 @@ function openAddProduct(force = false){
     </div>
 
     <div class="form-group">
+      <label>ราคาต้นทุน</label>
+      <input id="addCostPrice" type="number" value="${draft.costPrice || ""}" placeholder="0">
+    </div>
+
+    <div class="form-group">
       <label>จำนวน (สต๊อกเริ่มต้น)</label>
       <input id="addStock" type="number" value="${draft.stock || ""}" placeholder="0">
     </div>
@@ -5010,6 +5043,11 @@ function openProductEdit(p){
     <div class="form-group">
       <label>ราคา</label>
       <input id="editPrice" type="number" value="${p.price}">
+    </div>
+    
+    <div class="form-group">
+      <label>ราคาต้นทุน</label>
+      <input id="editCostPrice" type="number" value="${Number(p.costPrice) || 0}">
     </div>
 
     <div class="form-group">
@@ -5350,6 +5388,7 @@ async function submitProductEdit(){
 
   const name   = document.getElementById("editName").value.trim();
   const price  = Number(document.getElementById("editPrice").value);
+  const costPrice = Number(document.getElementById("editCostPrice").value);
   const stock  = Number(document.getElementById("editStock").value);
   const status = document.getElementById("editStatus").value;
   const newProductId = document.getElementById("editProductId").value.trim();
@@ -5368,8 +5407,10 @@ async function submitProductEdit(){
    !name ||
    !newProductId ||
    !Number.isFinite(price) ||
+   !Number.isFinite(costPrice) ||
    !Number.isFinite(stock) ||
    price < 0 ||
+   costPrice < 0 || 
    stock < 0
  ) {
     showToast("ข้อมูลไม่ถูกต้อง", "error");
@@ -5419,6 +5460,7 @@ async function submitProductEdit(){
     form.append("newProductId", newProductId);
     form.append("name", name);
     form.append("price", price);
+    form.append("costPrice", costPrice);
     form.append("stock", stock);
     form.append("status", status);
     form.append("image", imageUrl);
@@ -5570,6 +5612,7 @@ async function submitAddProduct(btn){
     const productId = document.getElementById("addProductId").value.trim();
     const name      = document.getElementById("addName").value.trim();
     const price     = Number(document.getElementById("addPrice").value);
+    const costPrice = Number(document.getElementById("addCostPrice").value);
     const stock     = Number(document.getElementById("addStock").value);
  let status      = document.getElementById("addStatus").value;
  const note      = document.getElementById("addNote")?.value.trim() || "";
@@ -5589,12 +5632,12 @@ async function submitAddProduct(btn){
       throw new Error("กรุณากรอกชื่อสินค้า");
     }
 
-    if (!Number.isInteger(price) || !Number.isInteger(stock)) {
-      throw new Error("ราคาและจำนวนต้องเป็นตัวเลขจำนวนเต็ม");
+    if (!Number.isInteger(price) || !Number.isInteger(costPrice) || !Number.isInteger(stock)) {
+      throw new Error("ราคา ราคาต้นทุน และจำนวน ต้องเป็นตัวเลขจำนวนเต็ม");
     }
 
-    if (price < 0 || stock < 0) {
-      throw new Error("ราคาและจำนวนต้องมากกว่าหรือเท่ากับ 0");
+    if (price < 0 || costPrice < 0 || stock < 0) {
+      throw new Error("ราคา ราคาต้นทุน และจำนวน ต้องมากกว่าหรือเท่ากับ 0");
     }
 
     const dup = state.products.find(p => p.productId === productId);
@@ -5628,6 +5671,7 @@ async function submitAddProduct(btn){
     form.append("productId", productId);
     form.append("name", name);
     form.append("price", price);
+    form.append("costPrice", costPrice);
     form.append("stock", stock);
   form.append("active", active);
   form.append("status", status);
