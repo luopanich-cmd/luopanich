@@ -1,35 +1,35 @@
-<!DOCTYPE html> 
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>Stock Viewer</title>
+ <!DOCTYPE html> 
+ <html lang="en">
+ <head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+ <meta name="color-scheme" content="dark">
+ <meta name="theme-color" content="#0f0f12">
+ <title>Stock Viewer</title>
 
 <!-- ================= UI STYLE ================= -->
 <style>
   :root {
   /* ================= PHASE 3: TYPOGRAPHY / HIERARCHY ================= */
-  --text-primary:   rgba(17,17,17,.92);
-  --text-secondary: rgba(60,60,67,.82); /* 🔴 เพิ่มความคมชัด */
+  --text-primary:   rgba(255,255,255,.92);
+  --text-secondary: rgba(235,235,245,.75);
   --title-size:     22px;
   --subtitle-size:  12.5px;
   --title-weight:   700;
   --subtitle-weight:500;
     
   /* ================= STEP 2: SHADOW/DEPTH TOKENS (UNIFIED) ================= */
-  --shadow-card:            0 10px 30px rgba(0,0,0,.08);
-  --shadow-control:         0 6px 16px rgba(0,0,0,.08);
-  --shadow-image:           0 4px 12px rgba(0,0,0,.12);  
-  --shadow-header:          0 8px 28px rgba(0,0,0,.06);
-  --shadow-header-scrolled: 0 12px 36px rgba(0,0,0,.12);
-  /* card pressed should be card semantics (not control) */
-  --shadow-card-pressed:    0 6px 18px rgba(0,0,0,.06);
-  /* canvas export card shadow should follow tokens */
+  --shadow-card:            0 10px 34px rgba(0,0,0,.65);
+  --shadow-control:         0 8px 22px rgba(0,0,0,.60);
+  --shadow-image:           0 6px 18px rgba(0,0,0,.65);
+  --shadow-header:          0 8px 32px rgba(0,0,0,.50);
+  --shadow-header-scrolled: 0 16px 42px rgba(0,0,0,.65);
+  --shadow-card-pressed:    0 6px 18px rgba(0,0,0,.55);
+  --shadow-side:            -6px 0 24px rgba(0,0,0,.60);
+  --shadow-floating:        0 10px 34px rgba(0,0,0,.60);
+  --shadow-fab:             0 12px 34px rgba(0,0,0,.60);
   --shadow-canvas-card:     var(--shadow-card);
-  --shadow-side:            -6px 0 20px rgba(0,0,0,.12);
-  --shadow-floating:        0 12px 36px rgba(0,0,0,.12);
-  --shadow-fab:             0 10px 28px rgba(0,0,0,.14); 
-  
+ 
   /* legacy alias (keep old refs working + follow unified override) */
   --shadow-float:           var(--shadow-floating);  
    
@@ -50,19 +50,19 @@
    --ease-chrome:cubic-bezier(.22,.61,.36,1); 
  }
   
-  html, body {
-  margin: 0;
-  padding: 0;
-
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;   /* 🔴 ตัวนี้คือหัวใจ */
-
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f2f2f7;
-  height: 100%;  
-  min-height: 100%;
-}
+ html, body {
+   margin: 0;
+   padding: 0;
+   width: 100%;
+   max-width: 100%;
+   overflow-x: hidden;
+   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+   background: #0f0f12;
+   color: #f5f5f7;
+   color-scheme: dark;
+   height: 100%;
+   min-height: 100%;
+ }
 
   body{
    min-height: 100dvh;
@@ -78,53 +78,53 @@
   font-weight: inherit;
 
   /* 🔹 Visual */
-  background:rgba(255,255,255,.65);
-  backdrop-filter:blur(30px) saturate(180%);
-  -webkit-backdrop-filter:blur(30px) saturate(180%);
-  border-bottom: 1px solid rgba(255,255,255,.4);
+  background: rgba(28,28,30,.55); /* 🔴 CHANGED: dark glass */
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border-bottom: 1px solid rgba(255,255,255,.06); /* 🔴 CHANGED: subtle dark divider */
 
   box-shadow:
     var(--shadow-header),
-    inset 0 -1px 0 rgba(255,255,255,.35);
+    inset 0 -1px 0 rgba(255,255,255,.06); /* 🔴 CHANGED: reduce white glow */
 
   /* 🔹 Position */
-  position:sticky;
-  top:0;
-  z-index:50;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 
   /* 🔹 Layout (สำคัญ) */
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
   /* 🔴 FIX สำคัญ */
-  min-height:110px;     /* รองรับ Search + Filter (STEP 5.2) */  
-  box-sizing:border-box;
+  min-height: 110px; /* รองรับ Search + Filter (STEP 5.2) */
+  box-sizing: border-box;
 
   transition:
     padding var(--dur-chrome) var(--ease-chrome),
     min-height var(--dur-chrome) var(--ease-chrome),
     background var(--dur-chrome) ease,
     box-shadow var(--dur-chrome) ease;
-  }
+}
 
-  header.scrolled{
-   padding:
+header.scrolled{
+  padding:
     calc(env(safe-area-inset-top, 0px) + 12px)
     calc(env(safe-area-inset-right, 0px) + 16px)
     10px
     calc(env(safe-area-inset-left, 0px) + 16px);
-   min-height: 72px;
-   background: rgba(255,255,255,.85);
-   box-shadow:
+  min-height: 72px;
+  background: rgba(28,28,30,.75); /* 🔴 CHANGED: darker when scrolled */
+  box-shadow:
     var(--shadow-header-scrolled),
-    inset 0 -1px 0 rgba(255,255,255,.5);
- } 
-
+    inset 0 -1px 0 rgba(255,255,255,.08); /* 🔴 CHANGED: subtle inner edge */
+}
+  
 /* ================= SHOP TITLE GLOW ================= */
- .shop-title,
- .admin-title{
-   font-weight: var(--title-weight);
+.shop-title,
+.admin-title{
+  font-weight: var(--title-weight);
   font-size: var(--title-size);
   letter-spacing: .15px;
   color: var(--text-primary);
@@ -135,43 +135,44 @@
   border-radius: 999px;
   position: relative;
   overflow: hidden;
+  isolation: isolate; /* 🔴 FIX: กัน layer เพี้ยน */
 
-  /* ✅ Match filter/menu/search: Apple-nimble glass */
-  background: rgba(255,255,255,.55);
-  border: 1px solid rgba(255,255,255,.45);
+  /* 🔴 CHANGED: dark glass base */
+  background: rgba(28,28,30,.72);
+  border: 1px solid rgba(255,255,255,.10);
   backdrop-filter: blur(16px) saturate(170%);
   -webkit-backdrop-filter: blur(16px) saturate(170%);
-  /* ✅ add inner rim + same depth language as buttons */
+
+  /* 🔴 CHANGED: softer dark-depth inner rim */
   box-shadow:
     var(--shadow-control),
-    inset 0 1px 0 rgba(255,255,255,.70),
-    inset 0 -1px 0 rgba(255,255,255,.28);
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -1px 0 rgba(255,255,255,.04);
 
-  /* Apple-nimble: เงาเบามาก ไม่ glow */
-  text-shadow: 0 1px 0 rgba(255,255,255,.35);
- }
+  /* 🔴 CHANGED: remove white glow feeling */
+  text-shadow: 0 1px 0 rgba(0,0,0,.35);
+
+  z-index: 0;
+}
 
 /* ✅ Glass highlight (top-left glare) */
-  .shop-title::before,
-  .admin-title::before{
+.shop-title::before,
+.admin-title::before{
   content:"";
   position:absolute;
   inset:0;
   border-radius:inherit;
-  z-index:0;
+  z-index:0; /* 🔴 FIX: ไม่ใช้ -1 */
   background:
     radial-gradient(70% 55% at 28% 22%,
-      rgba(255,255,255,.95) 0%,
-      rgba(255,255,255,.55) 26%,
+      rgba(255,255,255,.20) 0%,
+      rgba(255,255,255,.10) 26%,
       rgba(255,255,255,0) 60%);
-  opacity:.45;
+  opacity:.55;
   pointer-events:none;
   mix-blend-mode: screen;
 }
-/* ✅ ensure text always above highlight (even when no child elements) */
-.shop-title,
-.admin-title{ z-index: 0; }
-  
+
 /* PHASE 3: Supporting line under title */
 .shop-subtitle{
   margin-top: 6px;
@@ -204,17 +205,7 @@
    /* 🔴 CHANGED: ให้เหมือน shop-title 100% → ไม่ดันซ้ายด้วย margin */
    margin-left: 0;
  }
-  
-@media (prefers-color-scheme: dark){
-  .admin-title{
-    /* 🔴 CHANGED: ทำให้ rgba ถูกต้องตามมาตรฐาน (กัน rule หลุดในบาง browser) */
-    color: rgba(255,255,255,.92);
-    text-shadow:
-      0 0 10px rgba(0,0,0,.70),
-      0 0 22px rgba(0,0,0,.45);
-  }
-}
-  
+    
   .badge{
     color:#fff;
   border-radius:999px;
@@ -231,7 +222,7 @@
   .container{padding:16px;display:grid;gap:16px;}
   
   .card{
-    background: rgba(255,255,255,.72);
+  background: rgba(28,28,30,.72);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-radius:18px;
@@ -251,7 +242,7 @@
   word-break:break-word;
 }
   .price{color:#007aff;margin-top:4px;}
-  .stock{font-size:14px;color:#666;}
+  .stock{font-size:14px;color:rgba(235,235,245,.72);}
 
   .backdrop{
   position: fixed;
@@ -268,7 +259,7 @@
   right: 0;
   bottom: 0;
 
-  background: rgba(255,255,255,.85);
+  background: rgba(28,28,30,.88);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
   border-radius: 22px 22px 0 0;
@@ -304,8 +295,9 @@ select {
   box-sizing: border-box;
   outline: none;
   font-family: inherit;
-  background: rgba(255,255,255,.9);
-  color: #111;                 /* 🔴 FIX: text มองเห็นชัดใน light mode */
+  background: rgba(44,44,46,.90);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.08);
 }
 
 /* 🔴 NEW: textarea base style (Light mode fix) */
@@ -313,9 +305,9 @@ textarea {
   width: 100%;
   box-sizing: border-box;
   font-family: inherit;
-  background: #fff;
-  color: #111;
-  border: 1px solid #ddd;
+  background: rgba(44,44,46,.90);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.08);
   border-radius: 12px;
 }
   
@@ -340,7 +332,7 @@ select:focus {
 
 .form-group label {
   font-size: 13px;
-  color: #666;
+  color: rgba(235,235,245,.72);
 }
 
 /* ================= FORM INPUT (UNIFIED) ================= */
@@ -356,9 +348,10 @@ select:focus {
   line-height: 1.2;
 
   border-radius: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid rgba(255,255,255,.08);
   box-sizing: border-box;
-  background: #fff;
+  background: rgba(44,44,46,.90);
+  color: #fff;
   font-family: inherit;
 }
 
@@ -433,9 +426,9 @@ button:disabled {
 
 /* Outline (cancel / back) */
 .btn-outline {
-  background: #f2f2f7;
-  color: #333;
-  border: 1px solid #ddd;
+  background: rgba(44,44,46,.90);
+  color: #f5f5f7;
+  border: 1px solid rgba(255,255,255,.08);
 }
 
 /* Danger (logout / destructive) */
@@ -504,7 +497,8 @@ button:disabled {
   #orderPreview {
     width: 360px;
     padding: 16px;
-    background: #fff;
+    background: #1c1c1e;
+    color: #f5f5f7;
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     display: none;
   }
@@ -546,18 +540,18 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255,255,255,.45);
+  border: 1px solid rgba(255,255,255,.10);
   position: relative;
   overflow: hidden;
 
   /* ✅ Match filter/menu: Apple-nimble glass */
-  background: rgba(255,255,255,.55);
+  background: rgba(28,28,30,.72);
   backdrop-filter: blur(16px) saturate(170%);
   -webkit-backdrop-filter: blur(16px) saturate(170%);
 
   box-shadow: var(--shadow-control);
   cursor: pointer;
-  color: rgba(17,17,17,.92); /* svg uses currentColor */
+  color: rgba(255,255,255,.92);
   -webkit-tap-highlight-color: transparent;
 
   transition:
@@ -610,8 +604,8 @@ button:disabled {
    border-radius: 12px;
    border: 0;
 
-   background: rgba(255,255,255,.85);
-   color: #111;    /* ✅ อ่านชัดใน light mode */
+   background: rgba(44,44,46,.90);
+   color: #fff;
    backdrop-filter: blur(14px);
 
   pointer-events: none;
@@ -635,7 +629,7 @@ button:disabled {
   width: min(220px, calc(100vw - 200px)); /* 🔴 ลด/ยืดตามจอ ไม่ดัน filter+menu */
   margin-left: 8px;
   padding: 8px 12px;
-  border: 1px solid rgba(0,0,0,.12);
+  border: 1px solid rgba(255,255,255,.08);
 }
 
 /* 🔹 subtle focus glow (iOS feel) */
@@ -670,11 +664,11 @@ button:disabled {
    overflow: hidden;            /* ✅ clip highlight rim */
    
    /* ✅ Apple-nimble glass (less "3D") */
-  background: rgba(255,255,255,.55);
+  background: rgba(28,28,30,.72);
   backdrop-filter: blur(16px) saturate(170%);
   -webkit-backdrop-filter: blur(16px) saturate(170%);
    cursor:pointer;
-   color: rgba(17,17,17,.92);
+   color: rgba(255,255,255,.92);
    display:flex;
    align-items:center;
    justify-content:center;
@@ -685,7 +679,7 @@ button:disabled {
      box-shadow var(--dur-tap) ease;
 
    /* ✅ Token shadow (unified depth) */
-  border: 1px solid rgba(255,255,255,.45);
+  border: 1px solid rgba(255,255,255,.10);
   box-shadow: var(--shadow-control);
  }
 
@@ -739,12 +733,12 @@ button:disabled {
    padding:10px;
    border-radius:18px;
    /* 🔴 CHANGED: เพิ่ม contrast + ขอบ + แยกชั้นให้ชัด */
-   background: rgba(255,255,255,.92);
+   background: rgba(44,44,46,.96);
    backdrop-filter: blur(26px) saturate(180%);
    -webkit-backdrop-filter: blur(26px) saturate(180%);
-   border: 1px solid rgba(0,0,0,.08);
+   border: 1px solid rgba(255,255,255,.12);
    box-shadow: var(--shadow-floating);
-   color: rgba(17,17,17,.92);
+   color: rgba(245,245,247,.92);
    display:none;
    flex-direction:column;
    gap:6px;
@@ -758,7 +752,7 @@ button:disabled {
    border-radius: 12px;
    font-size: 14px;
    font-weight: 600;
-   color: rgba(17,17,17,.88);
+   color: rgba(245,245,247,.92);
    cursor: pointer;
    user-select: none;
    transition: background .16s ease, transform .16s ease;
@@ -766,17 +760,17 @@ button:disabled {
 
  /* 🔴 CHANGED: เส้นแบ่งแบบ iOS (ช่วยแยก item ไม่ให้กลืน) */
  .filter-item + .filter-item{
-   border-top: 1px solid rgba(0,0,0,.06);
+   border-top: 1px solid rgba(255,255,255,.08);
  }
 
  /* 🔴 CHANGED: hover/active ให้รู้ว่ากดได้ */
  @media (hover:hover){
    .filter-item:hover{
-     background: rgba(0,0,0,.06);
+     background: rgba(255,255,255,.10);
    }
  }
  .filter-item:active{
-   background: rgba(0,0,0,.10);
+   background: rgba(255,255,255,.14);
    transform: scale(.985);
  } 
   
@@ -790,13 +784,13 @@ button:disabled {
   overflow: hidden;
 
   /* ✅ Match filter-btn: Apple-nimble glass (less 3D) */
-  background: rgba(255,255,255,.55);
+  background: rgba(28,28,30,.72);
   backdrop-filter: blur(16px) saturate(170%);
   -webkit-backdrop-filter: blur(16px) saturate(170%);
-  border: 1px solid rgba(255,255,255,.45);
+  border: 1px solid rgba(255,255,255,.10);
   box-shadow: var(--shadow-control);
 
-  color: rgba(17,17,17,.92); /* ✅ correct in light */
+  color: rgba(255,255,255,.92);
   cursor:pointer;
 
   display:flex;
@@ -846,24 +840,11 @@ button:disabled {
   }
 }
   
-@media (prefers-color-scheme: dark){
-  .menu-btn{
-    background:
-      radial-gradient(120% 120% at 30% 25%,
-        rgba(255,255,255,.18) 0%,
-        rgba(44,44,46,.62) 45%,
-        rgba(0,0,0,.28) 100%);
-    color: rgba(255,255,255,.92);
-    border: 1px solid rgba(255,255,255,.14);
-    box-shadow: var(--shadow-control);
-  }
-  .menu-btn::before{ opacity: .55; }
-}
   /* ================= PRODUCT CARD (HORIZONTAL) ================= */
 .product-card {
   display: flex;
   gap: 12px;
-  background: rgba(255,255,255,.72);
+  background: rgba(28,28,30,.72);
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
   border-radius: 16px;
@@ -888,7 +869,7 @@ button:disabled {
   height: 80px;
   border-radius: 12px;
   object-fit: cover;
-  background: #f0f0f0;
+  background: #1c1c1e;
   flex-shrink: 0;
 }
 
@@ -906,7 +887,7 @@ button:disabled {
 
 .product-card .sku {
   font-size: 12px;
-  color: #888;
+  color: rgba(235,235,245,.60);
 }
 
 .product-card .price {
@@ -920,7 +901,7 @@ button:disabled {
   gap: 10px;
   align-items: center;
   font-size: 13px;
-  color: #555;
+  color: rgba(235,235,245,.72);
 }
 
 .product-card:active {
@@ -951,14 +932,15 @@ button:disabled {
 }
 
 .product-info-block {
-  background: rgba(255,255,255,.72);
+  background: rgba(28,28,30,.72);
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
   border-radius: 14px;
   padding: 14px;
 
   /* ✅ iOS readability */
-  color: rgba(17,17,17,.92);
+  color: rgba(255,255,255,.92);
+  border: 1px solid rgba(255,255,255,.08);
   font-size: 15px;
   line-height: 1.58;
   letter-spacing: .1px;
@@ -983,7 +965,7 @@ button:disabled {
 }
 
 .product-info-block a{
-  color: #007aff;
+  color: #4da3ff;
   text-decoration: none;
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -991,17 +973,6 @@ button:disabled {
 
 .product-info-block a:active{
   opacity: .75;
-}
-
-@media (prefers-color-scheme: dark){
-  .product-info-block{
-    background: rgba(28,28,30,.72);
-    color: rgba(255,255,255,.92);
-    border: 1px solid rgba(255,255,255,.08);
-  }
-  .product-info-block a{
-    color: #4da3ff;
-  }
 }
 
 /* คงของเดิม */
@@ -1035,8 +1006,8 @@ button:disabled {
 
 /* อยู่โกดังไทย */
 .status.warehouse {
-  background: #eef3ff;
-  color: #3b6cff;
+  background: rgba(90,140,255,.18);
+  color: #8fb2ff;
 }
 
 /* หมด */
@@ -1079,7 +1050,7 @@ button:disabled {
    /* ✅ ลดลงอีกนิด กำลังพอดี */
   height: 100vh;
 
-  background: rgba(255,255,255,.82);
+  background: rgba(28,28,30,.82);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   box-shadow: var(--shadow-side);
@@ -1110,7 +1081,7 @@ button:disabled {
 .loading {
   text-align: center;
   padding: 32px 16px;
-  color: #666;
+  color: rgba(235,235,245,.72);
   font-size: 14px;
 }
 
@@ -1155,28 +1126,28 @@ textarea {
 
 /* สีตามประเภท */
 .tag-in {
-  background: #e6f9f0;
-  color: #1e9c6a;
+  background: rgba(52,199,89,.16);
+  color: #7ee2a0;
 }
 
 .tag-out {
-  background: #fdecec;
-  color: #d93025;
+  background: rgba(255,59,48,.16);
+  color: #ff8a84;
 }
 
 .tag-create {
-  background: #eef3ff;
-  color: #3b6cff;
+  background: rgba(90,140,255,.18);
+  color: #8fb2ff;
 }
 
 .tag-adjust {
-  background: #fff4e5;
-  color: #e37400;
+  background: rgba(255,159,10,.16);
+  color: #ffbf66;
 }
 
 .tag-cancel {
-  background: #f1f1f1;
-  color: #666;
+  background: rgba(142,142,147,.18);
+  color: rgba(235,235,245,.78);
 }
 
 /* ===== ADMIN LOGIN TWEAK ===== */
@@ -1189,15 +1160,15 @@ textarea {
 .form-group select,
 #adminLoginSheet input,
 #adminLoginSheet select {
-  background: #f9f9fb;
-  border: 1px solid #e5e5ea;
+  background: rgba(44,44,46,.90);
+  border: 1px solid rgba(255,255,255,.08);
   box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
-  color: #111; /* 🔴 FIX: บังคับ text ให้มองเห็นแน่นอน */
+  color: #fff;
 }
 
 .form-group input:focus,
 #adminLoginSheet input:focus {
-  background: #fff;
+  background: rgba(44,44,46,.96);
   border-color: #007aff;
   box-shadow:
     0 0 0 2px rgba(0,122,255,.15),
@@ -1275,7 +1246,7 @@ textarea {
 }
 
 .loading-box {
-  background: rgba(255,255,255,.85);
+  background: rgba(28,28,30,.88);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   padding: 20px 24px;
@@ -1292,7 +1263,7 @@ textarea {
 .skeleton-card{
   height:104px;
   border-radius:16px;
-  background: rgba(255,255,255,.72);
+  background: rgba(28,28,30,.72);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   box-shadow: var(--shadow-card);
@@ -1306,7 +1277,7 @@ textarea {
   background:
     linear-gradient(90deg,
       rgba(255,255,255,0) 0%,
-      rgba(255,255,255,.55) 45%,
+      rgba(255,255,255,.16) 45%,
       rgba(255,255,255,0) 90%);
   transform: translateX(-120%);
   animation: shimmer 1.15s infinite;
@@ -1318,13 +1289,13 @@ textarea {
 }
 .skeleton-thumb{
   width:80px;height:80px;border-radius:12px;
-  background: rgba(0,0,0,.06);
+  background: rgba(255,255,255,.08);
   flex-shrink:0;
 }
 .skeleton-lines{flex:1;display:flex;flex-direction:column;gap:10px;padding-top:6px;}
 .skeleton-line{
   height:12px;border-radius:999px;
-  background: rgba(0,0,0,.06);
+  background: rgba(255,255,255,.08);
 }
 .skeleton-line.w70{width:70%}
 .skeleton-line.w45{width:45%}
@@ -1333,27 +1304,12 @@ textarea {
 @keyframes shimmer{
   to { transform: translateX(120%); }
 }
-
-@media (prefers-color-scheme: dark){
-  .skeleton-card{
-    background: rgba(28,28,30,.72);
-  }
-  .skeleton-thumb,
-  .skeleton-line{
-    background: rgba(255,255,255,.08);
-  }
-  .skeleton-card::before{
-    background: linear-gradient(90deg,
-      rgba(255,255,255,0) 0%,
-      rgba(255,255,255,.16) 45%,
-      rgba(255,255,255,0) 90%);
-  }
-}  
+  
 .spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid #ddd;
-  border-top-color: #555;
+  border: 3px solid rgba(255,255,255,.18);
+  border-top-color: rgba(255,255,255,.82);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 12px;
@@ -1380,9 +1336,9 @@ textarea {
    font-weight: 600;
 
    border-radius: 16px;
-   border: 1px solid rgba(0,0,0,.08);
-
-   background: rgba(255,255,255,.9);
+   border: 1px solid rgba(255,255,255,.08);
+   background: rgba(44,44,46,.90);
+   color: #fff;
    backdrop-filter: blur(6px);
 
    box-shadow:
@@ -1552,7 +1508,7 @@ textarea {
 }
 
 .product-sku {
-   color: #888;
+   color: rgba(235,235,245,.60);
    font-size: 13px;
    margin-bottom: 8px;
  }
@@ -1576,7 +1532,7 @@ textarea {
   border-radius: 14px;
   margin: 12px 0;
 
-  background: #f0f0f0;
+  background: rgba(44,44,46,.80);
 }
 
 /* 📝 หมายเหตุสินค้า (Note) */
@@ -1586,11 +1542,9 @@ textarea {
 
   font-size: 14px;
   line-height: 1.45;
-  color: #555;
-
-  background: #f9f9fb;
-  border-radius: 12px;
-  border: 1px dashed rgba(0,0,0,.12);
+  color: rgba(235,235,245,.78);
+  background: rgba(44,44,46,.80);
+  border: 1px dashed rgba(255,255,255,.08);
 }
 
 /* 🔹 Action Zone (ปุ่มล่างสุด) */
@@ -1602,7 +1556,7 @@ textarea {
 /* 🔧 ข้อความโหมดแอดมิน */
 .product-admin-hint {
   margin-top: 16px;
-  color: #888;
+  color: rgba(235,235,245,.72);
   font-size: 14px;
 }
 
@@ -1614,181 +1568,7 @@ textarea {
    opacity:.9;
    letter-spacing:.3px;
  }
-
- @media (prefers-color-scheme: dark){
-   .admin-motto{
-     color:#ff6b6b;
-   }
- }
   
- @media (prefers-color-scheme: dark) {
-   html, body {
-    background: #0f0f12;
-  }
-
-  :root{
-    --text-secondary: rgba(235,235,245,.75); /* 🔴 ชัดขึ้นใน dark */
-    /* STEP 2: dark shadow harmony */
-    --shadow-card:            0 10px 34px rgba(0,0,0,.65);
-    --shadow-control:         0 8px 22px rgba(0,0,0,.60);
-    --shadow-image:           0 6px 18px rgba(0,0,0,.65);
-    --shadow-header:          0 8px 32px rgba(0,0,0,.5);
-    --shadow-header-scrolled: 0 16px 42px rgba(0,0,0,.65);
-    --shadow-floating:        0 10px 34px rgba(0,0,0,.6);
-    --shadow-side:            -6px 0 24px rgba(0,0,0,.6);
-    --shadow-fab:             0 12px 34px rgba(0,0,0,.6);
-    /* keep pressed + canvas consistent in dark */
-    --shadow-card-pressed:    0 6px 18px rgba(0,0,0,.55);
-    --shadow-canvas-card:     var(--shadow-card);
-
-    /* legacy alias */
-    --shadow-float:           var(--shadow-floating);
-  }
-} 
-
-  /* 🔹 FLOATING BAR (DARK) */
-  #floatingBar{
-    background:rgba(28,28,30,.55);
-    color:#f5f5f7;
-
-    border:1px solid rgba(255,255,255,.08);
-
-    box-shadow:
-      var(--shadow-floating),
-      inset 0 1px 0 rgba(255,255,255,.08);
-  } 
-
-   .product-image {
-     background: rgba(44,44,46,.8);
-   }
-   
-   .product-card,
-   .card,
-   .sheet,
-   .side-menu,
-   .loading-box {
-     background: rgba(28,28,30,.72);
-     color: #f5f5f7;
-   }
-
-.filter-btn{
-    background:
-      radial-gradient(120% 120% at 30% 25%,
-        rgba(255,255,255,.18) 0%,
-        rgba(44,44,46,.62) 45%,
-        rgba(0,0,0,.28) 100%);
-    color: rgba(255,255,255,.92);
-    -webkit-backdrop-filter: blur(18px) saturate(180%);
-    border: 1px solid rgba(255,255,255,.14);
-    box-shadow:
-      0 12px 26px rgba(0,0,0,.55),
-      inset 0 1px 0 rgba(255,255,255,.12),
-      inset 0 -10px 18px rgba(0,0,0,.35);
-  }
-
-  /* ✅ ลด glare (highlight) ของแก้วในโหมดมืด */
-  .filter-btn::before{ opacity: .55; }
- } /* end @media (prefers-color-scheme: dark) */
-
-@media (prefers-color-scheme: dark){
-  .filter-dropdown{
-    /* 🔴 CHANGED: เพิ่ม contrast + ขอบให้ชัด */
-    background: rgba(44,44,46,.96);
-    color: rgba(245,245,247,.92);
-    border: 1px solid rgba(255,255,255,.12);
-  }
-
-  .filter-item:hover{
-    /* 🔴 CHANGED: hover ชัดขึ้น */
-    background: rgba(255,255,255,.10);
-  }
-
- 
-  /* 🔴 CHANGED: active ในโหมดมืด */
-  .filter-item:active{
-    background: rgba(255,255,255,.14);
-    transform: scale(.985);
-  }
-  
-  .search-btn {
-    background:
-      radial-gradient(120% 120% at 30% 25%,
-        rgba(255,255,255,.18) 0%,
-        rgba(44,44,46,.62) 45%,
-        rgba(0,0,0,.28) 100%);
-    color: rgba(255,255,255,.92);
-    border: 1px solid rgba(255,255,255,.14);
-    box-shadow: var(--shadow-control);
-  }
-
-  .search-input {
-    background: rgba(44,44,46,.9);
-    border: 1px solid rgba(255,255,255,.08);
-    color: #fff;
-  }
-  
-.product-note {
-    background: rgba(44,44,46,.8);
-    border: 1px dashed rgba(255,255,255,.08);
-    color: #ddd;
-  }
-
-  .product-info-block {
-    background: rgba(44,44,46,.75);
-  }
-
-  .qty-input input[type="number"] {
-    background: rgba(44,44,46,.9);
-    border: 1px solid rgba(255,255,255,.08);
-    color: #fff;
-  }
-
-  input,
-  select,
-  textarea {
-    background: rgba(44,44,46,.8);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,.08);
-  }
-} /* end @media (prefers-color-scheme: dark) */
-
- /* ================= DARK MODE LIQUID HEADER ================= */
-
-@media (prefers-color-scheme: dark){
-  .shop-title,
-  .admin-title{
-    
-    color: rgba(255,255,255,.92);
-    background:
-      radial-gradient(120% 120% at 30% 25%,
-        rgba(255,255,255,.18) 0%,
-        rgba(44,44,46,.62) 45%,
-        rgba(0,0,0,.28) 100%);
-    border: 1px solid rgba(255,255,255,.14);
-    box-shadow: var(--shadow-control);
-    text-shadow:
-      0 0 10px rgba(0,0,0,.70),
-      0 0 22px rgba(0,0,0,.45);
-  }
-  .shop-title::before,
-  .admin-title::before{ opacity: .55; }
- 
-  header{
-    background: rgba(28,28,30,.55);
-    border-bottom: 1px solid rgba(255,255,255,.06);
-
-    box-shadow:
-      var(--shadow-header),
-      inset 0 -1px 0 rgba(255,255,255,.06);
-  }
-
-  header.scrolled{
-    background: rgba(28,28,30,.75);
-    box-shadow:
-      var(--shadow-header-scrolled),
-      inset 0 -1px 0 rgba(255,255,255,.08);
-  }
-}
 /* ================= FLOATING BOTTOM BAR ================= */
 
 /* 🔴 CHANGED: Clean + deterministic cascade (กัน opacity สลับทิศ) */
@@ -1806,13 +1586,14 @@ textarea {
   align-items: center;
   border-radius: 18px;
 
-  background: rgba(255,255,255,.78);
+  background: rgba(28,28,30,.72);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255,255,255,.85);
+  border: 1px solid rgba(255,255,255,.12);
   box-shadow:
     var(--shadow-floating),
-    inset 0 1px 0 rgba(255,255,255,.85);
+    inset 0 1px 0 rgba(255,255,255,.10);
+  color: #f5f5f7;
 
   z-index: 999;
 
@@ -1834,18 +1615,12 @@ textarea {
 }
 #floatingBar .bar-subtext{
   font-size: 13px;
-  color: rgba(17,17,17,.80); /* ชัดกว่า .65 */
+  color: rgba(245,245,247,.82);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
 }
-
-@media (prefers-color-scheme: dark){
-  #floatingBar .bar-subtext{
-    color: rgba(245,245,247,.82);
-  }
-}  
 
 #floatingBar.bounce-in{
   animation: float-bounce .65s cubic-bezier(.34,1.56,.64,1);
@@ -1882,17 +1657,6 @@ textarea {
   transform: translateY(120%) !important;
   opacity: 0 !important;
   pointer-events: none !important;
-}
-
-@media (prefers-color-scheme: dark){
-  #floatingBar{
-    background: rgba(28,28,30,.72);
-    color: #f5f5f7;
-    border: 1px solid rgba(255,255,255,.12);
-    box-shadow:
-      var(--shadow-floating),
-      inset 0 1px 0 rgba(255,255,255,.10);
-  }
 }
   
 #floatingBar:active{
@@ -1965,14 +1729,14 @@ textarea {
   z-index: 46; /* ✅ สูงกว่า floatingBar (45) แต่ต่ำกว่า backdrop (100) */
 
   /* iOS glass */
-  background: rgba(255,255,255,.38);
+  background: rgba(28,28,30,.65);
   backdrop-filter: blur(22px) saturate(180%);
   -webkit-backdrop-filter: blur(22px) saturate(180%);
-  border: 1px solid rgba(255,255,255,.55);
+  border: 1px solid rgba(255,255,255,.08);
   box-shadow:
     var(--shadow-fab),
     inset 0 1px 0 rgba(255,255,255,.75);
-  color: #111;
+  color: #fff;
   font-size: 18px;
   font-weight: 700;
 
@@ -1989,14 +1753,6 @@ textarea {
 .btnTop:active{
   transform: translateX(-50%) translateY(1px) scale(.97);
 }
-
-@media (prefers-color-scheme: dark){
-  .btnTop{
-    background: rgba(28,28,30,.65);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,.08);
-  }
-} 
 
 /* ================= CONTINUE MODE (ADMIN ADD PRODUCT) ================= */
 /* 🔴 FIX: กันข้อความ "เพิ่มต่อเนื่อง..." ชิดขอบ/ไม่ wrap ในมือถือ */
