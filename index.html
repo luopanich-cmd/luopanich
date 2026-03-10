@@ -4843,14 +4843,20 @@ function openProductEdit(p){
   // 🔒 A6 guard: ป้องกัน admin UI leak ตอนอยู่ Viewer
   if (state.mode !== "admin" || !state.admin?.loggedIn || !state.admin?.token) return;
 
+  // 🔴 CHANGED: ใช้ object ล่าสุดจาก state.products ก่อนเสมอ
+  const latestProduct =
+    state.products.find(x => x.productId === p?.productId) || p;
+
   // 🔴 CHANGED: debug ตอนเปิดฟอร์มแก้ไข
   console.log("openProductEdit p =", p);
   console.log("openProductEdit p.costPrice =", p?.costPrice);
+  console.log("openProductEdit latestProduct =", latestProduct);
+  console.log("openProductEdit latestProduct.costPrice =", latestProduct?.costPrice);
   console.log("state.selectedProduct in openProductEdit =", state.selectedProduct);
   console.log("state.selectedProduct.costPrice in openProductEdit =", state.selectedProduct?.costPrice);
 
-  state.selectedProduct = p;
-  state.compareImagesDraft = (p.compareImages || "")
+  state.selectedProduct = latestProduct;
+  state.compareImagesDraft = (latestProduct.compareImages || "")
     .split(",")
     .map(s => s.trim())
     .filter(Boolean);
@@ -4860,42 +4866,42 @@ function openProductEdit(p){
 
     <div class="form-group">
       <label>รหัสสินค้า (SKU)</label>
-      <input id="editProductId" value="${p.productId}">
+      <input id="editProductId" value="${latestProduct.productId}">
     </div>
 
     <div class="form-group">
       <label>ชื่อสินค้า</label>
-      <input id="editName" value="${p.name}">
+      <input id="editName" value="${latestProduct.name}">
     </div>
 
     <div class="form-group">
       <label>ราคาขาย</label>
-      <input id="editPrice" type="number" value="${p.price}">
+      <input id="editPrice" type="number" value="${latestProduct.price}">
     </div>
     
     <div class="form-group">
       <label>ราคาต้นทุน</label>
-      <input id="editCostPrice" type="number" value="${p.costPrice ?? ""}">
+      <input id="editCostPrice" type="number" value="${latestProduct.costPrice ?? ""}">
     </div>
 
     <div class="form-group">
       <label>จำนวน</label>
-      <input id="editStock" type="number" value="${p.stock}">
+      <input id="editStock" type="number" value="${latestProduct.stock}">
     </div>
 
     <div class="form-group">
       <label>สถานะสินค้า</label>
       <select id="editStatus">
-        <option value="ready" ${p.status === "ready" ? "selected" : ""}>
+        <option value="ready" ${latestProduct.status === "ready" ? "selected" : ""}>
           พร้อมส่ง
         </option>
-        <option value="shipping" ${p.status === "shipping" ? "selected" : ""}>
+        <option value="shipping" ${latestProduct.status === "shipping" ? "selected" : ""}>
           อยู่ระหว่างจัดส่ง
         </option>
-        <option value="warehouse" ${p.status === "warehouse" ? "selected" : ""}>
+        <option value="warehouse" ${latestProduct.status === "warehouse" ? "selected" : ""}>
           อยู่โกดังไทย
         </option>
-        <option value="out" ${p.status === "out" ? "selected" : ""}>
+        <option value="out" ${latestProduct.status === "out" ? "selected" : ""}>
           หมด
         </option>
       </select>
