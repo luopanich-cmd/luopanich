@@ -4351,8 +4351,10 @@ async function submitStockAdjust(){
     // ✅ ปิด Stock Action ผ่าน Overlay Manager
     closeOverlay(adminStockActionSheet);
 
-    // ✅ กลับไปหน้าเมนูจัดการสินค้า (flow ต่อเนื่องถูกต้อง)
-    openAdminProductAction(state.selectedProduct);
+    // 🔴 CHANGED: หลัง refresh ต้อง lookup object ล่าสุดก่อน
+    openAdminProductAction(
+      state.products.find(x => x.productId === state.selectedProduct?.productId)
+    );
 
   } catch (err) {
     console.error(err);
