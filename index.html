@@ -1949,6 +1949,50 @@ function loadCart() {
 function clearCartStorage() {
   localStorage.removeItem(CART_KEY);
 }  
+
+/* ================= SKU AUTO RUN UTILITY ================= */
+// 🔴 ADDED: หา SKU ถัดไปจาก state.products เช่น A001 -> A002
+function getNextProductId(currentValue = "") {
+  const raw = String(currentValue || "").trim().toUpperCase();
+
+  // ใช้ prefix จากค่าปัจจุบันก่อน เช่น A001 => A
+  // ถ้าไม่มี ให้ fallback จากสินค้าที่มีอยู่ หรือใช้ "A"
+  let prefix = "";
+  const currentMatch = raw.match(/^([A-Z]+)(\d+)$/);
+  if (currentMatch) {
+    prefix = currentMatch[1];
+  }
+
+  const productIds = Array.isArray(state.products)
+    ? state.products
+        .map(p => String(p.productId || "").trim().toUpperCase())
+        .filter(Boolean)
+    : [];
+
+  if (!prefix) {
+    const lastMatch = [...productIds]
+      .reverse()
+      .map(id => id.match(/^([A-Z]+)(\d+)$/))
+      .find(Boolean);
+
+    prefix = lastMatch ? lastMatch[1] : "A";
+  }
+
+  const samePrefixMatches = productIds
+    .map(id => id.match(/^([A-Z]+)(\d+)$/))
+    .filter(match => match && match[1] === prefix);
+
+  let maxNum = 0;
+  samePrefixMatches.forEach(match => {
+    const num = Number(match[2]);
+    if (Number.isFinite(num) && num > maxNum) {
+      maxNum = num;
+    }
+  });
+
+  const nextNum = maxNum + 1;
+  return `${prefix}${String(nextNum).padStart(3, "0")}`;
+}
   
   /* ===== Feedback & Loading Utilities ===== */
 function updateLoadingText(message){
@@ -4510,8 +4554,9 @@ function openAddProduct(force = false){
   const draft = state.smartAddDraft || {};
   // 🔒 guard: กัน textarea ปิดแท็กเอง (DOM แตก)
   const safeNote = String(draft.note || "").replace(/<\/textarea>/gi, "");
-
-
+  // 🔴 ADDED: สร้าง SKU ถัดไปอัตโนมัติจาก state.products
+  const nextProductId = getNextProductId();
+ 
   adminAddProductSheet.innerHTML = `
     <h3>➕ เพิ่มสินค้าใหม่</h3>
 
@@ -4521,7 +4566,7 @@ function openAddProduct(force = false){
 
     <div class="form-group">
       <label>รหัสสินค้า (SKU)</label>
-      <input id="addProductId" placeholder="เช่น P002">
+      <input id="addProductId" value="${nextProductId}" placeholder="เช่น P002">
     </div>
 
     <div class="form-group">
@@ -5484,9 +5529,14 @@ async function submitAddProduct(btn){
  await refreshProducts();
 
  if (continueMode) {
-   // 🔁 ยิงรัว: ล้างเฉพาะ SKU + รูป
-   document.getElementById("addProductId").value = "";
+   // 🔴 CHANGED: คำนวณ SKU ถัดไปจาก state.products หลัง refreshProducts() แล้ว
+   const nextProductId = getNextProductId(productId);
+
+   document.getElementById("addProductId").value = nextProductId;
+   document.getElementById("addName").value = "";
    document.getElementById("addStock").value = state.smartAddDraft.stock ?? "";
+   document.getElementById("addStatus").value = state.smartAddDraft.status ?? "ready";
+   document.getElementById("addNote").value = state.smartAddDraft.note ?? "";
 
    const img = document.getElementById("addImagePreview");
    if (img) {
@@ -5494,7 +5544,9 @@ async function submitAddProduct(btn){
      img.style.display = "none";
    }
 
+   state.addImageFile = null;
    document.getElementById("addProductId").focus();
+   document.getElementById("addProductId").select();
  } else {
    closeAddProduct();
  }
