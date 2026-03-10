@@ -3385,12 +3385,19 @@ function openAdminEntry(){
   renderAdminLogin();
 }
 
-function enterAdmin(){
+async function enterAdmin(){
   state.mode = "admin";
   state.search = ""; // ✅ reset
   state.viewerSearchOpen = false;
+
+  // 🔴 CHANGED: render โครงก่อน เพื่อให้ header/admin mode ถูกต้อง
   renderHeader();
-  renderProducts();
+
+  // 🔴 CHANGED: ล้าง selection เก่าจาก viewer/admin รอบก่อน
+  state.selectedProduct = null;
+
+  // 🔴 CHANGED: ต้องโหลด admin products ให้เสร็จก่อน
+  await refreshProducts();
 }
 
 // ✅ STEP 1: UI-only mode switch (ไม่ยุ่ง session/token)
@@ -3801,7 +3808,7 @@ async function handleAdminLogin(btn){
     state.ui.backdropLocked = false;
 
     // 🚀 ENTER ADMIN MODE
-    enterAdmin();
+    await enterAdmin();
 
   } catch (err) {
     console.error(err);
