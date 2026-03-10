@@ -4786,6 +4786,12 @@ function openProductEdit(p){
   // 🔒 A6 guard: ป้องกัน admin UI leak ตอนอยู่ Viewer
   if (state.mode !== "admin" || !state.admin?.loggedIn || !state.admin?.token) return;
 
+  // 🔴 CHANGED: debug ตอนเปิดฟอร์มแก้ไข
+  console.log("openProductEdit p =", p);
+  console.log("openProductEdit p.costPrice =", p?.costPrice);
+  console.log("state.selectedProduct in openProductEdit =", state.selectedProduct);
+  console.log("state.selectedProduct.costPrice in openProductEdit =", state.selectedProduct?.costPrice);
+
   state.selectedProduct = p;
   state.compareImagesDraft = (p.compareImages || "")
     .split(",")
@@ -5501,7 +5507,15 @@ function openAdminProductAction(p){
   // 🔒 guard
   if (state.mode !== "admin") return;
 
+  // 🔴 CHANGED: debug ก่อนเก็บ selectedProduct
+  console.log("openAdminProductAction p =", p);
+  console.log("openAdminProductAction p.costPrice =", p?.costPrice);
+
   state.selectedProduct = p;
+
+  // 🔴 CHANGED: debug หลังเก็บ selectedProduct
+  console.log("state.selectedProduct after set =", state.selectedProduct);
+  console.log("state.selectedProduct.costPrice after set =", state.selectedProduct?.costPrice);
 
   adminProductActionSheet.innerHTML = `
     <h3>จัดการสินค้า</h3>
