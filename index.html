@@ -4803,7 +4803,7 @@ function openProductEdit(p){
     
     <div class="form-group">
       <label>ราคาต้นทุน</label>
-      <input id="editCostPrice" type="number" value="${Number(p.costPrice) || 0}">
+      <input id="editCostPrice" type="number" value="${p.costPrice ?? ""}">
     </div>
 
     <div class="form-group">
