@@ -5018,6 +5018,17 @@ function openProductEdit(p){
   openOverlay(adminProductEditSheet); // ✅ ใช้ Overlay Manager
 }
 
+// 🔴 FIX: เปิดหน้าแก้ไขสินค้าโดยใช้ productId (กัน stale object)
+function openProductEditById(productId){
+  const p = state.products.find(x => x.productId === productId);
+  if(!p){
+    console.warn("Product not found:", productId);
+    return;
+  }
+
+  openProductEdit(p);
+} 
+
 function removeCompareImage(index){
   if (!Array.isArray(state.compareImagesDraft)) return;
 
@@ -5603,7 +5614,7 @@ function openAdminProductAction(p){
       style="width:100%;margin-bottom:10px"
       onclick="
         closeAdminProductAction();
-        openProductEdit(state.selectedProduct);
+        openProductEditById('${p.productId}');
       ">
       ✏️ แก้ไขข้อมูลสินค้า
     </button>
