@@ -5144,7 +5144,8 @@ async function submitProductEdit(){
 
   const name   = document.getElementById("editName").value.trim();
   const price  = Number(document.getElementById("editPrice").value);
-  const costPrice = Number(document.getElementById("editCostPrice").value);
+  const rawCostPrice = document.getElementById("editCostPrice").value.trim();
+  const costPrice = rawCostPrice === "" ? null : Number(rawCostPrice);
   const stock  = Number(document.getElementById("editStock").value);
   const status = document.getElementById("editStatus").value;
   const newProductId = document.getElementById("editProductId").value.trim();
@@ -5163,6 +5164,7 @@ async function submitProductEdit(){
    !name ||
    !newProductId ||
    !Number.isFinite(price) ||
+   costPrice === null ||
    !Number.isFinite(costPrice) ||
    !Number.isFinite(stock) ||
    price < 0 ||
@@ -5368,7 +5370,8 @@ async function submitAddProduct(btn){
     const productId = document.getElementById("addProductId").value.trim();
     const name      = document.getElementById("addName").value.trim();
     const price     = Number(document.getElementById("addPrice").value);
-    const costPrice = Number(document.getElementById("addCostPrice").value);
+    const rawCostPrice = document.getElementById("addCostPrice").value.trim();
+    const costPrice = rawCostPrice === "" ? null : Number(rawCostPrice);
     const stock     = Number(document.getElementById("addStock").value);
  let status      = document.getElementById("addStatus").value;
  const note      = document.getElementById("addNote")?.value.trim() || "";
@@ -5388,7 +5391,7 @@ async function submitAddProduct(btn){
       throw new Error("กรุณากรอกชื่อสินค้า");
     }
 
-    if (!Number.isInteger(price) || !Number.isInteger(costPrice) || !Number.isInteger(stock)) {
+    if (!Number.isInteger(price) || costPrice === null || !Number.isInteger(costPrice) || !Number.isInteger(stock)) {
       throw new Error("ราคา ราคาต้นทุน และจำนวน ต้องเป็นตัวเลขจำนวนเต็ม");
     }
 
