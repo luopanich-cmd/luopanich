@@ -2173,10 +2173,20 @@ async function refreshProducts() {
   }
 
   try {
-    const list = state.mode === "admin"
+    const list = state.admin?.token
       ? await fetchAdminProducts()
       : await fetchProducts();
+
+    console.log("refreshProducts list[BN006] =",
+      list.find(x => x.productId === "BN006")
+    );
+   
     state.products = sortProducts(list);
+
+    console.log("state.products[BN006] =",
+      state.products.find(x => x.productId === "BN006")
+    );
+   
     renderProducts();
   } catch (err) {
     console.error("refreshProducts failed:", err);
