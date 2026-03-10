@@ -2165,14 +2165,6 @@ const fetchAdminProducts = async () => {
   );
 
   const json = await res.json();
-  // 🔴 CHANGED: debug response หลัง refresh
-  console.log("adminProducts raw response =", json);
-  console.log(
-    "BN006 from API =",
-    Array.isArray(json.data)
-      ? json.data.find(x => x.productId === "BN006")
-      : null
-  );
  
   if (!json || json.success !== true || !Array.isArray(json.data)) {
     throw new Error(json?.error || "โหลดสินค้าแอดมินไม่สำเร็จ");
@@ -2220,16 +2212,8 @@ async function refreshProducts() {
     const list = state.admin?.token
       ? await fetchAdminProducts()
       : await fetchProducts();
-
-    console.log("refreshProducts list[BN006] =",
-      list.find(x => x.productId === "BN006")
-    );
    
     state.products = sortProducts(list);
-
-    console.log("state.products[BN006] =",
-      state.products.find(x => x.productId === "BN006")
-    );
    
     renderProducts();
   } catch (err) {
@@ -4854,14 +4838,6 @@ function openProductEdit(p){
   const latestProduct =
     state.products.find(x => x.productId === p?.productId) || p;
 
-  // 🔴 CHANGED: debug ตอนเปิดฟอร์มแก้ไข
-  console.log("openProductEdit p =", p);
-  console.log("openProductEdit p.costPrice =", p?.costPrice);
-  console.log("openProductEdit latestProduct =", latestProduct);
-  console.log("openProductEdit latestProduct.costPrice =", latestProduct?.costPrice);
-  console.log("state.selectedProduct in openProductEdit =", state.selectedProduct);
-  console.log("state.selectedProduct.costPrice in openProductEdit =", state.selectedProduct?.costPrice);
-
   state.selectedProduct = latestProduct;
   state.compareImagesDraft = (latestProduct.compareImages || "")
     .split(",")
@@ -5595,15 +5571,7 @@ function openAdminProductAction(p){
   // 🔒 guard
   if (state.mode !== "admin") return;
 
-  // 🔴 CHANGED: debug ก่อนเก็บ selectedProduct
-  console.log("openAdminProductAction p =", p);
-  console.log("openAdminProductAction p.costPrice =", p?.costPrice);
-
   state.selectedProduct = p;
-
-  // 🔴 CHANGED: debug หลังเก็บ selectedProduct
-  console.log("state.selectedProduct after set =", state.selectedProduct);
-  console.log("state.selectedProduct.costPrice after set =", state.selectedProduct?.costPrice);
 
   adminProductActionSheet.innerHTML = `
     <h3>จัดการสินค้า</h3>
