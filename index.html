@@ -5521,8 +5521,9 @@ async function submitAddProduct(btn){
     showToast("เพิ่มสินค้าเรียบร้อย 🎉", "success");
 
     state.addImageFile = null;
- // 🧠 SMART MODE SAVE (จำค่าล่าสุดเสมอ)
+// 🧠 SMART MODE SAVE (จำค่าล่าสุดเสมอ)
  state.smartAddDraft = {
+   name,   // 🔴 CHANGED: จำชื่อสินค้าไว้สำหรับโหมดเพิ่มต่อเนื่อง
    price,
    stock,
    status,
@@ -5535,7 +5536,7 @@ async function submitAddProduct(btn){
    const nextProductId = getNextProductId(productId);
 
    document.getElementById("addProductId").value = nextProductId;
-   document.getElementById("addName").value = "";
+   document.getElementById("addName").value = state.smartAddDraft.name ?? ""; // 🔴 CHANGED: คงชื่อสินค้าเดิมไว้
    document.getElementById("addStock").value = state.smartAddDraft.stock ?? "";
    document.getElementById("addStatus").value = state.smartAddDraft.status ?? "ready";
    document.getElementById("addNote").value = state.smartAddDraft.note ?? "";
