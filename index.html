@@ -2121,6 +2121,15 @@ const fetchAdminProducts = async () => {
   );
 
   const json = await res.json();
+  // 🔴 CHANGED: debug response หลัง refresh
+  console.log("adminProducts raw response =", json);
+  console.log(
+    "BN006 from API =",
+    Array.isArray(json.data)
+      ? json.data.find(x => x.productId === "BN006")
+      : null
+  );
+ 
   if (!json || json.success !== true || !Array.isArray(json.data)) {
     throw new Error(json?.error || "โหลดสินค้าแอดมินไม่สำเร็จ");
   }
