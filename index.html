@@ -1860,7 +1860,9 @@ Object.assign(window, {
   adminProductActionSheet,
   adminProductEditSheet,
   adminStockActionSheet,
-  adminAddProductSheet
+  adminAddProductSheet,
+  openChangePasswordSheet,
+  submitChangePassword
 });
 
 // 🔒 Intent guards (STEP 2)
@@ -3716,6 +3718,105 @@ function renderAdminLogin(){
   openOverlay(adminLoginSheet);
 }
 
+function openChangePasswordSheet(){
+  if (
+    state.mode !== "admin" ||
+    !state.admin.loggedIn ||
+    !state.admin.token ||
+    isAdminSessionExpired()
+  ) {
+    alert("Session หมดอายุ กรุณา login ใหม่");
+    exitAdmin();
+    return;
+  }
+
+  adminLoginSheet.innerHTML = `
+    <h3>เปลี่ยนรหัสผ่าน</h3>
+
+    <div class="form-group">
+      <label>รหัสผ่านปัจจุบัน</label>
+      <input id="currentPassword" type="password" placeholder="รหัสผ่านปัจจุบัน">
+    </div>
+
+    <div class="form-group">
+      <label>รหัสผ่านใหม่</label>
+      <input id="newPassword" type="password" placeholder="รหัสผ่านใหม่">
+    </div>
+
+    <div class="form-group">
+      <label>ยืนยันรหัสผ่านใหม่</label>
+      <input id="confirmNewPassword" type="password" placeholder="ยืนยันรหัสผ่านใหม่">
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;margin-top:12px"
+      onclick="submitChangePassword(this)">
+      บันทึกรหัสผ่านใหม่
+    </button>
+
+    <button class="btn btn-outline" style="width:100%;margin-top:8px"
+      onclick="closeOverlay(adminLoginSheet)">
+      ยกเลิก
+    </button>
+  `;
+
+  openOverlay(adminLoginSheet);
+}
+
+async function submitChangePassword(btn){
+  if (state.admin.isSubmitting) return;
+
+  const currentPassword = document.getElementById("currentPassword")?.value || "";
+  const newPassword = document.getElementById("newPassword")?.value || "";
+  const confirmNewPassword = document.getElementById("confirmNewPassword")?.value || "";
+
+  if (!currentPassword || !newPassword || !confirmNewPassword) {
+    alert("กรุณากรอกข้อมูลให้ครบ");
+    return;
+  }
+
+  if (newPassword !== confirmNewPassword) {
+    alert("รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน");
+    return;
+  }
+
+  if (newPassword.length < 4) {
+    alert("รหัสผ่านใหม่สั้นเกินไป");
+    return;
+  }
+
+  state.admin.isSubmitting = true;
+  if (btn) btn.disabled = true;
+
+  try {
+    const form = new URLSearchParams();
+    form.append("action", "changePassword");
+    form.append("token", state.admin.token);
+    form.append("currentPassword", currentPassword);
+    form.append("newPassword", newPassword);
+
+    const res = await fetch(API_URL, {
+      method: "POST",
+      body: form
+    });
+
+    const json = await res.json();
+
+    if (!json.success) {
+      throw new Error(json.error || json.message || "เปลี่ยนรหัสผ่านไม่สำเร็จ");
+    }
+
+    alert("เปลี่ยนรหัสผ่านสำเร็จ กรุณาเข้าสู่ระบบใหม่");
+    exitAdmin();
+
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "เปลี่ยนรหัสผ่านไม่สำเร็จ");
+  } finally {
+    state.admin.isSubmitting = false;
+    if (btn) btn.disabled = false;
+  }
+}
+ 
 // 🔒 RATE LIMIT STUB (กัน ReferenceError)
 function isLoginRateLimited() {
   return false;
@@ -4483,6 +4584,11 @@ function openMainMenu(){
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); handleOpenAddProduct();">
                   ➕ เพิ่มสินค้าใหม่
+                </button>
+                
+                <button class="btn btn-secondary"
+                  onclick="closeMainMenu(); openChangePasswordSheet();">
+                  🔐 เปลี่ยนรหัสผ่าน
                 </button>
               `
             : `
