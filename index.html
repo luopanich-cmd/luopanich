@@ -1,4 +1,4 @@
- <!DOCTYPE html> 
+ <!DOCTYPE html>  
  <html lang="en">
  <head>
  <meta charset="UTF-8" />
@@ -220,7 +220,23 @@ header.scrolled{
     inset 0 1px 0 rgba(255,255,255,.35);
   }
   .container{padding:16px;display:grid;gap:16px;}
-  
+
+.pagination{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:8px;
+  padding:12px 0 calc(env(safe-area-inset-bottom) + 8px);
+}
+
+.pagination-info{
+  flex:1;
+  text-align:center;
+  font-size:14px;
+  color:rgba(245,245,247,.92);
+  line-height:1.35;
+}
   .card{
   background: rgba(28,28,30,.72);
   backdrop-filter: blur(20px) saturate(160%);
@@ -839,6 +855,22 @@ button:disabled {
     background: rgba(0,0,0,.06);
   }
 }
+
+/* ================= ACCESSIBILITY: KEYBOARD FOCUS ================= */
+.search-btn:focus-visible,
+.filter-btn:focus-visible,
+.menu-btn:focus-visible,
+.btn:focus-visible,
+.btn-remove:focus-visible,
+.sheet-close-btn:focus-visible,
+.filter-item:focus-visible,
+.search-input:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #4da3ff;
+  outline-offset: 2px;
+} 
   
   /* ================= PRODUCT CARD (HORIZONTAL) ================= */
 .product-card {
@@ -1150,6 +1182,67 @@ textarea {
   color: rgba(235,235,245,.78);
 }
 
+/* ===== STOCK TIMELINE EXPAND DETAIL ===== */
+.timeline-summary{
+  font-size:13px;
+  color:rgba(235,235,245,.78);
+  margin:6px 0 8px;
+}
+
+.timeline-row{
+  font-size:14px;
+  line-height:1.55;
+}
+
+.timeline-row + .timeline-row{
+  margin-top:4px;
+}
+
+.timeline-muted{
+  color:#888;
+}
+
+.timeline-detail-wrap{
+  margin-top:10px;
+}
+
+.timeline-detail-toggle{
+  width:100%;
+  border:none;
+  border-radius:12px;
+  padding:10px 12px;
+  background:rgba(44,44,46,.90);
+  color:#fff;
+  font-size:13px;
+  font-weight:600;
+  text-align:left;
+  cursor:pointer;
+}
+
+.timeline-detail-panel{
+  display:none;
+  margin-top:8px;
+  padding:12px;
+  border-radius:12px;
+  background:rgba(44,44,46,.72);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.timeline-detail-panel.show{
+  display:block;
+}
+
+.timeline-detail-list{
+  display:grid;
+  gap:6px;
+}
+
+.timeline-detail-meta{
+  font-size:13px;
+  color:rgba(235,235,245,.82);
+  line-height:1.5;
+}
+ 
 /* ===== ADMIN LOGIN TWEAK ===== */
 #adminLoginSheet {
   padding-bottom: calc(env(safe-area-inset-bottom) + 24px); /* 🔴 ยกขึ้นจากขอบ */
@@ -1793,37 +1886,37 @@ textarea {
 <div id="app" class="container"></div>
 
 <!-- ✅ GLOBAL BACKDROP (มีตัวเดียวพอ) -->
-<div id="globalBackdrop" class="backdrop" onclick="handleBackdropClick()"></div>
+ <div
+   id="globalBackdrop"
+   class="backdrop"
+   onclick="handleBackdropClick()"
+   aria-hidden="true"
+ ></div>
 
 <!-- ================= VIEWER SHEETS ================= -->
-<div id="productSheet" class="sheet sheet-product"></div>
-<div id="qtySheet" class="sheet"></div>
-<div id="cartSheet" class="sheet"></div>
-<div id="confirmSheet" class="sheet"></div>
-<div id="stockSheet" class="sheet"></div>  
+ <div id="productSheet" class="sheet sheet-product" role="dialog" aria-modal="true" tabindex="-1"></div>
+ <div id="qtySheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
+ <div id="cartSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
+ <div id="confirmSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
+ <div id="stockSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
 
 <!-- 🖼️ IMAGE VIEWER (FULLSCREEN) -->
-<div id="imageViewerSheet" class="sheet image-viewer-sheet">
+<div id="imageViewerSheet" class="sheet image-viewer-sheet" role="dialog" aria-modal="true" tabindex="-1">
 </div>
 
 <!-- ================= ADMIN SHEETS ================= -->
-<div id="adminLoginSheet" class="sheet"></div>
-<div id="adminDashboardSheet" class="sheet"></div>
-<div id="adminOrderSheet" class="sheet"></div>
-<div id="adminStockSheet" class="sheet"></div>
+ <div id="adminLoginSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
+ <div id="adminDashboardSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
+ <div id="adminOrderSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
+ <div id="adminStockSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
 
 <!-- 🔹 Main Menu (Side Sheet Right) -->
-<div id="mainMenuSheet" class="side-menu"></div>
+<div id="mainMenuSheet" class="side-menu" role="dialog" aria-modal="true" tabindex="-1"></div>
 
-<!-- 🔹 Admin Product -->
-<div id="adminProductActionSheet" class="sheet"></div>
-<div id="adminProductEditSheet" class="sheet"></div>
-
-<!-- 🔹 Stock (STEP 7.5) -->
-<div id="adminStockActionSheet" class="sheet"></div>
-
-<!-- 🔹 ADD PRODUCT (STEP 7.6) ✅ เพิ่มใหม่ -->
-<div id="adminAddProductSheet" class="sheet"></div>
+ <div id="adminProductActionSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
+ <div id="adminProductEditSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
+ <div id="adminStockActionSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
+ <div id="adminAddProductSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
 
   
 <script>
@@ -1846,23 +1939,32 @@ const adminProductEditSheet = document.getElementById("adminProductEditSheet");
 const adminStockActionSheet = document.getElementById("adminStockActionSheet");
 const adminAddProductSheet = document.getElementById("adminAddProductSheet");
 
-// ✅ expose for inline onclick handlers (ปลอดภัยสุด)
+// ================= ADMIN UI REGISTRY =================
+// 🔒 รวม ref ฝั่ง admin ไว้จุดเดียว เพื่อให้เพิ่ม/ถอดเมนูในอนาคตง่ายขึ้น
+const ADMIN_SHEETS = Object.freeze({
+  login: adminLoginSheet,
+  dashboard: adminDashboardSheet,
+  order: adminOrderSheet,
+  stock: adminStockSheet,
+  menu: mainMenuSheet,
+  productAction: adminProductActionSheet,
+  productEdit: adminProductEditSheet,
+  stockAction: adminStockActionSheet,
+  addProduct: adminAddProductSheet
+});
+
+function getAdminSheets() {
+  return Object.values(ADMIN_SHEETS).filter(Boolean);
+}
+
+// ✅ expose เฉพาะ public actions ที่ inline handler ยังจำเป็นต้องใช้
 Object.assign(window, {
-  productSheet,
-  qtySheet,
-  confirmSheet,
-  stockSheet,
-  adminLoginSheet,
-  adminDashboardSheet,
-  adminOrderSheet,
-  adminStockSheet,
-  mainMenuSheet,
-  adminProductActionSheet,
-  adminProductEditSheet,
-  adminStockActionSheet,
-  adminAddProductSheet,
   openChangePasswordSheet,
-  submitChangePassword
+  submitChangePassword,
+  cancelAdminLogin,
+  closeMainMenu,
+  closeAddProduct,
+  closeProduct
 });
 
 // 🔒 Intent guards (STEP 2)
@@ -1876,12 +1978,12 @@ Object.assign(window, {
 const state = {
   mode: "viewer",
 
-  viewerFilter: {
-    status: "all"
+  pagination: {
+    page: 1,
+    pageSize: 100
   },
-
-  // 🔴 CHANGED: เพิ่ม admin filter แยกจาก viewer (กันชน/กัน flow ปนกัน)
-  adminFilter: {
+ 
+  viewerFilter: {
     status: "all"
   },
 
@@ -1900,17 +2002,25 @@ const state = {
     loggedIn: false,
     user: null,
     token: null,
+    expiredAt: null,
     orders: [],
     selectedOrder: null,
     logs: [],
-
+    filters: {
+      status: "all"
+    },
+    ui: {
+      activeSheet: null
+    },
     // 🔒 admin submit guard
     isSubmitting: false
   },
 
   // 🧠 SMART ADD PRODUCT DRAFT
   smartAddDraft: {
+    name: "",
     price: "",
+    costPrice: "",
     stock: "",
     status: "ready",
     note: ""
@@ -1925,6 +2035,15 @@ const state = {
 /* ================= CART STORAGE (VIEWER ONLY) ================= */
 
 const CART_KEY = "luopanich_cart";
+
+function escapeHtml(value = "") {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+} 
 
 function saveCart() {
   try {
@@ -2042,8 +2161,6 @@ function showLoading(message, timeoutMs = 60000) {
   overlay.offsetHeight;
 
   _loadingShownAt = Date.now();
-
-  state.isSubmitting = true;
   state.ui.backdropLocked = true;
   if (backdrop) backdrop.style.display = "block";
 
@@ -2077,8 +2194,6 @@ function safeHideLoading(fromTimeout = false) {
         clearTimeout(_loadingTimer);
         _loadingTimer = null;
       }
-
-      state.isSubmitting = false;
       // 🔒 ปลด lock เฉพาะเมื่อไม่มี overlay เปิดอยู่ (กัน confirm/flow หลุด)
       if (state.ui.overlayCount === 0) {
         state.ui.backdropLocked = false;
@@ -2126,7 +2241,38 @@ async function fetchWithTimeout(input, init = {}, ms = 30000) {
     clearTimeout(id);
   }
 }
-  
+
+function isAuthError(message = "") {
+   return [
+     "Session expired",
+     "Invalid token",
+     "Missing token"
+   ].includes(String(message || "").trim());
+ }
+
+ async function postFormAction(form, { timeout = 30000 } = {}) {
+   const res = await fetchWithTimeout(API_URL, {
+     method: "POST",
+     body: form
+   }, timeout);
+
+   let json;
+   try {
+     json = await res.json();
+   } catch (err) {
+     throw new Error("รูปแบบข้อมูลตอบกลับไม่ถูกต้อง");
+   }
+
+   if (json?.error || json?.success === false) {
+     if (isAuthError(json.error)) {
+       showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
+       exitAdmin({ silent: true });
+     }
+     throw new Error(json.message || json.error || "Request failed");
+   }
+
+   return json;
+ } 
 
 /* ================= API LAYER ================= */
 const API_URL="https://script.google.com/macros/s/AKfycbzx9WlWXUqZ9OM_R0tO9wJvw79RPWIn40iakCPNuPDLBmvcuHXkqp9EMPoRiuMRnaM2Wg/exec";
@@ -2296,6 +2442,7 @@ function openOverlay(el){
   state.ui.overlayCount++;
 
   backdrop.style.display = "block";
+  setTimeout(() => focusFirstInteractive(el), 0);
 }
 
 function closeOverlay(el){
@@ -2325,6 +2472,8 @@ function closeOverlay(el){
       });
     }
   }
+ 
+  restoreTriggerFocus();
 }
 
 async function adminStockIn(productId, qty, reason){
@@ -2339,27 +2488,7 @@ async function adminStockIn(productId, qty, reason){
   form.append("reason", reason || "");
   form.append("token", state.admin.token); // ✅ สำคัญที่สุด
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-    body: form
-  });
-
-  const json = await res.json();
-
-  // 🔒 session หมดอายุ / token ผิด
-  if (json.error || json.success === false) {
-    if (
-      json.error === "Session expired" ||
-      json.error === "Invalid token" ||
-      json.error === "Missing token"
-    ) {
-      alert("Session หมดอายุ กรุณา login ใหม่");
-      exitAdmin();
-    }
-    throw new Error(json.error || "Stock IN failed");
-  }
-
-  return json;
+  return await postFormAction(form);
 }
 
 
@@ -2375,32 +2504,24 @@ async function adminStockAdjust(productId, newQty, reason){
   form.append("reason", reason || "");
   form.append("token", state.admin.token); // ✅ สำคัญที่สุด
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-    body: form
-  });
-
-  const json = await res.json();
-
-  // 🔒 session หมดอายุ / token ผิด
-  if (json.error || json.success === false) {
-    if (
-      json.error === "Session expired" ||
-      json.error === "Invalid token" ||
-      json.error === "Missing token"
-    ) {
-      alert("Session หมดอายุ กรุณา login ใหม่");
-      exitAdmin();
-    }
-    throw new Error(json.error || "Stock adjust failed");
-  }
-
-  return json;
+  return await postFormAction(form);
 }
 
   
 
 /* ================= ADMIN API ================= */ // 🔴 ADD
+
+async function refreshAdminAuditSnapshot() {
+  if (!state.admin.token) return;
+
+  const [orders, logs] = await Promise.all([
+    fetchOrders(),
+    fetchStockLogs()
+  ]);
+
+  state.admin.orders = Array.isArray(orders) ? orders : [];
+  state.admin.logs = Array.isArray(logs) ? logs : [];
+} 
 
 async function adminApproveOrder(orderId) {
   if (state.admin.isSubmitting) return;
@@ -2418,23 +2539,15 @@ async function adminApproveOrder(orderId) {
     form.append("orderId", orderId);
     form.append("token", state.admin.token);
 
-    const res = await fetch(API_URL, {
-      method: "POST",
-      body: form
-    });
+    const json = await postFormAction(form);
 
-    const json = await res.json();
-
-    if (json.error || json.success === false) {
-      if (
-        json.error === "Session expired" ||
-        json.error === "Invalid token" ||
-        json.error === "Missing token"
-      ) {
-        showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
-        exitAdmin();
-      }
-      throw new Error(json.error || "Approve order failed");
+    // 🔒 STEP 5: sync ข้อมูลตรวจสอบย้อนหลังทันที
+    try {
+      await refreshAdminAuditSnapshot();
+      await refreshProducts();
+    } catch (refreshErr) {
+      console.error("post-approve refresh failed:", refreshErr);
+      showToast("อนุมัติสำเร็จ แต่รีเฟรชข้อมูลย้อนหลังไม่สมบูรณ์", "warning");
     }
 
     // ✅ success
@@ -2467,24 +2580,17 @@ async function adminRejectOrder(orderId) {
     form.append("orderId", orderId);
     form.append("token", state.admin.token);
 
-    const res = await fetch(API_URL, {
-      method: "POST",
-      body: form
-    });
+    const json = await postFormAction(form);
 
-    const json = await res.json();
-
-    if (json.error || json.success === false) {
-      if (
-        json.error === "Session expired" ||
-        json.error === "Invalid token" ||
-        json.error === "Missing token"
-      ) {
-        showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
-        exitAdmin();
-      }
-      throw new Error(json.error || "Reject order failed");
+    // 🔒 STEP 5: sync ข้อมูลตรวจสอบย้อนหลังทันที
+    try {
+      await refreshAdminAuditSnapshot();
+      await refreshProducts();
+    } catch (refreshErr) {
+      console.error("post-reject refresh failed:", refreshErr);
+      showToast("ปฏิเสธสำเร็จ แต่รีเฟรชข้อมูลย้อนหลังไม่สมบูรณ์", "warning");
     }
+   
 
     // ✅ success
     showToast("ปฏิเสธคำสั่งซื้อเรียบร้อย", "success");
@@ -2514,27 +2620,8 @@ async function fetchStockLogs() {
   form.append("action", "stockLogs");
   form.append("token", state.admin.token);
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-    body: form
-  });
-
-  const json = await res.json();
-
-  if (json.error || json.success === false) {
-    if (
-      json.error === "Session expired" ||
-      json.error === "Invalid token" ||
-      json.error === "Missing token"
-    ) {
-      alert("Session หมดอายุ กรุณา login ใหม่");
-      exitAdmin();
-    }
-
-    throw new Error(json.error || "โหลด Stock Logs ไม่สำเร็จ");
-  }
-
-  return json;
+  const json = await postFormAction(form);
+  return json.data;
 }
 
 
@@ -2549,26 +2636,7 @@ async function fetchOrders(){
   form.append("action", "orders");
   form.append("token", state.admin.token);
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-    body: form
-  });
-
-  const json = await res.json();
-
-  if (!json.success) {
-    // 🔒 token หมดอายุ / ไม่ถูกต้อง
-    if (
-      json.error === "Session expired" ||
-      json.error === "Invalid token"
-    ) {
-      alert("Session หมดอายุ กรุณา login ใหม่");
-      exitAdmin(); // logout ฝั่ง frontend
-    }
-    throw new Error(json.error || "โหลด Orders ไม่สำเร็จ");
-  }
-
-  // ✅ คืน array ของ orders
+  const json = await postFormAction(form);
   return json.data;
 }
   
@@ -2679,6 +2747,7 @@ function openImageViewer(url){
     <!-- close button -->
     <button
       class="close-btn image-viewer-close"
+      aria-label="ปิดตัวอย่างรูปภาพ"
       onclick="closeImageViewer(event)">
       ×
     </button>
@@ -2761,6 +2830,9 @@ function closeImageViewer(ev){
    sheet = document.createElement("div");
    sheet.id = "productInfoSheet";
    sheet.className = "sheet";
+   sheet.setAttribute("role", "dialog");
+   sheet.setAttribute("aria-modal", "true");
+   sheet.setAttribute("tabindex", "-1");  
    document.body.appendChild(sheet);
  }
  sheet.innerHTML = html;
@@ -2801,8 +2873,7 @@ function renderProducts(){
     return;
   }
 
-  app.innerHTML = "";
-  let found = false;
+  const filteredProducts = [];
 
   state.products.forEach(p => {
     const stockNum = Number(p.stock);
@@ -2834,23 +2905,41 @@ if (
 // 🔴 CHANGED: admin filter (ต้องอยู่หลัง resolvedStatus เสมอ)
     if (
       state.mode === "admin" &&
-      state.adminFilter &&
-      state.adminFilter.status !== "all"
+      state.admin.filters &&
+      state.admin.filters.status !== "all"
     ) {
-      if (resolvedStatus !== state.adminFilter.status) return;
-    }    
-    
-/* ================= STATUS LOGIC ================= */
-const statusMap = {
-  ready:     "พร้อมส่ง",
-  shipping:  "อยู่ระหว่างจัดส่ง",
-  warehouse: "อยู่โกดังไทย",
-  out:       "หมด"
-};
+      if (resolvedStatus !== state.admin.filters.status) return;
+    } 
 
-const statusKey = resolvedStatus;
-let statusClass = statusKey;
-let statusText  = statusMap[statusKey] || "พร้อมส่ง";
+    filteredProducts.push({
+      ...p,
+      resolvedStatus
+    });
+  });
+
+  const pageSize = Number(state.pagination?.pageSize) || 100;
+  const totalItems = filteredProducts.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const safePage = Math.min(Math.max(1, Number(state.pagination?.page) || 1), totalPages);
+  state.pagination.page = safePage;
+
+  const startIndex = (safePage - 1) * pageSize;
+  const pageItems = filteredProducts.slice(startIndex, startIndex + pageSize);
+
+  app.innerHTML = "";
+  let found = false;
+
+  pageItems.forEach(p => {
+    const statusMap = {
+      ready:     "พร้อมส่ง",
+      shipping:  "อยู่ระหว่างจัดส่ง",
+      warehouse: "อยู่โกดังไทย",
+      out:       "หมด"
+    };
+ 
+    const statusKey = p.resolvedStatus;
+    let statusClass = statusKey;
+    let statusText  = statusMap[statusKey] || "พร้อมส่ง";
 
     /* ================= CARD ================= */
     const card = document.createElement("div");
@@ -2900,9 +2989,54 @@ let statusText  = statusMap[statusKey] || "พร้อมส่ง";
         ไม่พบสินค้าที่ค้นหา
       </div>
     `;
+    return;   
   }
+
+  if (totalItems > pageSize) {
+    const pagination = document.createElement("div");
+    pagination.className = "pagination";
+    pagination.innerHTML = `
+      <button
+        class="btn btn-outline"
+        style="width:auto;padding:10px 14px"
+        ${safePage === 1 ? "disabled" : ""}
+        onclick="changePage(-1)">
+        ก่อนหน้า
+      </button>
+
+      <div class="pagination-info">
+        หน้า ${safePage} / ${totalPages}
+        <br>
+        <span style="font-size:12px;color:rgba(235,235,245,.72)">
+          ${totalItems.toLocaleString()} รายการ
+        </span>
+      </div>
+
+      <button
+        class="btn btn-outline"
+        style="width:auto;padding:10px 14px"
+        ${safePage === totalPages ? "disabled" : ""}
+        onclick="changePage(1)">
+        ถัดไป
+      </button>
+    `;
+    app.appendChild(pagination);
+  } 
 }
 
+function changePage(delta){
+  const nextPage = (Number(state.pagination.page) || 1) + Number(delta || 0);
+  if (nextPage < 1) return;
+
+  state.pagination.page = nextPage;
+  renderProducts();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+Object.assign(window, {
+  changePage
+});
+ 
 function renderProductSheet(){
   const p = state.selectedProduct;
   if (!productSheet || !p) return;
@@ -2911,7 +3045,7 @@ function renderProductSheet(){
     <!-- ❌ CLOSE BUTTON (TOP-RIGHT) -->
  <button
    class="sheet-close sheet-close-btn"
-   onclick="closeOverlay(window.productSheet)"
+   onclick="closeProduct()"
    aria-label="Close"
  >
       ×
@@ -3108,23 +3242,27 @@ function renderHeader(){
    id="viewerSearchWrap"
    class="search-wrap viewer-search-wrap"
  >
-          <button
-            onclick="toggleViewerSearch()"
-            class="search-btn"
-          >
+ <button
+   onclick="toggleViewerSearch(this)"
+   class="search-btn"
+   aria-label="เปิดการค้นหา"
+   aria-expanded="false"
+   aria-controls="viewerSearchInput"
+ >
             <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <circle cx="11" cy="11" r="6"></circle>
               <path d="M20 20l-3.2-3.2"></path>
             </svg>
           </button>
 
-          <input
-            id="viewerSearchInput"
-            placeholder="ค้นหาสินค้า / รหัส"
-            oninput="handleSearch(this.value)"
-            onfocus="focusInput(this)"
-            class="search-input"
-          >
+ <input
+   id="viewerSearchInput"
+   placeholder="ค้นหาสินค้า / รหัส"
+   oninput="handleSearch(this.value)"
+   onfocus="focusInput(this)"
+   class="search-input"
+   aria-label="ค้นหาสินค้า"
+ >
         </div>          
          </div>
     </div>
@@ -3132,9 +3270,11 @@ function renderHeader(){
 <div class="header-actions">
 
    <div class="filter-wrap">
-     <button class="filter-btn"
-        onclick="toggleFilterDropdown()"
-        aria-label="Filter">
+ <button class="filter-btn"
+    onclick="toggleFilterDropdown(this)"
+    aria-label="กรองสินค้า"
+    aria-expanded="false"
+    aria-controls="filterDropdown">
         <!-- iOS-like: line.3.horizontal.decrease (stroke, SF-style) -->
         <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path d="M4 7h16"></path>
@@ -3143,19 +3283,21 @@ function renderHeader(){
         </svg>
      </button>
 
-     <div id="filterDropdown" class="filter-dropdown">
-       <div class="filter-item" onclick="selectFilter('all')">ทั้งหมด</div>
-       <div class="filter-item" onclick="selectFilter('ready')">พร้อมส่ง</div>
-       <div class="filter-item" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</div>
-       <div class="filter-item" onclick="selectFilter('warehouse')">โกดังไทย</div>
-       <div class="filter-item" onclick="selectFilter('out')">หมด</div>
-     </div>
+ <div id="filterDropdown" class="filter-dropdown" role="menu" aria-label="ตัวกรองสินค้า">
+   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('all')">ทั้งหมด</button>
+   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('ready')">พร้อมส่ง</button>
+   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</button>
+   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('warehouse')">โกดังไทย</button>
+   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('out')">หมด</button>
+ </div>
    </div>
       
  <button
    class="menu-btn"
-   onclick="openMainMenu()"
-   aria-label="Main Menu">
+   onclick="openMainMenu(this)"
+   aria-label="เปิดเมนูหลัก"
+   aria-expanded="false"
+   aria-controls="mainMenuSheet">
    <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
      <path d="M4 7h16"></path>
      <path d="M4 12h16"></path>
@@ -3181,20 +3323,24 @@ function renderHeader(){
 
       <!-- 🔍 SEARCH (ICON EXPAND LIKE VIEWER) -->
       <div class="search-wrap" id="adminSearchWrap">
-        <button
-          class="search-btn"
-          onclick="toggleAdminSearch()"
-          aria-label="Search">
+ <button
+   class="search-btn"
+   onclick="toggleAdminSearch(this)"
+   aria-label="เปิดการค้นหา"
+   aria-expanded="false"
+   aria-controls="adminSearchInput">
           <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <circle cx="11" cy="11" r="6"></circle>
             <path d="M20 20l-3.2-3.2"></path>
           </svg>
         </button>
-        <input
-          class="search-input"
-          placeholder="ค้นหาสินค้า / รหัส"
-          oninput="handleSearch(this.value)"
-        />
+ <input
+   id="adminSearchInput"
+   class="search-input"
+   placeholder="ค้นหาสินค้า / รหัส"
+   oninput="handleSearch(this.value)"
+   aria-label="ค้นหาสินค้า"
+ />
       </div>
     </div>
   
@@ -3202,9 +3348,11 @@ function renderHeader(){
     <div class="header-actions">
 
       <div class="filter-wrap">
-        <button class="filter-btn"
-          onclick="toggleFilterDropdown()"
-          aria-label="Filter">
+ <button class="filter-btn"
+   onclick="toggleFilterDropdown(this)"
+   aria-label="กรองสินค้า"
+   aria-expanded="false"
+   aria-controls="filterDropdown">
           <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M4 7h16"></path>
             <path d="M7 12h10"></path>
@@ -3212,19 +3360,21 @@ function renderHeader(){
           </svg>
         </button>
 
-        <div id="filterDropdown" class="filter-dropdown">
-          <div class="filter-item" onclick="selectFilter('all')">ทั้งหมด</div>
-          <div class="filter-item" onclick="selectFilter('ready')">พร้อมส่ง</div>
-          <div class="filter-item" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</div>
-          <div class="filter-item" onclick="selectFilter('warehouse')">โกดังไทย</div>
-          <div class="filter-item" onclick="selectFilter('out')">หมด</div>
-        </div>
+ <div id="filterDropdown" class="filter-dropdown" role="menu" aria-label="ตัวกรองสินค้า">
+   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('all')">ทั้งหมด</button>
+   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('ready')">พร้อมส่ง</button>
+   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</button>
+   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('warehouse')">โกดังไทย</button>
+   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('out')">หมด</button>
+ </div>
       </div>
 
-      <button
-        class="menu-btn"
-        onclick="openMainMenu()"
-        aria-label="Open Main Menu">
+ <button
+   class="menu-btn"
+   onclick="openMainMenu(this)"
+   aria-label="เปิดเมนูหลัก"
+   aria-expanded="false"
+   aria-controls="mainMenuSheet">
         <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path d="M4 7h16"></path>
           <path d="M4 12h16"></path>
@@ -3237,47 +3387,81 @@ function renderHeader(){
 }
 
 } // ✅ ปิด renderHeader()
+
+ let lastFocusTrigger = null;
+
+ function rememberTrigger(el){
+   if (el instanceof HTMLElement) lastFocusTrigger = el;
+ }
+
+ function restoreTriggerFocus(){
+   if (lastFocusTrigger && typeof lastFocusTrigger.focus === "function") {
+     lastFocusTrigger.focus();
+   }
+ }
+
+ function syncExpanded(button, expanded){
+   if (button) button.setAttribute("aria-expanded", String(!!expanded));
+ }
+
+ function focusFirstInteractive(container){
+   if (!container) return;
+   const first = container.querySelector(
+     'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+   );
+   (first || container).focus();
+ } 
   
 /* 🔍 viewer search toggle (เฉพาะ UI) */
-function toggleViewerSearch(){
+function toggleViewerSearch(triggerEl){
   const wrap  = document.getElementById("viewerSearchWrap");
   const input = document.getElementById("viewerSearchInput");
   if(!wrap || !input) return;
 
+  rememberTrigger(triggerEl || document.querySelector("#viewerSearchWrap .search-btn")); 
   const opened = wrap.classList.contains("active");
 
   if(opened){
     input.value = "";
     state.search = "";
+    state.pagination.page = 1;
     state.viewerSearchOpen = false;
     renderProducts();
     wrap.classList.remove("active");
+    syncExpanded(wrap.querySelector(".search-btn"), false);
+    restoreTriggerFocus();   
   }else{
     state.viewerSearchOpen = true;
     wrap.classList.add("active");
+    syncExpanded(wrap.querySelector(".search-btn"), true);   
     setTimeout(()=>input.focus(),80);
   }
 }
 
 /* 🔍 admin search toggle (ICON EXPAND) */
 
-function toggleAdminSearch(){
+function toggleAdminSearch(triggerEl){
   const wrap = document.getElementById("adminSearchWrap");
   if (!wrap) return;
 
+  rememberTrigger(triggerEl || wrap.querySelector(".search-btn")); 
   const opening = !wrap.classList.contains("active");
 
   wrap.classList.toggle("active");
+  syncExpanded(wrap.querySelector(".search-btn"), opening);
 
   if (opening) {
     const input = wrap.querySelector("input");
     // 🕒 รอ animation เริ่มก่อน focus (iOS trick)
     setTimeout(() => input && input.focus(), 120);
+   } else {
+     restoreTriggerFocus();   
   }
 }
   
 function handleSearch(keyword){
   state.search = keyword.toLowerCase();
+  state.pagination.page = 1;
   renderProducts();
 }
 
@@ -3291,6 +3475,7 @@ function setViewerStatus(status){
   if(!status) return;
 
   state.viewerFilter.status = status;
+  state.pagination.page = 1;
 
   // 🔄 sync UI pill
   renderHeader();
@@ -3306,28 +3491,37 @@ function setAdminStatus(status){
 
   if(!status) return;
 
-  state.adminFilter.status = status;
+  state.admin.filters.status = status;
+  state.pagination.page = 1;
 
   renderHeader();
   renderProducts();
 }
 
-function toggleFilterDropdown(){
+function toggleFilterDropdown(triggerEl){
   const el = document.getElementById("filterDropdown");
   if(!el) return;
 
+  const btn = triggerEl || document.querySelector(".filter-btn");
+  rememberTrigger(btn);
   const isOpen = el.classList.contains("show");
 
   document.querySelectorAll(".filter-dropdown.show")
     .forEach(d => d.classList.remove("show"));
+  document.querySelectorAll(".filter-btn[aria-expanded='true']")
+    .forEach(b => syncExpanded(b, false));
 
   if(!isOpen){
     el.classList.add("show");
+     syncExpanded(btn, true);
+     setTimeout(() => focusFirstInteractive(el), 0);   
 
     // 🔴 auto close on outside click
     setTimeout(()=>{
       document.addEventListener("click", closeFilterOnOutside, { once:true });
     }, 0);
+   } else {
+     restoreTriggerFocus();   
   }
 }
 
@@ -3337,6 +3531,8 @@ function closeFilterOnOutside(e){
 
   const el = document.getElementById("filterDropdown");
   if(el) el.classList.remove("show");
+   document.querySelectorAll(".filter-btn[aria-expanded='true']")
+     .forEach(b => syncExpanded(b, false)); 
 }
 
 // 🔴 CHANGED: route ตาม mode แทนการ fix viewer อย่างเดียว
@@ -3349,18 +3545,17 @@ function selectFilter(status){
 
   const el = document.getElementById("filterDropdown");
   if(el) el.classList.remove("show");
+   document.querySelectorAll(".filter-btn[aria-expanded='true']")
+     .forEach(b => syncExpanded(b, false));
+   restoreTriggerFocus(); 
 }  
   
 function openAdminEntry(){
   // 🔒 ถ้ามี session อยู่แล้ว → ต้อง valid ก่อนค่อยเข้า admin
   if (state.admin.loggedIn && state.admin.token) {
     if (isAdminSessionExpired()) {
-      alert("Session หมดอายุ กรุณา login ใหม่");
+      showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
       clearAdminSession();
-      state.admin.loggedIn = false;
-      state.admin.user = null;
-      state.admin.token = null;
-      state.admin.expiredAt = null;
     } else {
       enterAdmin();
       return;
@@ -3374,6 +3569,7 @@ function openAdminEntry(){
 async function enterAdmin(){
   state.mode = "admin";
   state.search = ""; // ✅ reset
+  state.pagination.page = 1;
   state.viewerSearchOpen = false;
 
   // 🔴 CHANGED: render โครงก่อน เพื่อให้ header/admin mode ถูกต้อง
@@ -3403,40 +3599,6 @@ function leaveAdminMode(){
   state.search = "";
   state.viewerSearchOpen = false;
 
-  renderHeader();
-  renderProducts();
-  if (typeof renderBadge === "function") renderBadge();
-}
-
-function exitAdmin(){
-  // 🔒 ปิดทุก overlay ผ่าน Overlay Manager (สำคัญที่สุด)
-  document
-    .querySelectorAll(".sheet.show, .side-menu.show")
-    .forEach(el => {
-      closeOverlay(el); // ✅ หัวใจ
-    });
-
-  // ❌ กัน Orders เด้งซ้ำ
-  allowOpenOrders = false;
-  allowOpenStockTimeline = false;
-  allowOpenAddProduct = false;
-
-  // 🧹 CLEAR PERSIST SESSION  ← 🔴 เพิ่มบรรทัดเดียว
-  clearAdminSession();
-
-  // 🔄 reset admin state
-  state.mode = "viewer";
-  state.admin.loggedIn = false;
-  state.admin.user = null;
-  state.admin.token = null;
-  state.admin.orders = [];
-  state.admin.selectedOrder = null;
-  state.admin.logs = [];
-
-  // 🔍 reset search
-  state.search = "";
-
-  // 🔄 render viewer ใหม่แบบ clean
   renderHeader();
   renderProducts();
   if (typeof renderBadge === "function") renderBadge();
@@ -3502,7 +3664,7 @@ function showStockError(message){
       line-height:1.5;
       margin-top:8px
     ">
-      ${message}
+      ${escapeHtml(message)}
     </div>
 
     <button class="btn btn-primary"
@@ -3725,7 +3887,7 @@ function openChangePasswordSheet(){
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    alert("Session หมดอายุ กรุณา login ใหม่");
+    showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
     exitAdmin();
     return;
   }
@@ -3770,17 +3932,17 @@ async function submitChangePassword(btn){
   const confirmNewPassword = document.getElementById("confirmNewPassword")?.value || "";
 
   if (!currentPassword || !newPassword || !confirmNewPassword) {
-    alert("กรุณากรอกข้อมูลให้ครบ");
+    showToast("กรุณากรอกข้อมูลให้ครบ", "warning");
     return;
   }
 
   if (newPassword !== confirmNewPassword) {
-    alert("รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน");
+    showToast("รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน", "warning");
     return;
   }
 
   if (newPassword.length < 4) {
-    alert("รหัสผ่านใหม่สั้นเกินไป");
+    showToast("รหัสผ่านใหม่สั้นเกินไป", "warning");
     return;
   }
 
@@ -3805,12 +3967,12 @@ async function submitChangePassword(btn){
       throw new Error(json.error || json.message || "เปลี่ยนรหัสผ่านไม่สำเร็จ");
     }
 
-    alert("เปลี่ยนรหัสผ่านสำเร็จ กรุณาเข้าสู่ระบบใหม่");
+    showToast("เปลี่ยนรหัสผ่านสำเร็จ กรุณาเข้าสู่ระบบใหม่", "success");
     exitAdmin();
 
   } catch (err) {
     console.error(err);
-    alert(err.message || "เปลี่ยนรหัสผ่านไม่สำเร็จ");
+    showToast(err.message || "เปลี่ยนรหัสผ่านไม่สำเร็จ", "error");
   } finally {
     state.admin.isSubmitting = false;
     if (btn) btn.disabled = false;
@@ -3825,12 +3987,12 @@ function isLoginRateLimited() {
 
 async function handleAdminLogin(btn){
   // 🔒 กันกดซ้ำ
-  if (state.isSubmitting) return;
+  if (state.admin.isSubmitting) return;
 
   // 🔒 force global rate limit (scope-safe)
   if (typeof window.isLoginRateLimited === "function") {
     if (window.isLoginRateLimited()) {
-      alert("พยายามเข้าสู่ระบบบ่อยเกินไป กรุณารอสักครู่");
+      showToast("พยายามเข้าสู่ระบบบ่อยเกินไป กรุณารอสักครู่", "warning");
       return;
     }
   }
@@ -3843,12 +4005,12 @@ async function handleAdminLogin(btn){
   const password = passInput.value;
 
   if (!username || !password) {
-    alert("กรุณากรอก Username และ Password");
+    showToast("กรุณากรอก Username และ Password", "warning");
     return;
   }
 
   // ================= UX START =================
-  state.isSubmitting = true;
+  state.admin.isSubmitting = true;
 
   if (btn) {
     btn.disabled = true;
@@ -3897,12 +4059,12 @@ async function handleAdminLogin(btn){
 
   } catch (err) {
     console.error(err);
-    alert(err.message || "ไม่สามารถเข้าสู่ระบบได้");
+    showToast(err.message || "ไม่สามารถเข้าสู่ระบบได้", "error");
 
   } finally {
     // ================= CLEANUP =================
     safeHideLoading();
-    state.isSubmitting = false;
+    state.admin.isSubmitting = false;
 
     if (btn) {
       btn.disabled = false;
@@ -3922,7 +4084,7 @@ async function openAdminDashboard(mode = "PENDING", force = false) {
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    alert("Session หมดอายุ กรุณา login ใหม่");
+    showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
     exitAdmin();
     return;
   }
@@ -3988,7 +4150,7 @@ async function openAdminDashboard(mode = "PENDING", force = false) {
       err.message?.includes("Session") ||
       err.message?.includes("token")
     ) {
-      alert("Session หมดอายุ กรุณา login ใหม่");
+      showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
       exitAdmin();
       return;
     }
@@ -4002,7 +4164,7 @@ async function openAdminDashboard(mode = "PENDING", force = false) {
 
       <button class="btn btn-secondary"
         style="width:100%;margin-top:16px"
-        onclick="handleOpenOrders()">
+        onclick="allowOpenOrders = true; openAdminDashboard('${mode}', true)">
         🔄 ลองใหม่
       </button>
 
@@ -4042,7 +4204,7 @@ async function openStockTimeline(force = false) {
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    alert("Session หมดอายุ กรุณา login ใหม่");
+    showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
     exitAdmin();
     return;
   }
@@ -4060,34 +4222,93 @@ async function openStockTimeline(force = false) {
   openOverlay(adminStockSheet);
 
   try {
-    const logsRes = await fetchStockLogs();
-    const logs = Array.isArray(logsRes?.data) ? logsRes.data : [];
+    const logs = await fetchStockLogs();
+    const safeLogs = Array.isArray(logs) ? logs : [];
+
+    const money = (value) => `฿${Number(value || 0).toLocaleString("th-TH")}`;
+    const esc = (value) => escapeHtml(value ?? "");   
+
+    // ✅ ensure orders พร้อมใช้สำหรับ fallback ราคา/ยอดรวม
+    if (!Array.isArray(state.admin.orders) || state.admin.orders.length === 0) {
+      try {
+        const freshOrders = await fetchOrders();
+        state.admin.orders = Array.isArray(freshOrders) ? freshOrders : [];
+      } catch (orderErr) {
+        console.warn("openStockTimeline: preload orders failed", orderErr);
+      }
+    }
+   
+    // ✅ fallback ราคา/ยอดรวมจาก order จริง ถ้า stock log ไม่มีราคา
+    const orderLookup = new Map(
+      (Array.isArray(state.admin.orders) ? state.admin.orders : []).map(o => [
+        String(o.orderId || "").trim(),
+        o
+      ])
+    );   
 
     /* ================= GROUP ORDER OUT ================= */
     const orderMap = {};
     const singles = [];
 
-    logs.forEach(l => {
+ safeLogs.forEach(l => {
   const time = l.timestamp ? new Date(l.timestamp) : new Date();
 
   // ✅ ใช้ orderId จริงจาก sheet (fallback เผื่อของเก่า)
   const orderRef = l.orderId || l.ref || null;
 
   if (l.type === "OUT" && orderRef) {
+    const matchedOrder = orderLookup.get(String(orderRef).trim());
+    const matchedOrderItem = Array.isArray(matchedOrder?.items)
+      ? matchedOrder.items.find(item =>
+          String(item.productId || "").trim() === String(l.productId || "").trim()
+        )
+      : null;
+
+    const fallbackSalePrice = Number(
+      l.salePrice ??
+      l.price ??
+      matchedOrderItem?.price ??
+      0
+    );
+
+    const fallbackLineTotal = Number(
+      l.lineTotal ??
+      (fallbackSalePrice * Math.abs(Number(l.qty || 0)))
+    );
+   
     if (!orderMap[orderRef]) {
       orderMap[orderRef] = {
         orderId: orderRef,
         time,
         by: l.by || "-",
+        note: l.note || l.reason || "",
+        totalSalesAmount: Number(matchedOrder?.total || 0),
         items: []
       };
     }
 
+    if (!orderMap[orderRef].note && (l.note || l.reason)) {
+      orderMap[orderRef].note = l.note || l.reason || "";
+    }   
+
+    // ใช้เวลาล่าสุดของ item ใน order เดียวกัน
+    if (time.getTime() > orderMap[orderRef].time.getTime()) {
+      orderMap[orderRef].time = time;
+    }
+
+    // ✅ ถ้า order.total ไม่มี ค่อยสะสมจากรายการย่อย
+    if (!Number(orderMap[orderRef].totalSalesAmount)) {
+      orderMap[orderRef].totalSalesAmount += fallbackLineTotal;
+    }   
+
     orderMap[orderRef].items.push({
       productId: l.productId,
+      productName: l.productName || l.name || "",
       qty: Math.abs(Number(l.qty || 0)),
       before: l.before,
-      after: l.after
+      after: l.after,
+      salePrice: fallbackSalePrice,
+      lineTotal: fallbackLineTotal
     });
   } else {
     singles.push({
@@ -4107,7 +4328,11 @@ async function openStockTimeline(force = false) {
         orderId: o.orderId,
         time: o.time,
         by: o.by,
-        items: o.items
+        note: o.note || "",
+        items: o.items,
+        totalLines: o.items.length,
+        totalQty: o.items.reduce((sum, item) => sum + Number(item.qty || 0), 0),
+        totalSalesAmount: o.totalSalesAmount
       });
     });
 
@@ -4116,11 +4341,13 @@ async function openStockTimeline(force = false) {
         kind: "STOCK",
         type: l.type,
         productId: l.productId,
+        productName: l.productName || l.name || "",
         qty: l.qty,
         before: l.before,
         after: l.after,
         time: l._time,
-        by: l.by || "-"
+        by: l.by || "-",
+        note: l.note || l.reason || ""
       });
     });
 
@@ -4142,24 +4369,71 @@ async function openStockTimeline(force = false) {
           ? timeline.map(t => {
 
               if (t.kind === "ORDER") {
+                const detailId = `stock-detail-${esc(t.orderId)}`;
+               
                 return `
                   <div class="card">
                     <div class="timeline-tag tag-out">
-                      🧾 ขายออก (ออเดอร์ ${t.orderId})
+                      🧾 ขายออก (ออเดอร์ ${esc(t.orderId)})
                     </div>
 
+                    <div class="timeline-summary">
+                      ${t.totalLines} รายการ · ${t.totalQty} ชิ้น · ${money(t.totalSalesAmount)}
+                    </div>                    
+
                     ${t.items.map(i => `
-                      <div style="font-size:14px;line-height:1.5">
-                        ${i.productId} x ${i.qty}
+                      <div class="timeline-row">
+                        ${esc(i.productId)}
+                        ${i.productName ? ` — ${esc(i.productName)}` : ""}
+                        x ${Number(i.qty || 0)}
                         ${
-                          Number.isFinite(i.before)
-                            ? `<span style="color:#888">
+                          Number.isFinite(Number(i.before))
+                            ? `<span class="timeline-muted">
                                 (${i.before} → ${i.after})
                               </span>`
                             : ""
                         }
                       </div>
                     `).join("")}
+
+                    <div class="timeline-detail-wrap">
+                      <button
+                        type="button"
+                        class="timeline-detail-toggle"
+                        onclick="
+                          const panel = document.getElementById('${detailId}');
+                          if (!panel) return;
+                          panel.classList.toggle('show');
+                          this.textContent = panel.classList.contains('show')
+                            ? 'ซ่อนรายละเอียด'
+                            : 'ดูรายละเอียดเพิ่มเติม';
+                        "
+                      >
+                        ดูรายละเอียดเพิ่มเติม
+                      </button>
+
+                      <div id="${detailId}" class="timeline-detail-panel">
+                        <div class="timeline-detail-meta">
+                          ยอดรวมสินค้า: ${t.totalLines} รายการ<br>
+                          ยอดรวมจำนวนชิ้น: ${t.totalQty}<br>
+                          ยอดขายรวม: ${money(t.totalSalesAmount)}
+                          ${t.note ? `<br>หมายเหตุ: ${esc(t.note)}` : ""}
+                        </div>
+
+                        <div class="timeline-detail-list" style="margin-top:10px">
+                          ${t.items.map(i => `
+                            <div class="timeline-row">
+                              ${esc(i.productId)}
+                              ${i.productName ? ` — ${esc(i.productName)}` : ""} |
+                              ${Number(i.qty || 0)} ชิ้น
+                              ${Number.isFinite(Number(i.before)) ? ` | ${i.before} → ${i.after}` : ""}
+                              | ${money(i.salePrice)}/ชิ้น
+                              | รวม ${money(i.lineTotal)}
+                            </div>
+                          `).join("")}
+                        </div>
+                      </div>
+                    </div>                    
 
                     <div style="font-size:12px;color:#888;margin-top:6px">
                       ${t.time.toLocaleDateString("th-TH")}
@@ -4184,14 +4458,44 @@ async function openStockTimeline(force = false) {
                     ${cfg.text}
                   </div>
 
-                  <div style="font-size:14px">
-                    ${t.productId}
+                  <div class="timeline-row">
+                    ${esc(t.productId)}
+                    ${t.productName ? ` — ${esc(t.productName)}` : ""}
+                    ${Number.isFinite(Number(t.qty)) ? ` x ${Math.abs(Number(t.qty))}` : ""}
                     ${
-                      Number.isFinite(t.before)
+                      Number.isFinite(Number(t.before))
                         ? ` (${t.before} → ${t.after})`
                         : ""
                     }
                   </div>
+
+                  ${
+                    t.note
+                      ? `
+                        <div class="timeline-detail-wrap">
+                          <button
+                            type="button"
+                            class="timeline-detail-toggle"
+                            onclick="
+                              const panel = this.nextElementSibling;
+                              if (!panel) return;
+                              panel.classList.toggle('show');
+                              this.textContent = panel.classList.contains('show')
+                                ? 'ซ่อนรายละเอียด'
+                                : 'ดูรายละเอียดเพิ่มเติม';
+                            "
+                          >
+                            ดูรายละเอียดเพิ่มเติม
+                          </button>
+                          <div class="timeline-detail-panel">
+                            <div class="timeline-detail-meta">
+                              หมายเหตุ: ${esc(t.note)}
+                            </div>
+                          </div>
+                        </div>
+                      `
+                      : ""
+                  }
 
                   <div style="font-size:12px;color:#888;margin-top:6px">
                     ${t.time.toLocaleDateString("th-TH")}
@@ -4248,6 +4552,8 @@ function openAdminOrder(orderId){
     ? order.items
     : [];
 
+  const isPending = order.status === "PENDING";
+
   adminOrderSheet.innerHTML = `
     <h3>${order.orderId}</h3>
 
@@ -4259,16 +4565,25 @@ function openAdminOrder(orderId){
     `).join("")}
 
     <div class="total">Total: ฿${order.total}</div>
-
-    <div class="admin-action">
-      <button class="btn btn-approve" onclick="handleApprove()">
-        Approve
-      </button>
-
-      <button class="btn btn-reject" onclick="handleReject()">
-        Reject
-      </button>
+    <div style="margin-top:8px;color:rgba(235,235,245,.72);font-size:14px">
+      สถานะ: ${order.status}
     </div>
+
+    ${
+      isPending
+        ? `
+          <div class="admin-action">
+            <button class="btn btn-approve" onclick="handleApprove()">
+              Approve
+            </button>
+
+            <button class="btn btn-reject" onclick="handleReject()">
+              Reject
+            </button>
+          </div>
+        `
+        : ""
+    }
   `;
 
   // ❌ ห้ามปิดด้วย classList
@@ -4339,7 +4654,7 @@ async function handleReject() {
 async function submitStockIn(){
   // 🔒 guard
   if (state.mode !== "admin" || !state.selectedProduct) {
-    alert("Unauthorized");
+    showToast("Unauthorized", "error");
     return;
   }
 
@@ -4351,7 +4666,7 @@ async function submitStockIn(){
 
   // 🔍 validate
   if (!Number.isInteger(qty) || qty <= 0) {
-    alert("จำนวนไม่ถูกต้อง");
+    showToast("จำนวนไม่ถูกต้อง", "warning");
     qtyInput.focus();
     return;
   }
@@ -4371,10 +4686,11 @@ async function submitStockIn(){
       throw new Error(res.error);
     }
 
-    alert("รับสต๊อกเข้าแล้ว");
+    showToast("รับสต๊อกเข้าแล้ว", "success");
 
-    // 🔄 refresh สินค้า
+    // 🔄 sync ข้อมูลหลัก + ข้อมูลย้อนหลังทันที
     await refreshProducts();
+    await refreshAdminAuditSnapshot();
 
     // 🧹 reset input
     qtyInput.value = "";
@@ -4388,7 +4704,7 @@ async function submitStockIn(){
 
   } catch (err) {
     console.error(err);
-    alert(err.message || "ไม่สามารถรับสต๊อกได้");
+    showToast(err.message || "ไม่สามารถรับสต๊อกได้", "error");
   } finally {
     // 🔓 เปิดปุ่มกลับทุกกรณี
     buttons.forEach(b => b.disabled = false);
@@ -4399,7 +4715,7 @@ async function submitStockIn(){
 async function submitStockAdjust(){
   // 🔒 guard
   if (state.mode !== "admin" || !state.admin.loggedIn || !state.selectedProduct) {
-    alert("Unauthorized");
+    showToast("Unauthorized", "error");
     return;
   }
 
@@ -4411,7 +4727,7 @@ async function submitStockAdjust(){
 
   // 🔍 validate
   if (!Number.isInteger(newQty) || newQty < 0) {
-    alert("จำนวนไม่ถูกต้อง");
+    showToast("จำนวนไม่ถูกต้อง", "warning");
     qtyInput.focus();
     return;
   }
@@ -4431,10 +4747,11 @@ async function submitStockAdjust(){
       throw new Error(res.error);
     }
 
-    alert("ปรับสต๊อกแล้ว");
+    showToast("ปรับสต๊อกแล้ว", "success");
 
-    // 🔄 refresh สินค้า
+    // 🔄 sync ข้อมูลหลัก + ข้อมูลย้อนหลังทันที
     await refreshProducts();
+    await refreshAdminAuditSnapshot();
 
     // 🧹 reset input
     qtyInput.value = "";
@@ -4450,7 +4767,7 @@ async function submitStockAdjust(){
 
   } catch (err) {
     console.error(err);
-    alert(err.message || "ไม่สามารถปรับสต๊อกได้");
+    showToast(err.message || "ไม่สามารถปรับสต๊อกได้", "error");
   } finally {
     // 🔓 เปิดปุ่มกลับทุกกรณี
     buttons.forEach(b => b.disabled = false);
@@ -4536,11 +4853,26 @@ async function refreshProductsWithFeedback({
     // 5️⃣ แจ้ง error แบบไม่พัง UI
     if (!silent) {
       showToast("ไม่สามารถโหลดข้อมูลสินค้าได้", "error");
+      confirmSheet.innerHTML = `
+        <h3>โหลดข้อมูลไม่สำเร็จ</h3>
+        <div style="margin-top:12px;color:rgba(235,235,245,.78)">
+          กรุณาลองใหม่อีกครั้ง
+        </div>
+        <button class="btn btn-primary" style="margin-top:16px"
+          onclick="closeOverlay(confirmSheet); refreshProductsWithFeedback()">
+          ลองใหม่
+        </button>
+        <button class="btn btn-outline" style="margin-top:8px"
+          onclick="closeOverlay(confirmSheet)">
+          ปิด
+        </button>
+      `;
+      openOverlay(confirmSheet);     
     }
   }
 }
  
-function openMainMenu(){
+function openMainMenu(triggerEl){
   const adminValid =
     state.admin.loggedIn &&
     state.admin.token &&
@@ -4548,7 +4880,7 @@ function openMainMenu(){
 
   // ✅ ถ้าอยู่ใน admin mode แต่ session ไม่ valid → ค่อยบังคับออก
   if (state.mode === "admin" && !adminValid) {
-    alert("Session หมดอายุ กรุณา login ใหม่");
+    showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
     exitAdmin();
     return;
   }
@@ -4626,8 +4958,13 @@ function openMainMenu(){
     }
   `;
 
+  rememberTrigger(triggerEl || document.querySelector(".menu-btn"));
+
   // ✅ เปิดผ่าน Overlay Manager เท่านั้น
   openOverlay(mainMenuSheet);
+
+  document.querySelectorAll(".menu-btn")
+    .forEach(b => syncExpanded(b, true)); 
 }
 
 function openAddProduct(force = false){
@@ -4651,10 +4988,14 @@ function openAddProduct(force = false){
 
   state.addImageFile = null;
   const draft = state.smartAddDraft || {};
-  // 🔒 guard: กัน textarea ปิดแท็กเอง (DOM แตก)
-  const safeNote = String(draft.note || "").replace(/<\/textarea>/gi, "");
   // 🔴 ADDED: สร้าง SKU ถัดไปอัตโนมัติจาก state.products
   const nextProductId = getNextProductId();
+  const safeNextProductId = escapeHtml(nextProductId);
+  const safeDraftName = escapeHtml(draft.name || "");
+  const safeDraftPrice = escapeHtml(draft.price || "");
+  const safeDraftCostPrice = escapeHtml(draft.costPrice || "");
+  const safeDraftStock = escapeHtml(draft.stock || "");
+  const safeNote = escapeHtml(draft.note || "");
  
   adminAddProductSheet.innerHTML = `
     <h3>➕ เพิ่มสินค้าใหม่</h3>
@@ -4665,27 +5006,27 @@ function openAddProduct(force = false){
 
     <div class="form-group">
       <label>รหัสสินค้า (SKU)</label>
-      <input id="addProductId" value="${nextProductId}" placeholder="เช่น P002">
+      <input id="addProductId" value="${safeNextProductId}" placeholder="เช่น P002">
     </div>
 
     <div class="form-group">
       <label>ชื่อสินค้า</label>
-      <input id="addName" placeholder="ชื่อสินค้า">
+      <input id="addName" value="${safeDraftName}" placeholder="ชื่อสินค้า">
     </div>
 
     <div class="form-group">
       <label>ราคาขาย</label>
-      <input id="addPrice" type="number" value="${draft.price || ""}" placeholder="0">
+      <input id="addPrice" type="number" value="${safeDraftPrice}" placeholder="0">
     </div>
 
     <div class="form-group">
       <label>ราคาต้นทุน</label>
-      <input id="addCostPrice" type="number" value="${draft.costPrice || ""}" placeholder="0">
+      <input id="addCostPrice" type="number" value="${safeDraftCostPrice}" placeholder="0">
     </div>
 
     <div class="form-group">
       <label>จำนวน (สต๊อกเริ่มต้น)</label>
-      <input id="addStock" type="number" value="${draft.stock || ""}" placeholder="0">
+      <input id="addStock" type="number" value="${safeDraftStock}" placeholder="0">
     </div>
 
     <!-- 🔴 สถานะสินค้า (เพื่อแจ้งลูกค้า) -->
@@ -4719,9 +5060,11 @@ function openAddProduct(force = false){
       <label>รูปสินค้า</label>
       <img id="addImagePreview"
         style="width:120px;border-radius:12px;display:none;margin-bottom:6px">
-      <input type="file"
-        accept="image/*"
-        onchange="handleAddImagePreview(this)">
+      <input
+   id="addImageFile"
+   type="file"
+   accept="image/*"
+   onchange="handleAddImagePreview(this)">
     </div>
 
     <!-- 🔁 CONTINUE MODE -->
@@ -4748,10 +5091,40 @@ function openAddProduct(force = false){
   openOverlay(adminAddProductSheet);
 }
 
+ const PRODUCT_IMAGE_MAX_MB = 5;
+ const PRODUCT_IMAGE_ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+ 
+function validateProductImageFile(file) {
+   if (!file) return;
+
+   if (!PRODUCT_IMAGE_ALLOWED_TYPES.includes(file.type)) {
+     throw new Error("รองรับเฉพาะไฟล์ JPG, PNG, WEBP");
+   }
+
+   const maxBytes = PRODUCT_IMAGE_MAX_MB * 1024 * 1024;
+   if (file.size > maxBytes) {
+     throw new Error(`รูปต้องมีขนาดไม่เกิน ${PRODUCT_IMAGE_MAX_MB} MB`);
+   }
+ }
+ 
 function handleAddImagePreview(input){
   const file = input.files[0];
   if(!file) return;
 
+ try {
+   validateProductImageFile(file);
+ } catch (err) {
+   input.value = "";
+   state.addImageFile = null;
+   const img = document.getElementById("addImagePreview");
+   if (img) {
+     img.removeAttribute("src");
+     img.style.display = "none";
+   }
+   showToast(err.message || "ไฟล์รูปไม่ถูกต้อง", "error");
+   return;
+ }
+ 
   const reader = new FileReader();
   reader.onload = () => {
     const img = document.getElementById("addImagePreview");
@@ -4764,14 +5137,114 @@ function handleAddImagePreview(input){
 }
 
 function closeAddProduct(){
+ const continueMode =
+   document.getElementById("addContinueMode")?.checked === true;
+ 
   state.addImageFile = null;
+  state.admin.ui.activeSheet = null;
+
+ const img = document.getElementById("addImagePreview");
+ if (img) {
+   img.removeAttribute("src");
+   img.style.display = "none";
+ }
+
+ const fileInput = document.getElementById("addImageFile");
+ if (fileInput) {
+   fileInput.value = "";
+ }
+
+ if (!continueMode) {
+   document.getElementById("addProductId").value = "";
+   document.getElementById("addName").value = "";
+   document.getElementById("addPrice").value = "";
+   document.getElementById("addCostPrice").value = "";
+   document.getElementById("addStock").value = "";
+   document.getElementById("addStatus").value = "ready";
+   if (document.getElementById("addNote")) {
+     document.getElementById("addNote").value = "";
+   }
+   if (document.getElementById("addContinueMode")) {
+     document.getElementById("addContinueMode").checked = false;
+   }
+   state.smartAddDraft = {
+     name: "",
+     price: "",
+     costPrice: "",
+     stock: "",
+     status: "ready",
+     note: ""
+   };
+ } 
+
   closeOverlay(adminAddProductSheet);
 }
   
 function closeMainMenu(){
-  closeOverlay(mainMenuSheet);
+  state.admin.ui.activeSheet = null;
+   closeOverlay(mainMenuSheet);
+   document.querySelectorAll(".menu-btn[aria-expanded='true']")
+     .forEach(b => syncExpanded(b, false));
+   restoreTriggerFocus();
  }
 
+ // ================= GLOBAL KEYBOARD SUPPORT =================
+ document.addEventListener("keydown", (e) => {
+   const activeOverlay = [...document.querySelectorAll(".sheet.show, .side-menu.show")].pop();
+
+   if (e.key === "Escape") {
+     const filter = document.getElementById("filterDropdown");
+     if (filter?.classList.contains("show")) {
+       filter.classList.remove("show");
+       document.querySelectorAll(".filter-btn[aria-expanded='true']")
+         .forEach(b => syncExpanded(b, false));
+       restoreTriggerFocus();
+       return;
+     }
+
+     const viewerSearch = document.getElementById("viewerSearchWrap");
+     if (viewerSearch?.classList.contains("active")) {
+       toggleViewerSearch(viewerSearch.querySelector(".search-btn"));
+       return;
+     }
+
+     const adminSearch = document.getElementById("adminSearchWrap");
+     if (adminSearch?.classList.contains("active")) {
+       toggleAdminSearch(adminSearch.querySelector(".search-btn"));
+       return;
+     }
+
+     if (activeOverlay && !state.ui.backdropLocked) {
+       if (activeOverlay === mainMenuSheet) return closeMainMenu();
+       return closeOverlay(activeOverlay);
+     }
+   }
+
+   if (e.key === "Tab" && activeOverlay) {
+     const focusables = activeOverlay.querySelectorAll(
+       'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+     );
+     if (!focusables.length) return;
+
+     const first = focusables[0];
+     const last = focusables[focusables.length - 1];
+    
+    if (!activeOverlay.contains(document.activeElement)) {
+      e.preventDefault();
+      first.focus();
+      return;
+    }
+
+     if (e.shiftKey && document.activeElement === first) {
+       e.preventDefault();
+       last.focus();
+     } else if (!e.shiftKey && document.activeElement === last) {
+       e.preventDefault();
+       first.focus();
+     }
+   }
+ });
+ 
 /* ================= VIEWER FLOW ================= */
 function openProduct(p){
   // 🔴 ADMIN FLOW
@@ -4844,7 +5317,7 @@ async function submitOrder(){
  confirmSheet.innerHTML = `
    <h3>สร้างใบสั่งซื้อสำเร็จ</h3>
    <div style="margin-top:12px">
-     เลขที่ใบสั่งซื้อ: ${res.data.orderId}
+     เลขที่ใบสั่งซื้อ: ${escapeHtml(res.data.orderId)}
    </div>
    <button class="btn btn-primary"
      style="margin-top:16px"
@@ -4950,32 +5423,40 @@ function openProductEdit(p){
     .map(s => s.trim())
     .filter(Boolean);
 
+  const safeEditProductId = escapeHtml(latestProduct.productId || "");
+  const safeEditName = escapeHtml(latestProduct.name || "");
+  const safeEditPrice = escapeHtml(latestProduct.price ?? "");
+  const safeEditCostPrice = escapeHtml(latestProduct.costPrice ?? "");
+  const safeEditStock = escapeHtml(latestProduct.stock ?? ""); 
+  const safeEditNote = escapeHtml(latestProduct.note || "");
+  const safeEditDetailsText = escapeHtml(latestProduct.detailsText || "");
+
   adminProductEditSheet.innerHTML = `
     <h3>แก้ไขสินค้า</h3>
 
     <div class="form-group">
       <label>รหัสสินค้า (SKU)</label>
-      <input id="editProductId" value="${latestProduct.productId}">
+      <input id="editProductId" value="${safeEditProductId}">
     </div>
 
     <div class="form-group">
       <label>ชื่อสินค้า</label>
-      <input id="editName" value="${latestProduct.name}">
+      <input id="editName" value="${safeEditName}">
     </div>
 
     <div class="form-group">
       <label>ราคาขาย</label>
-      <input id="editPrice" type="number" value="${latestProduct.price}">
+      <input id="editPrice" type="number" value="${safeEditPrice}">
     </div>
     
     <div class="form-group">
       <label>ราคาต้นทุน</label>
-      <input id="editCostPrice" type="number" value="${latestProduct.costPrice ?? ""}">
+      <input id="editCostPrice" type="number" value="${safeEditCostPrice}">
     </div>
 
     <div class="form-group">
       <label>จำนวน</label>
-      <input id="editStock" type="number" value="${latestProduct.stock}">
+      <input id="editStock" type="number" value="${safeEditStock}">
     </div>
 
     <div class="form-group">
@@ -5010,7 +5491,7 @@ function openProductEdit(p){
           border-radius: 12px;
           padding: 10px 12px;
         "
-      >${p.note || ""}</textarea>
+      >${safeEditNote}</textarea>
     </div>
 
     <!-- 📄 PRODUCT DETAIL (VIEWER) -->
@@ -5020,7 +5501,7 @@ function openProductEdit(p){
         id="editDetailsText"
         rows="4"
         placeholder="ใส่ทีละบรรทัด"
-      >${p.detailsText || ""}</textarea>
+      >${safeEditDetailsText}</textarea>
     </div>
 
 <div class="form-group">
@@ -5032,7 +5513,7 @@ function openProductEdit(p){
   ${
     state.compareImagesDraft.map((url, idx) => `
       <div style="position:relative">
-        <img src="${url}"
+        <img src="${escapeHtml(url)}"
              style="
                width:80px;
                height:80px;
@@ -5075,7 +5556,7 @@ function openProductEdit(p){
       <img id="imagePreview"
         src="${p.image || ""}"
         style="width:100%;border-radius:12px;margin-bottom:6px">
-      <input type="file"
+      <input id="editImageFile" type="file"
         accept="image/*"
         onchange="handleImagePreview(this)">
     </div>
@@ -5137,7 +5618,7 @@ function removeCompareImage(index){
 
   wrap.innerHTML = state.compareImagesDraft.map((url, idx) => `
     <div style="position:relative">
-      <img src="${url}"
+      <img src="${escapeHtml(url)}"
            style="
              width:80px;
              height:80px;
@@ -5168,6 +5649,19 @@ function removeCompareImage(index){
 function handleImagePreview(input){
   const file = input.files[0];
   if(!file) return;
+
+ try {
+   validateProductImageFile(file);
+ } catch (err) {
+   input.value = "";
+   state.editImageFile = null;
+   const img = document.getElementById("imagePreview");
+   if (img && state.selectedProduct?.image) {
+     img.src = state.selectedProduct.image;
+   }
+   showToast(err.message || "ไฟล์รูปไม่ถูกต้อง", "error");
+   return;
+ } 
 
   const reader = new FileReader();
   reader.onload = () => {
@@ -5207,7 +5701,7 @@ async function handleCompareImagesUpload(input){
    if (wrap) {
      wrap.innerHTML = state.compareImagesDraft.map((url, idx) => `
        <div style="position:relative">
-         <img src="${url}"
+         <img src="${escapeHtml(url)}"
               style="
                 width:80px;
                 height:80px;
@@ -5253,9 +5747,16 @@ function closeProductEdit(){
 
 async function uploadProductImage(file) {
   return new Promise((resolve, reject) => {
-    // 🔒 guard token
+    try {
+      validateProductImageFile(file);
+    } catch (err) {
+      reject(err);
+      return;
+    }
+
+    // 🔴 CHANGED: ให้ error เป็น Error object เสมอ
     if (!state.admin || !state.admin.token) {
-      reject("Missing admin token");
+      reject(new Error("Missing admin token"));
       return;
     }
 
@@ -5263,40 +5764,52 @@ async function uploadProductImage(file) {
 
     reader.onload = async () => {
       try {
-        // 🔹 ตัด data:image/...;base64,
-        const base64 = reader.result.split(",")[1];
+        // 🔴 CHANGED: กัน reader.result ว่าง/ผิดรูปแบบ
+        const result = String(reader.result || "");
+        const base64 = result.includes(",") ? result.split(",")[1] : "";
+        if (!base64) {
+          throw new Error("ไม่สามารถอ่านข้อมูลรูปภาพได้");
+        }
 
-        // ✅ ใช้ FormData
         const formData = new FormData();
-        formData.append("action", "uploadProductImage"); // ✅ สำคัญ (ที่ขาดอยู่)
+        formData.append("action", "uploadProductImage");
         formData.append("token", state.admin.token);
         formData.append("filename", file.name);
         formData.append("mimeType", file.type || "image/jpeg");
         formData.append("data", base64);
 
-        const res = await fetch(API_URL, {
+        // 🔴 CHANGED: ใช้ fetchWithTimeout แบบเดียวกับ API อื่น
+        const res = await fetchWithTimeout(API_URL, {
           method: "POST",
           body: formData
-        });
+        }, 30000);
 
-        const json = await res.json();
-
-        // 🔒 backend wrap data ไว้ใน data
-        if (!json.success || !json.data || !json.data.imageUrl) {
-          reject(json.error || json.message || "Upload failed");
-          return;
+        let json;
+        try {
+          json = await res.json();
+        } catch (_) {
+          throw new Error("รูปแบบข้อมูลตอบกลับจากการอัปโหลดไม่ถูกต้อง");
         }
 
-        // ✅ สำเร็จ
-        resolve(json.data.imageUrl);
+        if (!json || json.success !== true || !json.data?.imageUrl) {
+          const rawMessage = json?.message || json?.error || "Upload failed";
 
+          // 🔴 CHANGED: แปลง DriveApp error ให้ debug ง่าย
+          if (String(rawMessage).includes("DriveApp")) {
+            throw new Error("อัปโหลดรูปไม่สำเร็จ: Apps Script ยังไม่มีสิทธิ์ใช้ DriveApp");
+          }
+
+          throw new Error(rawMessage);
+        }
+
+        resolve(json.data.imageUrl);
       } catch (err) {
-        reject(err);
+        reject(err instanceof Error ? err : new Error(String(err || "Upload failed")));
       }
     };
 
     reader.onerror = () => {
-      reject("File read error");
+      reject(new Error("File read error"));
     };
 
     reader.readAsDataURL(file);
@@ -5304,13 +5817,13 @@ async function uploadProductImage(file) {
 }
   
 async function submitProductEdit(){
-  // 🔒 GUARD: กันกดซ้ำ
-  if (state.isSubmitting) return;
+  // 🔒 GUARD: กันกดซ้ำ (admin scope only)
+  if (state.admin.isSubmitting) return;
 
   const p = state.selectedProduct;
   if (!p) return;
 
-  state.isSubmitting = true;
+  state.admin.isSubmitting = true;
 
   // 🔒 LOCK BUTTON
   const saveBtn = adminProductEditSheet.querySelector(".btn-primary");
@@ -5325,9 +5838,13 @@ async function submitProductEdit(){
   const rawCostPrice = document.getElementById("editCostPrice").value.trim();
   const costPrice = rawCostPrice === "" ? null : Number(rawCostPrice);
   const stock  = Number(document.getElementById("editStock").value);
-  const status = document.getElementById("editStatus").value;
-  const newProductId = document.getElementById("editProductId").value.trim();
-  const oldProductId = p.productId;
+  let status = normalizeProductStatus(
+    document.getElementById("editStatus").value
+  );
+  const newProductId = normalizeProductId(
+    document.getElementById("editProductId").value
+  );
+  const oldProductId = normalizeProductId(p.productId);
   const note   = document.getElementById("editNote")?.value.trim() || "";
   const detailsText =
   document.getElementById("editDetailsText")?.value.trim() || "";
@@ -5341,10 +5858,10 @@ async function submitProductEdit(){
   if (
    !name ||
    !newProductId ||
-   !Number.isFinite(price) ||
+   !Number.isInteger(price) ||
    costPrice === null ||
-   !Number.isFinite(costPrice) ||
-   !Number.isFinite(stock) ||
+   !Number.isInteger(costPrice) ||
+   !Number.isInteger(stock) ||
    price < 0 ||
    costPrice < 0 || 
    stock < 0
@@ -5352,7 +5869,7 @@ async function submitProductEdit(){
     showToast("ข้อมูลไม่ถูกต้อง", "error");
 
     // 🔓 คืนสภาพทันที
-    state.isSubmitting = false;
+    state.admin.isSubmitting = false;
     if (saveBtn) {
       saveBtn.disabled = false;
       saveBtn.textContent = originalText;
@@ -5361,13 +5878,14 @@ async function submitProductEdit(){
   }
 
   // 🔒 SKU Duplicate Check (วางตรงนี้เท่านั้น)
-  const duplicate = state.products.find(
-    x => x.productId === newProductId && x.productId !== oldProductId
-  );
+ const duplicate = state.products.find(x =>
+   normalizeProductId(x.productId) === newProductId &&
+   normalizeProductId(x.productId) !== oldProductId
+ );
  
   if (duplicate) {
     showToast("รหัสสินค้านี้มีอยู่แล้ว", "error");
-    state.isSubmitting = false;
+    state.admin.isSubmitting = false;
     if (saveBtn) {
       saveBtn.disabled = false;
       saveBtn.textContent = originalText;
@@ -5375,6 +5893,10 @@ async function submitProductEdit(){
     return;
   }
 
+  if (stock === 0) {
+    status = "out";
+  }
+ 
   let imageUrl = p.image || "";
 
   try {
@@ -5382,6 +5904,7 @@ async function submitProductEdit(){
 
     // ถ้ามีการเลือกภาพใหม่ → upload ก่อน
     if (state.editImageFile) {
+      validateProductImageFile(state.editImageFile);
       imageUrl = await uploadProductImage(state.editImageFile);
       if (!imageUrl) {
         throw new Error("ไม่สามารถอัปโหลดรูปได้");
@@ -5404,14 +5927,7 @@ async function submitProductEdit(){
     form.append("detailsText", detailsText);
     form.append("compareImages", compareImages);
 
-    const res = await fetch(API_URL, {
-      method: "POST",
-      body: form
-    }).then(r => r.json());
-
-    if (res.error || res.success === false) {
-      throw new Error(res.message || res.error || "บันทึกไม่สำเร็จ");
-    }
+    const res = await postFormAction(form);
 
     showToast("บันทึกการแก้ไขเรียบร้อย", "success");
 
@@ -5421,6 +5937,7 @@ async function submitProductEdit(){
     state.editImageFile = null;
     closeProductEdit();
     await refreshProducts();
+    await refreshAdminAuditSnapshot();
 
   } catch (err) {
     console.error(err);
@@ -5432,7 +5949,7 @@ async function submitProductEdit(){
   } finally {
     // ✅ CLEANUP กลางเดียว (หัวใจ STEP 9)
     safeHideLoading();
-    state.isSubmitting = false;
+    state.admin.isSubmitting = false;
 
     if (saveBtn) {
       saveBtn.disabled = false;
@@ -5443,7 +5960,8 @@ async function submitProductEdit(){
 
 function confirmDeleteProduct() {
   if (state.mode !== "admin") return;
-  if (state.admin.isSubmitting || state.isSubmitting) return;
+  if (state.admin.isSubmitting) return;
+
   const p = state.selectedProduct;
   if (!p) return;
 
@@ -5452,28 +5970,41 @@ function confirmDeleteProduct() {
     showToast("สินค้านี้ถูกลบไปแล้ว", "warning");
     return;
   }
-  
- const ok = confirm(
-   `⚠️ ลบสินค้าแบบถาวร\n\n` +
-   `สินค้า: "${p.name}"\n` +
-   `รหัส: ${p.productId}\n\n` +
-   `การลบนี้ไม่สามารถกู้คืนได้\n\n` +
-   `กด OK เพื่อยืนยัน`
- );
 
-  if (!ok) return;
+  // 🔴 CHANGED: ปิดหน้าแก้ไขก่อน เพื่อไม่ให้ confirm ไปซ้อนอยู่ข้างหลัง
+  closeOverlay(adminProductEditSheet);
 
-  deleteProduct();
-}
+  confirmSheet.innerHTML = `
+    <h3>ลบสินค้าแบบถาวร</h3>
+    <div style="margin-top:12px">
+      สินค้า: "${p.name}"<br>
+      รหัส: ${p.productId}<br><br>
+      การลบนี้ไม่สามารถกู้คืนได้
+    </div>
+    <button class="btn btn-danger" style="margin-top:16px"
+      onclick="closeOverlay(confirmSheet); deleteProduct()">
+      ยืนยันการลบ
+    </button>
+    <button class="btn btn-outline" style="margin-top:8px"
+      onclick="
+        closeOverlay(confirmSheet);
+        openProductEditById('${p.productId}');
+      ">
+      ยกเลิก
+    </button>
+  `;
+
+  // 🔴 CHANGED: เปิด confirm หลังจากปิด edit sheet แล้ว
+  openOverlay(confirmSheet);
+  }
 
 async function deleteProduct() {
-  if (state.admin.isSubmitting || state.isSubmitting) return;
+  if (state.admin.isSubmitting) return;
 
   const p = state.selectedProduct;
   if (!p || !state.admin.token) return;
 
   state.admin.isSubmitting = true;
-  state.isSubmitting = true;
 
   try {
     showLoading("กำลังลบสินค้า...");
@@ -5483,25 +6014,7 @@ async function deleteProduct() {
     form.append("token", state.admin.token);
     form.append("productId", p.productId);
 
-    const res = await fetch(API_URL, {
-      method: "POST",
-      body: form
-    }).then(r => r.json());
-
-    if (res.error || res.success === false) {
-      if (
-        res.error === "Session expired" ||
-        res.error === "Invalid token" ||
-        res.error === "Missing token"
-      ) {
-        showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
-        exitAdmin();
-        return;
-      }
-        throw new Error(
-        res.message || res.error || "ไม่สามารถลบสินค้าได้ (อาจถูกลบแล้ว)"
-      );
-    }
+    const res = await postFormAction(form);
     
     showToast("ลบสินค้าเรียบร้อย", "success");
 
@@ -5512,6 +6025,7 @@ async function deleteProduct() {
 
     // 🔄 refresh สินค้า
     await refreshProducts();
+    await refreshAdminAuditSnapshot();
 
   } catch (err) {
     console.error(err);
@@ -5520,21 +6034,45 @@ async function deleteProduct() {
   } finally {
     safeHideLoading();
     state.admin.isSubmitting = false;
-    state.isSubmitting = false;
   }
 }
   
-  
+function normalizeProductId(value = "") {
+   return String(value || "").trim().toUpperCase();
+ }
+
+const ALLOWED_PRODUCT_STATUS = ["ready", "shipping", "warehouse", "out"];
+
+function normalizeProductStatus(value = "") {
+  const normalized = String(value || "").trim().toLowerCase();
+  return ALLOWED_PRODUCT_STATUS.includes(normalized) ? normalized : "ready";
+}
+
+function validateProductImageFile(file) {
+  if (!file) return;
+
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  const maxBytes = 5 * 1024 * 1024;
+
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error("รองรับเฉพาะไฟล์ JPG, PNG, WEBP");
+  }
+
+  if (file.size > maxBytes) {
+    throw new Error("รูปสินค้าต้องมีขนาดไม่เกิน 5MB");
+  }
+} 
+ 
 async function submitAddProduct(btn){
   // 🔒 guard
   if(state.mode !== "admin" || !state.admin.loggedIn){
-    alert("Unauthorized");
+    showToast("ไม่มีสิทธิ์ใช้งานส่วนนี้", "warning");
     return;
   }
 
   // 🔒 กันกดซ้ำ
-  if(state.isSubmitting) return;
-  state.isSubmitting = true;
+  if(state.admin.isSubmitting) return;
+  state.admin.isSubmitting = true;
 
   // ✅ ใช้ปุ่มจาก parameter
   if(btn){
@@ -5545,13 +6083,18 @@ async function submitAddProduct(btn){
   try {
     // 🔔 UX: แจ้งเริ่มกระบวนการ
     showLoading("กำลังตรวจสอบข้อมูลสินค้า...");
-    const productId = document.getElementById("addProductId").value.trim();
+
+    const productId = normalizeProductId(
+      document.getElementById("addProductId").value
+    );
     const name      = document.getElementById("addName").value.trim();
     const price     = Number(document.getElementById("addPrice").value);
     const rawCostPrice = document.getElementById("addCostPrice").value.trim();
     const costPrice = rawCostPrice === "" ? null : Number(rawCostPrice);
     const stock     = Number(document.getElementById("addStock").value);
- let status      = document.getElementById("addStatus").value;
+ let status      = normalizeProductStatus(
+   document.getElementById("addStatus").value
+ );
  const note      = document.getElementById("addNote")?.value.trim() || "";
  const continueMode =
    document.getElementById("addContinueMode")?.checked === true;   
@@ -5577,7 +6120,9 @@ async function submitAddProduct(btn){
       throw new Error("ราคา ราคาต้นทุน และจำนวน ต้องมากกว่าหรือเท่ากับ 0");
     }
 
-    const dup = state.products.find(p => p.productId === productId);
+    const dup = state.products.find(
+      p => normalizeProductId(p.productId) === productId
+    );
     if (dup) {
       document.getElementById("addProductId").focus();
       throw new Error("รหัสสินค้า (SKU) นี้มีอยู่แล้ว");
@@ -5592,6 +6137,7 @@ async function submitAddProduct(btn){
 
     let imageUrl = "";
     if (state.addImageFile) {
+      validateProductImageFile(state.addImageFile);
       showLoading("กำลังอัปโหลดรูปสินค้า...");
       imageUrl = await uploadProductImage(state.addImageFile);
       if (!imageUrl) {
@@ -5615,12 +6161,9 @@ async function submitAddProduct(btn){
     form.append("image", imageUrl);
     form.append("note", note);
 
-    const res = await fetch(API_URL, {
-      method: "POST",
-      body: form
-    }).then(r => r.json());
+    const res = await postFormAction(form);
 
-    if(res.error || res.success === false){
+    if (res.error || res.success === false) {
       throw new Error(res.message || res.error || "เพิ่มสินค้าไม่สำเร็จ");
     }
 
@@ -5629,8 +6172,9 @@ async function submitAddProduct(btn){
     state.addImageFile = null;
 // 🧠 SMART MODE SAVE (จำค่าล่าสุดเสมอ)
  state.smartAddDraft = {
-   name,   // 🔴 CHANGED: จำชื่อสินค้าไว้สำหรับโหมดเพิ่มต่อเนื่อง
+   name: "",
    price,
+   costPrice,
    stock,
    status,
    note
@@ -5642,7 +6186,9 @@ async function submitAddProduct(btn){
    const nextProductId = getNextProductId(productId);
 
    document.getElementById("addProductId").value = nextProductId;
-   document.getElementById("addName").value = state.smartAddDraft.name ?? ""; // 🔴 CHANGED: คงชื่อสินค้าเดิมไว้
+   document.getElementById("addName").value = state.smartAddDraft.name ?? "";
+   document.getElementById("addPrice").value = state.smartAddDraft.price ?? "";
+   document.getElementById("addCostPrice").value = state.smartAddDraft.costPrice ?? "";
    document.getElementById("addStock").value = state.smartAddDraft.stock ?? "";
    document.getElementById("addStatus").value = state.smartAddDraft.status ?? "ready";
    document.getElementById("addNote").value = state.smartAddDraft.note ?? "";
@@ -5653,6 +6199,11 @@ async function submitAddProduct(btn){
      img.style.display = "none";
    }
 
+   const fileInput = document.getElementById("addImageFile");
+   if (fileInput) {
+     fileInput.value = "";
+   }
+  
    state.addImageFile = null;
    document.getElementById("addProductId").focus();
    document.getElementById("addProductId").select();
@@ -5665,7 +6216,7 @@ async function submitAddProduct(btn){
     showToast(err.message || "เกิดข้อผิดพลาด", "error");
   } finally {
     safeHideLoading(); // 🔒 สำคัญ: ปิด loading ทุกกรณี
-    state.isSubmitting = false;
+    state.admin.isSubmitting = false;
 
     if(btn){
       btn.disabled = false;
@@ -6321,8 +6872,13 @@ function clearAdminSession(){
   state.admin.loggedIn = false;
   state.admin.user = "";
   state.admin.token = "";
-  state.admin.expiredAt = "";
+  state.admin.expiredAt = null;
+  state.admin.orders = [];
+  state.admin.selectedOrder = null;
+  state.admin.logs = [];
+  state.admin.ui.activeSheet = null;
   state.admin.isSubmitting = false;
+  state.isSubmitting = false;
 }
 
 function exitAdmin(opts = {}){
@@ -6334,15 +6890,10 @@ function exitAdmin(opts = {}){
 
   // 2) ปิด overlay/sheet ทุกตัวแบบ force (กัน overlayCount เพี้ยน)
   const sheets = [
-    mainMenuSheet,
-    adminLoginSheet,
-    adminDashboardSheet,
-    adminStockSheet,
-    adminAddProductSheet,
+    ...getAdminSheets(),
     productSheet,
-    adminProductEditSheet,
     confirmSheet
-  ].filter(Boolean);
+  ];
 
   sheets.forEach(el => el.classList.remove("show"));
   state.ui.overlayCount = 0;
@@ -6353,11 +6904,20 @@ function exitAdmin(opts = {}){
 
   // 4) กลับสู่ viewer mode เสมอ (ตามตัวเลือก A)
   state.mode = "viewer";
+  state.admin.ui.activeSheet = null;
 
   // 5) เคลียร์ selection/admin draft ที่อาจทำให้หลุด flow
   state.selectedProduct = null;
   state.editImageFile = null;
   state.addImageFile = null;
+  state.smartAddDraft = {
+    name: "",
+    price: "",
+    costPrice: "",
+    stock: "",
+    status: "ready",
+    note: ""
+  };
 
   // 6) rerender เฉพาะที่จำเป็น (ไม่แตะ flow อื่น)
   renderHeader();
@@ -6586,10 +7146,10 @@ const __domReady = new Promise((resolve) => {
         form.append("action", "orders");
         form.append("token", restored.token);
 
-        const res = await fetch(API_URL, {
+        const res = await fetchWithTimeout(API_URL, {
           method: "POST",
           body: form
-        });
+        }, 15000);
 
         const json = await res.json();
 
