@@ -2410,7 +2410,8 @@ async function createOrder() {
   form.append("action", "createOrder");
   form.append("items", JSON.stringify(state.cart));
   form.append("total", total);
-
+  form.append("poNumber", String(state.poNumber || "").trim());
+ 
   // ใช้ fetchWithTimeout เพื่อป้องกัน request แขวน
   const res = await fetchWithTimeout(API_URL, {
     method: "POST",
@@ -3206,12 +3207,14 @@ function renderConfirmSheet(){
     <div class="total">ยอดรวม: ฿${total}</div>
 
     <div class="form-group" style="margin-top:12px">
-     <label>เลข PO (ถ้ามี)</label>
-     <input
-       id="poInput"
-       placeholder="กรอกเลข PO"
-       oninput="state.poNumber = this.value.trim()">
-   </div>
+     <label>เลข PO <span style="color:#ff3b30">*</span></label>
+      <input
+        id="poInput"
+        value="${esc(state.poNumber || "")}"
+        placeholder="กรอกเลข PO"
+        required
+        oninput="state.poNumber = this.value.trim()">
+    </div>
 
 
 <button class="btn btn-primary"
@@ -5276,6 +5279,14 @@ function closeProduct(){
 async function submitOrder(){
   // ❌ ห้ามใช้ state.loading เป็น guard
   if (state.isSubmitting || state.cart.length === 0) return;
+ 
+ const poNumber = String(state.poNumber || "").trim();
+ if (!poNumber) {
+   showToast("กรุณากรอกเลข PO", "warning");
+   const poInput = document.getElementById("poInput");
+   if (poInput) poInput.focus();
+   return;
+ }
 
   state.isSubmitting = true;
   state.ui.backdropLocked = true;
