@@ -1964,7 +1964,8 @@ Object.assign(window, {
   cancelAdminLogin,
   closeMainMenu,
   closeAddProduct,
-  closeProduct
+  closeProduct,
+  reopenLastOrderSheet
 });
 
 // 🔒 Intent guards (STEP 2)
@@ -2035,6 +2036,7 @@ const state = {
 /* ================= CART STORAGE (VIEWER ONLY) ================= */
 
 const CART_KEY = "luopanich_cart";
+const LAST_ORDER_KEY = "luopanich_last_order"; 
 
 function escapeHtml(value = "") {
   return String(value)
@@ -2070,6 +2072,77 @@ function loadCart() {
 function clearCartStorage() {
   localStorage.removeItem(CART_KEY);
 }  
+ 
+state.lastOrder = loadLastOrder();
+
+function renderLastOrderSheet() {
+  const order = state.lastOrder;
+  if (!order) {
+    showToast("ไม่พบบิลล่าสุด", "warning");
+    return;
+  }
+
+  confirmSheet.innerHTML = `
+    <h3>บิลล่าสุด</h3>
+    <div style="margin-top:12px">
+      เลขที่ใบสั่งซื้อ: ${escapeHtml(order.orderId)}
+    </div>
+    <div style="margin-top:6px;color:rgba(235,235,245,.72);font-size:14px">
+      PO: ${escapeHtml(order.poNumber || "-")}
+    </div>
+    <button class="btn btn-primary"
+      style="margin-top:16px"
+      onclick="exportOrderPrint()">
+      ดาวน์โหลดใบสั่งซื้อ
+    </button>
+    <button class="btn btn-secondary"
+      style="margin-top:8px"
+      onclick="
+        state.ui.backdropLocked = false;
+        closeOverlay(confirmSheet);
+      ">
+      ปิด
+    </button>
+  `;
+}
+
+function reopenLastOrderSheet() {
+  if (!state.lastOrder) {
+    showToast("ยังไม่มีบิลล่าสุดให้เรียกดู", "warning");
+    return;
+  }
+
+  renderLastOrderSheet();
+  openOverlay(confirmSheet);
+}
+ 
+function saveLastOrder() {
+  try {
+    if (!state.lastOrder) return;
+    localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(state.lastOrder));
+  } catch (e) {
+    console.warn("saveLastOrder failed", e);
+  }
+}
+
+function loadLastOrder() {
+  try {
+    const raw = localStorage.getItem(LAST_ORDER_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.orderId) return null;
+    return parsed;
+  } catch (e) {
+    console.warn("loadLastOrder failed", e);
+    return null;
+  }
+}
+
+function clearLastOrderStorage() {
+  localStorage.removeItem(LAST_ORDER_KEY);
+}
+ 
 
 /* ================= SKU AUTO RUN UTILITY ================= */
 // 🔴 ADDED: หา SKU ถัดไปจาก state.products เช่น A001 -> A002
@@ -5320,32 +5393,14 @@ async function submitOrder(){
  createdAt: new Date(),
  poNumber: state.poNumber || ""
     };
+   
+    saveLastOrder();
 
     showToast('สร้างใบสั่งซื้อเรียบร้อยแล้ว', 'success');
     showToast("กดปุ่มเพื่อดาวน์โหลดใบสั่งซื้อ", "info", 3000);
 
- // เปิด confirmSheet ใหม่พร้อมปุ่มดาวน์โหลด
- confirmSheet.innerHTML = `
-   <h3>สร้างใบสั่งซื้อสำเร็จ</h3>
-   <div style="margin-top:12px">
-     เลขที่ใบสั่งซื้อ: ${escapeHtml(res.data.orderId)}
-   </div>
-   <button class="btn btn-primary"
-     style="margin-top:16px"
-     onclick="exportOrderPrint()">
-     ดาวน์โหลดใบสั่งซื้อ
-   </button>
-
-   <button class="btn btn-secondary"
-    style="margin-top:8px"
-    onclick="
-      state.ui.backdropLocked = false;
-      closeOverlay(confirmSheet);
-    ">
-    ปิด
-  </button>
- `;
-
+    renderLastOrderSheet();
+   
 // confirmSheet เปิดอยู่แล้ว ไม่ต้อง reopen
 
     state.cart = [];
@@ -5378,6 +5433,11 @@ async function submitOrder(){
 
 
 function openCart(){
+  if ((!Array.isArray(state.cart) || state.cart.length === 0) && state.lastOrder) {
+    reopenLastOrderSheet();
+    return;
+  }
+ 
   renderCart();
 
   // 🔴 CHANGED: เมื่อเปิด cart sheet → ซ่อน floatingBar ไม่ให้บัง
@@ -6788,9 +6848,8 @@ function exportOrderPrint() {
       }
 
       // 🔴 NEW: clear lastOrder เพื่อกัน reopen state ค้าง
-      if (window.opener.state) {
-        window.opener.state.lastOrder = null;
-      }
+      // ❌ ห้าม clear lastOrder ที่นี่
+      // ต้องคงไว้เพื่อให้ผู้ใช้กลับมาโหลดบิลล่าสุดได้ภายหลัง
 
       // 🔴 NEW: reset backdrop lock กันค้าง
       if (window.opener.state?.ui) {
