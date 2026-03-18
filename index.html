@@ -2107,6 +2107,17 @@ function renderLastOrderSheet() {
 }
 
 function reopenLastOrderSheet() {
+  const adminValid =
+    state.mode === "admin" &&
+    state.admin?.loggedIn &&
+    state.admin?.token &&
+    !isAdminSessionExpired();
+
+  if (!adminValid) {
+    showToast("เฉพาะแอดมินเท่านั้นที่เปิดบิลล่าสุดได้", "warning");
+    return;
+  }
+
   if (!state.lastOrder) {
     showToast("ยังไม่มีบิลล่าสุดให้เรียกดู", "warning");
     return;
@@ -4980,6 +4991,17 @@ function openMainMenu(triggerEl){
                   👁 กลับสู่ Viewer
                 </button>
 
+               ${
+                 hasLastOrder
+                   ? `
+                       <button class="btn btn-primary"
+                         onclick="closeMainMenu(); reopenLastOrderSheet();">
+                         🧾 บิลล่าสุด
+                       </button>
+                     `
+                   : ``
+               }
+
                 <button class="btn btn-primary"
                   onclick="closeMainMenu(); handleOpenOrders();">
                   📦 Orders
@@ -5001,17 +5023,7 @@ function openMainMenu(triggerEl){
                 </button>
               `
             : `
-               ${
-                 hasLastOrder
-                   ? `
-                       <button class="btn btn-primary"
-                         onclick="closeMainMenu(); reopenLastOrderSheet();">
-                         🧾 บิลล่าสุด
-                       </button>
-                     `
-                   : ``
-               }
-            
+             
                 <button class="btn btn-primary"
                   onclick="closeMainMenu(); enterAdmin();">
                  🧭 ไป Admin Dashboard
@@ -5023,17 +5035,6 @@ function openMainMenu(triggerEl){
                 </button>
               `
           : `
-             ${
-               hasLastOrder
-                 ? `
-                     <button class="btn btn-secondary"
-                       onclick="closeMainMenu(); reopenLastOrderSheet();">
-                       🧾 บิลล่าสุด
-                     </button>
-                   `
-                 : ``
-             }
-          
               <button class="btn btn-primary"
                 onclick="closeMainMenu(); openAdminEntry();">
                 🔑 Admin Login
@@ -5456,11 +5457,6 @@ async function submitOrder(){
 
 
 function openCart(){
-  if ((!Array.isArray(state.cart) || state.cart.length === 0) && state.lastOrder) {
-    reopenLastOrderSheet();
-    return;
-  }
- 
   renderCart();
 
   // 🔴 CHANGED: เมื่อเปิด cart sheet → ซ่อน floatingBar ไม่ให้บัง
