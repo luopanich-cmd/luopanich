@@ -1110,6 +1110,11 @@ textarea:focus-visible {
   color: #34c759;
 }
 
+ .status.ready_plus {
+   background: rgba(52,199,89,.22);
+   color: #34c759;
+ }
+ 
 /* อยู่ระหว่างจัดส่ง */
 .status.shipping {
   background: rgba(0,122,255,.15);
@@ -3099,6 +3104,8 @@ if (
   pageItems.forEach(p => {
     const statusMap = {
       ready:     "พร้อมส่ง",
+      ready_plus:
+        "พร้อมส่ง สามารถบวกเพิ่มได้",
       shipping:  "อยู่ระหว่างจัดส่ง",
       warehouse: "อยู่โกดังไทย",
       out:       "หมด"
@@ -5437,6 +5444,10 @@ function openAddProduct(force = false){
       <label>สถานะสินค้า</label>
       <select id="addStatus">
         <option value="ready" ${draft.status==="ready"?"selected":""}>พร้อมส่ง</option>
+ <option value="ready_plus"
+   ${draft.status==="ready_plus"?"selected":""}>
+   พร้อมส่ง สามารถบวกเพิ่มได้
+ </option>
         <option value="shipping" ${draft.status==="shipping"?"selected":""}>อยู่ระหว่างจัดส่ง</option>
         <option value="warehouse" ${draft.status==="warehouse"?"selected":""}>อยู่โกดังไทย</option>
         <option value="out" ${draft.status==="out"?"selected":""}>หมด</option>
@@ -5858,6 +5869,10 @@ function openProductEdit(p){
         <option value="ready" ${latestProduct.status === "ready" ? "selected" : ""}>
           พร้อมส่ง
         </option>
+     <option value="ready_plus"
+       ${latestProduct.status === "ready_plus" ? "selected" : ""}>
+       พร้อมส่ง สามารถบวกเพิ่มได้
+     </option>    
         <option value="shipping" ${latestProduct.status === "shipping" ? "selected" : ""}>
           อยู่ระหว่างจัดส่ง
         </option>
@@ -6434,7 +6449,7 @@ function normalizeProductId(value = "") {
    return String(value || "").trim().toUpperCase();
  }
 
-const ALLOWED_PRODUCT_STATUS = ["ready", "shipping", "warehouse", "out"];
+const ALLOWED_PRODUCT_STATUS = ["ready", "ready_plus", "shipping", "warehouse", "out"];
 
 function normalizeProductStatus(value = "") {
   const normalized = String(value || "").trim().toLowerCase();
