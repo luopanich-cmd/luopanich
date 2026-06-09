@@ -4472,6 +4472,7 @@ function getOrderDateValue(order) {
     ""
   );
 }
+ 
 
 function isOrderInRange(order, fromYmd, toYmd) {
   const raw = getOrderDateValue(order);
@@ -4659,7 +4660,14 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
                   <div class="name">${esc(o.orderId)}</div>
                   <div>Status: ${esc(o.status)}</div>
                   <div>Total: ฿${Number(o.total || 0).toLocaleString("th-TH")}</div>
-                  <div class="stock">วันที่: ${esc(getOrderDateValue(o) || "-")}</div>
+ <div class="stock">
+   วันที่:
+   ${esc(
+     formatThaiDate(
+       getOrderDateValue(o)
+     )
+   )}
+ </div>
                 </div>
               `).join("")
             : `
@@ -4732,7 +4740,13 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
                 <div class="name">${esc(o.orderId)}</div>
                 <div>Status: ${esc(o.status)}</div>
                 <div>Total: ฿${Number(o.total || 0).toLocaleString("th-TH")}</div>
-                <div class="stock">วันที่: ${esc(getOrderDateValue(o) || "-")}</div>
+<div class="stock">
+  วันที่: ${esc(
+    formatThaiDate(
+      getOrderDateValue(o)
+    )
+  )}
+</div>
               </div>
             `).join("")
           : `
