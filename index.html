@@ -3462,6 +3462,10 @@ function renderHeader(){
  <div id="filterDropdown" class="filter-dropdown" role="menu" aria-label="ตัวกรองสินค้า">
    <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('all')">ทั้งหมด</button>
    <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('ready')">พร้อมส่ง</button>
+   <button type="button" class="filter-item"
+     onclick="selectFilter('ready_plus')">
+     พร้อมส่ง สามารถบวกเพิ่มได้
+   </button>
    <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</button>
    <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('warehouse')">โกดังไทย</button>
    <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('out')">หมด</button>
