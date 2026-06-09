@@ -848,6 +848,8 @@ button:disabled {
    border-radius: 12px;
    font-size: 14px;
    font-weight: 600;
+   line-height: 1.35;
+   text-align: center;  
    color: rgba(245,245,247,.92);
    cursor: pointer;
    user-select: none;
@@ -3464,7 +3466,8 @@ function renderHeader(){
    <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('ready')">พร้อมส่ง</button>
    <button type="button" class="filter-item"
      onclick="selectFilter('ready_plus')">
-     พร้อมส่ง สามารถบวกเพิ่มได้
+     พร้อมส่ง<br>
+     สามารถบวกเพิ่มได้
    </button>
    <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</button>
    <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('warehouse')">โกดังไทย</button>
