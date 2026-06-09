@@ -4741,7 +4741,8 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
                 <div>Status: ${esc(o.status)}</div>
                 <div>Total: ฿${Number(o.total || 0).toLocaleString("th-TH")}</div>
 <div class="stock">
-  วันที่: ${esc(
+  วันที่:
+  ${esc(
     formatThaiDate(
       getOrderDateValue(o)
     )
