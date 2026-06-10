@@ -5366,11 +5366,6 @@ function closeAdminOrderSheet() {
        ? order.items
        : [];
 
- console.log(
-   "order.items",
-   items
- );
-
    state.admin.bulkPendingItems =
      items.map(item => ({
    productId:
@@ -5389,23 +5384,41 @@ function closeAdminOrderSheet() {
 
    bulkPendingDeliverySheet.innerHTML = `
 
-   <div class="admin-sheet-topbar">
+<div
+  class="admin-sheet-topbar"
+ style="
+   position:relative;
+   display:flex;
+   justify-content:center;
+   align-items:center;
+ ">
+ 
+  <button
+    class="btn btn-outline"
+   style="
+     position:absolute;
+     left:0;
+   "
+    onclick="
+      closeOverlay(
+        bulkPendingDeliverySheet
+      )
+    ">
+    ✕
+  </button>
 
-     <button
-       class="btn btn-outline"
-       onclick="
-         closeOverlay(
-           bulkPendingDeliverySheet
-         )
-       ">
-       ✕
-     </button>
+<h3
+  style="
+    margin:0;
+    text-align:center;
+   width:100%;
+   padding:0 56px;
+   box-sizing:border-box;
+  ">
+    📦 สร้างค้างส่งหลายรายการ
+  </h3>
 
-     <h3>
-       📦 สร้างค้างส่งหลายรายการ
-     </h3>
-
-   </div>
+</div>
 
    <div class="card">
 
