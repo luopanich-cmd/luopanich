@@ -5366,6 +5366,11 @@ function closeAdminOrderSheet() {
        ? order.items
        : [];
 
+ console.log(
+   "order.items",
+   items
+ );
+
    state.admin.bulkPendingItems =
      items.map(item => ({
    productId:
@@ -5415,15 +5420,18 @@ function closeAdminOrderSheet() {
     border-bottom:1px solid rgba(255,255,255,.08);
   ">
 
- <div
-   style="
-     display:flex;
-     gap:10px;
-     align-items:flex-start;
-   ">
+<div>
 
-         <input
-           type="checkbox"
+  <label
+    style="
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      cursor:pointer;
+    ">
+
+    <input
+      type="checkbox"
            checked
            onchange="
              state.admin.bulkPendingItems[
@@ -5431,22 +5439,26 @@ function closeAdminOrderSheet() {
              ].selected=this.checked
            ">
 
-         <div
-           style="
-             flex:1;
-             min-width:0;
-             word-break:break-word;
-             line-height:1.4;
-            ">
+<div
+  style="
+    flex:1;
+    min-width:0;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+    line-height:1.4;
+  ">
            ${item.name || item.productId || "-"}
          </div>
 
+  </label>
+
  </div>
 
- <div
-   style="
-     margin-top:8px;
-   ">
+<div
+  style="
+    margin-top:8px;
+  ">
 
  <div
    style="
