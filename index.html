@@ -5386,19 +5386,14 @@ function closeAdminOrderSheet() {
 
 <div
   class="admin-sheet-topbar"
- style="
-   position:relative;
-   display:flex;
-   justify-content:center;
+  style="
+   display:grid;
+   grid-template-columns:48px 1fr 48px;
    align-items:center;
- ">
+  ">
  
   <button
     class="btn btn-outline"
-   style="
-     position:absolute;
-     left:0;
-   "
     onclick="
       closeOverlay(
         bulkPendingDeliverySheet
@@ -5411,12 +5406,14 @@ function closeAdminOrderSheet() {
   style="
     margin:0;
     text-align:center;
+    grid-column:2;
    width:100%;
-   padding:0 56px;
    box-sizing:border-box;
   ">
     📦 สร้างค้างส่งหลายรายการ
   </h3>
+
+  <div></div>
 
 </div>
 
@@ -5486,9 +5483,10 @@ function closeAdminOrderSheet() {
            min="1"
            value="${item.qty}"
            class="input"
- style="
-   width:100%;
- "
+style="
+  max-width:120px;
+  width:120px;
+"
            onchange="
              state.admin.bulkPendingItems[
                ${index}
