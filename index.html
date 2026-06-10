@@ -5407,13 +5407,20 @@ function closeAdminOrderSheet() {
      ${state.admin.bulkPendingItems.map(
        (item,index)=>`
 
-       <div
-         style="
-           display:flex;
-           gap:12px;
-           align-items:center;
-           margin-bottom:12px;
-         ">
+<div
+  style="
+    display:block;
+    margin-bottom:16px;
+    padding-bottom:16px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  ">
+
+ <div
+   style="
+     display:flex;
+     gap:10px;
+     align-items:flex-start;
+   ">
 
          <input
            type="checkbox"
@@ -5427,16 +5434,37 @@ function closeAdminOrderSheet() {
          <div
            style="
              flex:1;
-           ">
+             min-width:0;
+             word-break:break-word;
+             line-height:1.4;
+            ">
            ${item.name || item.productId || "-"}
          </div>
+
+ </div>
+
+ <div
+   style="
+     margin-top:8px;
+   ">
+
+ <div
+   style="
+     font-size:12px;
+     opacity:.7;
+     margin-bottom:4px;
+   ">
+   จำนวนค้างส่ง
+ </div>
 
          <input
            type="number"
            min="1"
            value="${item.qty}"
            class="input"
-           style="width:90px"
+ style="
+   width:100%;
+ "
            onchange="
              state.admin.bulkPendingItems[
                ${index}
@@ -5444,6 +5472,7 @@ function closeAdminOrderSheet() {
              Number(this.value)||0
            ">
 
+ </div>
        </div>
 
      `).join("")}
