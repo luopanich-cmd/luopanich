@@ -1752,6 +1752,62 @@ textarea {
   transform: scale(var(--tap-scale-icon));
 }
 
+ /* ================= COMPLETE ORDER CONFIRM ================= */
+
+ .confirm-complete-sheet{
+   text-align:center;
+   padding-top:8px;
+ }
+
+ .confirm-complete-icon{
+   width:64px;
+   height:64px;
+   margin:0 auto 16px;
+
+   display:flex;
+   align-items:center;
+   justify-content:center;
+
+   border-radius:50%;
+
+   background:
+     rgba(52,199,89,.16);
+
+   color:#34c759;
+
+   font-size:32px;
+
+   border:
+     1px solid
+     rgba(52,199,89,.22);
+
+   box-shadow:
+     var(--shadow-control);
+ }
+
+ .confirm-complete-title{
+   font-size:20px;
+   font-weight:700;
+   color:var(--text-primary);
+   margin-bottom:8px;
+ }
+
+ .confirm-complete-desc{
+   font-size:14px;
+   line-height:1.5;
+   color:var(--text-secondary);
+   margin-bottom:20px;
+ }
+
+ .confirm-complete-actions{
+   display:flex;
+   gap:10px;
+ }
+
+ .confirm-complete-actions .btn{
+   flex:1;
+ } 
+
 /* 🏷️ ชื่อสินค้าใน Product Sheet */
 .product-title {
   margin-top: 4px;
@@ -6437,11 +6493,52 @@ async function markPendingDelivered(
  
   if (!pendingId) return;
 
-  const ok = confirm(
-    "ยืนยันว่ารายการนี้ส่งครบแล้ว ?"
-  );
+ confirmSheet.innerHTML = `
 
-  if (!ok) return;
+ <div class="confirm-complete-sheet">
+
+   <div class="confirm-complete-icon">
+     ✅
+   </div>
+
+   <div class="confirm-complete-title">
+     ยืนยันการส่งครบ
+   </div>
+
+   <div class="confirm-complete-desc">
+     ยืนยันว่ารายการค้างส่งนี้
+     ส่งครบเรียบร้อยแล้ว ?
+   </div>
+
+   <div class="confirm-complete-actions">
+
+     <button
+       class="btn btn-outline"
+       onclick="
+         closeOverlay(confirmSheet)
+       ">
+       ยกเลิก
+     </button>
+
+     <button
+       class="btn btn-secondary"
+       onclick="
+         closeOverlay(confirmSheet);
+         confirmClosePendingDelivery(
+           '${pendingId}'
+         );
+       ">
+       ✅ ส่งครบแล้ว
+     </button>
+
+   </div>
+
+ </div>
+ `;
+
+ openOverlay(confirmSheet);
+
+ return;
 
   try {
 
@@ -6488,6 +6585,65 @@ async function markPendingDelivered(
     );
   }
 }
+
+ async function confirmClosePendingDelivery(
+   pendingId
+ ) {
+
+   try {
+
+     const form =
+       new URLSearchParams();
+
+     form.append(
+       "action",
+       "closePendingDelivery"
+     );
+
+     form.append(
+       "pendingId",
+       pendingId
+     );
+
+     form.append(
+       "token",
+       state.admin.token
+     );
+
+     const result =
+       await postFormAction(form);
+
+     if (!result?.success) {
+       throw new Error(
+         result?.error ||
+         "Close pending failed"
+       );
+     }
+
+     const list =
+       await fetchPendingDeliveries();
+
+     state.admin.pendingDeliveries =
+       list;
+
+     openPendingDeliverySheet();
+
+     showToast(
+       "ส่งครบเรียบร้อย",
+       "success"
+     );
+
+   } catch(err) {
+
+     console.error(err);
+
+     showToast(
+       err.message ||
+       "เกิดข้อผิดพลาด",
+       "error"
+     );
+   }
+ }
  
 function closePendingDeliverySheet() {
   closeOverlay(pendingDeliverySheet);
