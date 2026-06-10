@@ -2211,11 +2211,6 @@ const createPendingDeliverySheet =
      "bulkPendingDeliverySheet"
    ); 
 
- const confirmSheet =
-   document.getElementById(
-     "confirmSheet"
-   );
- 
 // ✅ SINGLE SOURCE OF TRUTH: sheet refs (กัน ReferenceError + กันพึ่ง global id)
 const productSheet = document.getElementById("productSheet");
 const qtySheet = document.getElementById("qtySheet");
