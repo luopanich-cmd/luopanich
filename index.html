@@ -6540,50 +6540,6 @@ async function markPendingDelivered(
 
  return;
 
-  try {
-
-    const form =
-      new URLSearchParams();
-
-    form.append(
-      "action",
-      "closePendingDelivery"
-    );
-
-    form.append(
-      "pendingId",
-      pendingId
-    );
-
-    form.append(
-      "token",
-      state.admin.token
-    );
-
-    const result =
-      await postFormAction(form);
-
-    if (!result?.success) {
-      throw new Error(
-        result?.error ||
-        "Close pending failed"
-      );
-    }
-
-    const list =
-      await fetchPendingDeliveries();
-
-    renderPendingDeliveries(list);
-
-  } catch (err) {
-
-    console.error(err);
-
-    alert(
-      err.message ||
-      "ปิดรายการไม่สำเร็จ"
-    );
-  }
 }
 
  async function confirmClosePendingDelivery(
