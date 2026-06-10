@@ -5182,6 +5182,8 @@ function openAdminOrder(orderId){
  
   state.admin.selectedOrder = order;
 
+  state.admin.pendingDeliveryOrder = order;
+
   // ✅ FIX: items เป็น array อยู่แล้ว ไม่ต้อง parse
   const items = Array.isArray(order.items)
     ? order.items
@@ -5197,6 +5199,20 @@ adminOrderSheet.innerHTML = `
   </button>
 
   <h3>${order.orderId}</h3>
+
+ ${
+   order.status !== "PENDING" &&
+   order.status !== "REJECTED"
+   ? `
+   <button
+     class="btn btn-primary"
+     style="margin-bottom:16px"
+     onclick="createAllPendingDelivery()">
+     📦 สร้างรายการค้างส่งทั้งหมด
+   </button>
+   `
+   : ""
+ }
 
     ${items.map(i => `
       <div class="cart-item">
@@ -5265,6 +5281,42 @@ adminOrderSheet.innerHTML = `
   openOverlay(adminOrderSheet);
 }
 
+ function createAllPendingDelivery() {
+
+   const order =
+     state.admin.pendingDeliveryOrder;
+
+   if (!order) {
+     showToast(
+       "ไม่พบข้อมูลออเดอร์",
+       "warning"
+     );
+     return;
+   }
+
+   const items = Array.isArray(order.items)
+     ? order.items
+     : [];
+
+   if (!items.length) {
+     showToast(
+       "ไม่มีรายการสินค้า",
+       "warning"
+     );
+     return;
+   }
+
+   // STEP 1
+   // ยังไม่สร้างจริง
+   // แค่ส่งรายการทั้งหมดเข้า Flow เดียว
+
+   openCreatePendingDeliveryBulk(
+     order.orderId,
+     order.poNumber || "",
+     items
+   );
+ }
+ 
 function closeAdminOrderSheet() {
 
   closeOverlay(adminOrderSheet);
@@ -5530,7 +5582,117 @@ async function createPendingDelivery() {
 
   }
 }
- 
+
+ async function createAllPendingDelivery() {
+
+   const order =
+     state.admin.pendingDeliveryOrder;
+
+   if (!order) {
+     showToast(
+       "ไม่พบข้อมูลออเดอร์",
+       "warning"
+     );
+     return;
+   }
+
+   const items =
+     Array.isArray(order.items)
+       ? order.items
+       : [];
+
+   if (!items.length) {
+     showToast(
+       "ไม่มีรายการสินค้า",
+       "warning"
+     );
+     return;
+   }
+
+   try {
+
+     showLoading(
+       "กำลังสร้างรายการค้างส่ง..."
+     );
+
+     for (const item of items) {
+
+       const form =
+         new URLSearchParams();
+
+       form.append(
+         "action",
+         "createPendingDelivery"
+       );
+
+       form.append(
+         "token",
+         state.admin.token
+       );
+
+       form.append(
+         "orderId",
+         order.orderId
+       );
+
+       form.append(
+         "poNumber",
+         order.poNumber || ""
+       );
+
+       form.append(
+         "productId",
+         item.productId
+       );
+
+       form.append(
+         "orderedQty",
+         Number(item.qty) || 0
+       );
+
+       form.append(
+         "qty",
+         Number(item.qty) || 0
+       );
+
+       form.append(
+         "note",
+         "Bulk Pending Delivery"
+       );
+
+       const result =
+         await postFormAction(form);
+
+       if (!result?.success) {
+         throw new Error(
+           result?.error ||
+           "Create pending delivery failed"
+         );
+       }
+     }
+
+     showToast(
+       "สร้างรายการค้างส่งทั้งหมดสำเร็จ",
+       "success"
+     );
+
+     openPendingDeliverySheet();
+
+   } catch (err) {
+
+     console.error(err);
+
+     alert(
+       err.message ||
+       "ไม่สามารถสร้างรายการค้างส่งได้"
+     );
+
+   } finally {
+
+     safeHideLoading();
+   }
+ } 
+
 async function handleApprove() {
   // 🔒 GUARD: ต้องอยู่ใน admin mode และมี order
   if (state.mode !== "admin" || !state.admin.selectedOrder) return;
