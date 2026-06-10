@@ -2179,6 +2179,14 @@ textarea.input{
    aria-modal="true"
    tabindex="-1">
  </div>
+
+ <div
+   id="confirmSheet"
+   class="sheet"
+   role="dialog"
+   aria-modal="true"
+   tabindex="-1">
+ </div>
  
 <!-- 🔹 Main Menu (Side Sheet Right) -->
 <div id="mainMenuSheet" class="side-menu" role="dialog" aria-modal="true" tabindex="-1"></div>
@@ -2202,6 +2210,11 @@ const createPendingDeliverySheet =
    document.getElementById(
      "bulkPendingDeliverySheet"
    ); 
+
+ const confirmSheet =
+   document.getElementById(
+     "confirmSheet"
+   );
  
 // ✅ SINGLE SOURCE OF TRUTH: sheet refs (กัน ReferenceError + กันพึ่ง global id)
 const productSheet = document.getElementById("productSheet");
@@ -6487,6 +6500,11 @@ async function markPendingDelivered(
   pendingId
 ) {
 
+ console.log(
+   "markPendingDelivered",
+   pendingId
+ );
+ 
   if (!state.admin?.token) {
     throw new Error("Not authenticated");
   }
@@ -6536,6 +6554,10 @@ async function markPendingDelivered(
  </div>
  `;
 
+ console.log(
+   "opening confirmSheet"
+ );
+ 
  openOverlay(confirmSheet);
 
  return;
