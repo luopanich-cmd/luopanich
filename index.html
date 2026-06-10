@@ -5177,6 +5177,9 @@ function openAdminOrder(orderId){
   const order = orders.find(o => o.orderId === orderId);
   if (!order) return;
 
+ state.admin.lastDashboardStatus =
+   state.admin.filters?.status || "all"; 
+ 
   state.admin.selectedOrder = order;
 
   // ✅ FIX: items เป็น array อยู่แล้ว ไม่ต้อง parse
@@ -5186,8 +5189,14 @@ function openAdminOrder(orderId){
 
   const isPending = order.status === "PENDING";
 
-  adminOrderSheet.innerHTML = `
-    <h3>${order.orderId}</h3>
+adminOrderSheet.innerHTML = `
+  <button
+    class="sheet-close-btn"
+    onclick="closeAdminOrderSheet()">
+    ×
+  </button>
+
+  <h3>${order.orderId}</h3>
 
     ${items.map(i => `
       <div class="cart-item">
@@ -5255,6 +5264,18 @@ function openAdminOrder(orderId){
   // ✅ เปิดผ่าน Overlay Manager
   openOverlay(adminOrderSheet);
 }
+
+function closeAdminOrderSheet() {
+
+  closeOverlay(adminOrderSheet);
+
+  allowOpenOrders = true;
+
+  openAdminDashboard(
+    state.admin.lastDashboardStatus || "all",
+    true
+  );
+} 
 
 function openCreatePendingDelivery(
   orderId,
