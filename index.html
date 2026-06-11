@@ -2291,6 +2291,7 @@ const state = {
   isSubmitting: false,
 
   admin: {
+    pendingDeliveryExpanded:{},
     pendingDeliveryOrder: null,
     bulkPendingItems: [],   
     loggedIn: false,
@@ -6399,92 +6400,118 @@ function renderPendingDeliveries(list) {
     return;
   }
 
-  container.innerHTML = list.map(item => `
+  const grouped = {};
 
-    <div class="card">
+list.forEach(item => {
 
-      <div class="name">
-        📦 PO: ${item.poNumber || "-"}
+  const po =
+    item.poNumber || "-";
+
+  if (!grouped[po]) {
+    grouped[po] = [];
+  }
+
+  grouped[po].push(item);
+
+});
+
+container.innerHTML =
+  Object.entries(grouped)
+    .map(([po, items]) => `
+
+<div class="card">
+
+<div
+  class="name"
+ onclick="
+   state.admin.pendingDeliveryExpanded[
+     '${po}'
+   ] =
+   !state.admin.pendingDeliveryExpanded[
+     '${po}'
+   ];
+
+   renderPendingDeliveries(
+     state.admin.pendingDeliveries
+   );
+ "
+  style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+  ">
+    
+    <span>
+      📦 PO: ${po}
+      (${items.length} รายการ)
+    </span>
+
+ <span>
+   ${
+     state.admin
+       .pendingDeliveryExpanded[
+         po
+       ]
+       ? "▲"
+       : "▼"
+   }
+ </span>
+
+  </div>
+${
+  state.admin
+    .pendingDeliveryExpanded[
+      po
+    ]
+    ? `
+
+    <div
+      style="
+        margin-top:12px;
+      ">
+
+      ${items.map(item => `
+
+      <div
+        style="
+          padding:12px 0;
+          border-top:
+            1px solid
+            rgba(255,255,255,.08);
+        ">
+
+        <div class="stock">
+          สินค้า:
+          ${item.productId || "-"}
+        </div>
+
+        <div class="stock">
+          จำนวนใน PO :
+          ${Number(
+            item.orderedQty || 0
+          )}
+        </div>
+
+        <div class="stock">
+          ค้างส่ง :
+          ${Number(
+            item.qty || 0
+          )}
+        </div>
+
       </div>
 
-      <div class="stock">
-        สินค้า:
-        ${item.productId || "-"}
-      </div>
-
-      <div class="stock">
-        จำนวนใน PO :
-        ${Number(item.orderedQty || 0)}
-      </div>
-
-      <div class="stock">
-        ค้างส่ง :
-        ${Number(item.qty || 0)}
-      </div>
-
-      <div class="stock">
-        วันที่:
-        ${
-          item.createdAt
-            ? new Date(item.createdAt)
-                .toLocaleDateString(
-                  "th-TH",
-                  {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric"
-                  }
-                )
-            : "-"
-        }
-      </div>
-
-      <div class="stock">
-        ผู้สร้าง:
-        ${item.createdBy || "-"}
-      </div>
-
-      <div class="stock">
-        <span
-          class="
-            status
-            ${
-              item.status === "OPEN"
-                ? "warehouse"
-                : "ready"
-            }
-          ">
-          ${
-            item.status === "OPEN"
-              ? "OPEN"
-              : "CLOSED"
-          }
-        </span>
-      </div>
-
-      ${
-        item.status === "OPEN"
-          ? `
-          <button
-            class="btn btn-secondary"
-            style="
-              margin-top:12px;
-              width:100%;
-            "
-            onclick="
-              markPendingDelivered(
-                '${item.pendingId}'
-              )
-            ">
-            ✅ ส่งครบแล้ว
-          </button>
-          `
-          : ""
-      }
+      `).join("")}
 
     </div>
 
-  `).join("");
+    `
+    : ""
+}
+</div>
+
+`).join("");
 }
 
 async function markPendingDelivered(
