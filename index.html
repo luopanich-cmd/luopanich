@@ -4813,13 +4813,24 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
 
       <h3 style="margin-top:18px">รายการออเดอร์ APPROVED ที่นำมาคิด</h3>
 
-      ${
-        approvedOrders.length
-          ? approvedOrders.map(o => `
-              <div class="card" onclick="openAdminOrder('${escAttr(o.orderId)}')">
-                <div class="name">${esc(o.orderId)}</div>
-                <div>Status: ${esc(o.status)}</div>
-                <div>Total: ฿${Number(o.total || 0).toLocaleString("th-TH")}</div>
+${
+  approvedOrders.length
+    ? approvedOrders
+        .slice()
+        .sort(
+          (a, b) =>
+            new Date(
+              getOrderDateValue(b)
+            ) -
+            new Date(
+              getOrderDateValue(a)
+            )
+        )
+        .map(o => `
+            <div class="card" onclick="openAdminOrder('${escAttr(o.orderId)}')">
+              <div class="name">${esc(o.orderId)}</div>
+              <div>Status: ${esc(o.status)}</div>
+              <div>Total: ฿${Number(o.total || 0).toLocaleString("th-TH")}</div>
 <div class="stock">
   วันที่:
   ${esc(
@@ -4828,8 +4839,8 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
     )
   )}
 </div>
-              </div>
-            `).join("")
+            </div>
+          `).join("")
           : `
             <div style="color:#888;text-align:center;margin-top:24px">
               ไม่มีออเดอร์สถานะ APPROVED ในช่วงวันที่ที่เลือก
