@@ -6502,12 +6502,36 @@ ${
           )}
         </div>
 
-        <div class="stock">
-          ค้างส่ง :
-          ${Number(
-            item.qty || 0
-          )}
-        </div>
+<div class="stock">
+  ค้างส่ง :
+  ${Number(
+    item.qty || 0
+  )}
+</div>
+
+ ${
+   item.status === "OPEN"
+     ? `
+     <button
+       class="btn btn-secondary"
+       style="
+         margin-top:12px;
+         width:100%;
+       "
+       onclick="
+         markPendingDelivered(
+           '${item.pendingId}'
+         )
+       ">
+       ✅ ส่งครบแล้ว
+     </button>
+     `
+     : `
+     <div class="stock">
+       ✅ CLOSED
+     </div>
+     `
+ }
 
       </div>
 
