@@ -6409,7 +6409,7 @@ function renderPendingDeliveries(list) {
     return;
   }
 
-  const grouped = {};
+const grouped = {};
 
 list.forEach(item => {
 
@@ -6423,6 +6423,20 @@ list.forEach(item => {
   grouped[po].push(item);
 
 });
+
+ const poStatus = {};
+
+ Object.entries(grouped)
+   .forEach(([po, items]) => {
+
+     const openCount =
+       items.filter(
+         item =>
+           item.status === "OPEN"
+       ).length;
+
+     poStatus[po] = openCount;
+   });
 
 container.innerHTML =
   Object.entries(grouped)
@@ -6451,18 +6465,33 @@ container.innerHTML =
     cursor:pointer;
   ">
     
-    <span>
-      📦 PO: ${po}
-      (${items.length} รายการ)
-    </span>
+ <div>
 
- <div
-   style="
-     font-size:13px;
-     color:#34c759;
-     margin-top:4px;
-   ">
-   ✅ ส่งครบแล้ว
+   <div>
+     📦 PO: ${po}
+     (${items.length} รายการ)
+   </div>
+
+   <div
+     style="
+       font-size:13px;
+       margin-top:4px;
+       color:
+       ${
+         poStatus[po] > 0
+           ? "#ffcc00"
+           : "#34c759"
+       };
+     ">
+
+     ${
+       poStatus[po] > 0
+       ? `⏳ ค้างส่ง ${poStatus[po]} รายการ`
+       : `✅ ส่งครบแล้ว`
+     }
+
+   </div>
+
  </div>
 
  <span>
