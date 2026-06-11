@@ -6361,7 +6361,16 @@ function openPendingDeliverySheet() {
   openOverlay(pendingDeliverySheet);
 
  fetchPendingDeliveries()
-   .then(renderPendingDeliveries)
+   .then(list => {
+
+     state.admin.pendingDeliveries =
+       list;
+
+     renderPendingDeliveries(
+       list
+     );
+
+   })
    .catch(err => {
      console.error(err);
 
