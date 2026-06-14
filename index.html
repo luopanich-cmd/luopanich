@@ -2887,6 +2887,35 @@ textarea.input{
   line-height:1.45;
 }
 
+.bulk-update-preview-card{
+  display:grid;
+  grid-template-columns:56px minmax(0,1fr);
+  gap:12px;
+  align-items:start;
+}
+
+.bulk-update-values{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:8px;
+}
+
+.bulk-update-value{
+  padding:8px 10px;
+  border-radius:12px;
+  background:rgba(255,255,255,.05);
+  font-size:12px;
+  line-height:1.35;
+}
+
+.bulk-update-value strong{
+  display:block;
+  margin-top:3px;
+  color:#fff;
+  font-size:14px;
+}
+
 </style>
 </head>
 <body>
@@ -2953,6 +2982,7 @@ textarea.input{
  <div id="adminStockActionSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminStockActionSheetTitle" tabindex="-1"></div>
  <div id="adminAddProductSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminAddProductSheetTitle" tabindex="-1"></div>
  <div id="adminBulkProductImportSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBulkProductImportSheetTitle" tabindex="-1"></div>
+ <div id="adminBulkProductUpdateSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBulkProductUpdateSheetTitle" tabindex="-1"></div>
 
   
 <script>
@@ -2987,6 +3017,8 @@ const adminStockActionSheet = document.getElementById("adminStockActionSheet");
 const adminAddProductSheet = document.getElementById("adminAddProductSheet");
 const adminBulkProductImportSheet =
   document.getElementById("adminBulkProductImportSheet");
+const adminBulkProductUpdateSheet =
+  document.getElementById("adminBulkProductUpdateSheet");
 
 // ================= ADMIN UI REGISTRY =================
 // 🔒 รวม ref ฝั่ง admin ไว้จุดเดียว เพื่อให้เพิ่ม/ถอดเมนูในอนาคตง่ายขึ้น
@@ -3002,6 +3034,7 @@ const ADMIN_SHEETS = Object.freeze({
   stockAction: adminStockActionSheet,
   addProduct: adminAddProductSheet,
   bulkProductImport: adminBulkProductImportSheet,
+  bulkProductUpdate: adminBulkProductUpdateSheet,
   bulkPending: bulkPendingDeliverySheet
 });
 
@@ -3017,6 +3050,11 @@ Object.assign(window, {
   closeBulkProductImportSheet,
   previewBulkProductImport,
   submitBulkProductImport,
+  openBulkProductUpdateSheet,
+  closeBulkProductUpdateSheet,
+  previewBulkProductUpdate,
+  submitBulkProductUpdate,
+  resetBulkProductUpdate,
   downloadBulkProductTemplate,
   handleBulkProductFileUpload,
   copyBulkProductHeader,
@@ -3091,6 +3129,16 @@ const state = {
       backendErrors: [],
       summary: "",
       importedCount: 0
+    },
+    bulkProductUpdate: {
+      skuText: "",
+      field: "price",
+      value: "",
+      items: [],
+      errors: [],
+      backendErrors: [],
+      summary: "",
+      updatedCount: 0
     },
     ui: {
       activeSheet: null
@@ -8078,6 +8126,11 @@ function openMainMenu(triggerEl){
                 </button>
 
                 <button class="btn btn-secondary"
+                  onclick="closeMainMenu(); openBulkProductUpdateSheet();">
+                  อัปเดตราคา/สถานะหลายรายการ
+                </button>
+
+                <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openChangePasswordSheet();">
                   🔐 เปลี่ยนรหัสผ่าน
                 </button>
@@ -10181,6 +10234,605 @@ async function submitBulkProductImport(btn) {
     safeHideLoading();
     state.admin.isSubmitting = false;
     renderBulkProductImportSheet();
+  }
+}
+
+function ensureAdminSessionForBulkUpdate() {
+  if (
+    state.mode !== "admin" ||
+    !state.admin.loggedIn ||
+    !state.admin.token ||
+    isAdminSessionExpired()
+  ) {
+    showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+    exitAdmin();
+    return false;
+  }
+  return true;
+}
+
+function openBulkProductUpdateSheet() {
+  if (!ensureAdminSessionForBulkUpdate()) return;
+
+  const bulkState = state.admin.bulkProductUpdate;
+  bulkState.backendErrors = [];
+  bulkState.summary = "";
+  bulkState.updatedCount = 0;
+
+  renderBulkProductUpdateSheet();
+  openOverlay(adminBulkProductUpdateSheet);
+}
+
+function closeBulkProductUpdateSheet() {
+  closeOverlay(adminBulkProductUpdateSheet);
+}
+
+function resetBulkProductUpdate() {
+  const bulkState = state.admin.bulkProductUpdate;
+  bulkState.skuText = "";
+  bulkState.field = "price";
+  bulkState.value = "";
+  bulkState.items = [];
+  bulkState.errors = [];
+  bulkState.backendErrors = [];
+  bulkState.summary = "";
+  bulkState.updatedCount = 0;
+  renderBulkProductUpdateSheet();
+}
+
+function getBulkProductUpdateFieldLabel(field) {
+  return {
+    price: "ราคาขาย",
+    costPrice: "ต้นทุน",
+    status: "สถานะสินค้า",
+    active: "สถานะการขาย"
+  }[field] || "ข้อมูลสินค้า";
+}
+
+function getBulkProductUpdateStatusLabel(status) {
+  return {
+    ready: "พร้อมส่ง",
+    ready_plus: "พร้อมส่ง + เพิ่มได้",
+    shipping: "อยู่ระหว่างจัดส่ง",
+    warehouse: "อยู่โกดังไทย",
+    out: "หมด"
+  }[normalizeProductStatus(status)] || "พร้อมส่ง";
+}
+
+function getBulkProductUpdateStatusClass(status) {
+  const key = normalizeProductStatus(status);
+  if (key === "out") return "status-rejected";
+  if (key === "shipping") return "status-pending";
+  if (key === "warehouse") return "status-neutral";
+  return "status-approved";
+}
+
+function formatBulkProductUpdateValue(field, value) {
+  if (field === "price" || field === "costPrice") {
+    return `฿${Number(value || 0).toLocaleString("th-TH")}`;
+  }
+  if (field === "status") {
+    return getBulkProductUpdateStatusLabel(value);
+  }
+  if (field === "active") {
+    return value === true ? "เปิดขาย" : "ปิดขาย";
+  }
+  return String(value ?? "-");
+}
+
+function renderBulkProductUpdateValueDisplay(field, value) {
+  if (field === "status") {
+    return `<span class="status-badge compact ${getBulkProductUpdateStatusClass(value)}">${esc(getBulkProductUpdateStatusLabel(value))}</span>`;
+  }
+  if (field === "active") {
+    const isActive = value === true;
+    return `<span class="status-badge compact ${isActive ? "status-approved" : "status-neutral"}">${isActive ? "เปิดขาย" : "ปิดขาย"}</span>`;
+  }
+  return esc(formatBulkProductUpdateValue(field, value));
+}
+
+function parseBulkProductUpdateActive(value) {
+  if (value === true || value === false) {
+    return { valid: true, value };
+  }
+
+  const normalized = String(value || "").trim().toLowerCase();
+  if (["true", "1", "เปิดขาย", "active", "yes"].includes(normalized)) {
+    return { valid: true, value: true };
+  }
+  if (["false", "0", "ปิดขาย", "inactive", "no"].includes(normalized)) {
+    return { valid: true, value: false };
+  }
+  return { valid: false, value: null };
+}
+
+function parseBulkProductUpdateValue(field, rawValue) {
+  const valueText = String(rawValue ?? "").trim();
+  if (!valueText) {
+    return {
+      valid: false,
+      value: null,
+      message: "กรุณาระบุค่าใหม่"
+    };
+  }
+
+  if (field === "price" || field === "costPrice") {
+    const value = Number(valueText);
+    if (!Number.isInteger(value) || value < 0) {
+      return {
+        valid: false,
+        value: null,
+        message: `${getBulkProductUpdateFieldLabel(field)}ต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป`
+      };
+    }
+    return { valid: true, value };
+  }
+
+  if (field === "status") {
+    const status = normalizeProductStatus(valueText);
+    const allowed = ["ready", "ready_plus", "shipping", "warehouse", "out"];
+    if (!allowed.includes(status)) {
+      return {
+        valid: false,
+        value: null,
+        message: "สถานะสินค้าไม่ถูกต้อง"
+      };
+    }
+    return { valid: true, value: status };
+  }
+
+  if (field === "active") {
+    const active = parseBulkProductUpdateActive(valueText);
+    if (!active.valid) {
+      return {
+        valid: false,
+        value: null,
+        message: "สถานะการขายต้องเป็น เปิดขาย/ปิดขาย หรือ true/false"
+      };
+    }
+    return active;
+  }
+
+  return {
+    valid: false,
+    value: null,
+    message: "ประเภทการอัปเดตไม่ถูกต้อง"
+  };
+}
+
+function parseBulkProductUpdateInput() {
+  const bulkState = state.admin.bulkProductUpdate;
+  const field = bulkState.field || "price";
+  const valueResult = parseBulkProductUpdateValue(field, bulkState.value);
+  const skuText = String(bulkState.skuText || "").trim();
+  const errors = [];
+  const items = [];
+  const seenSkus = new Set();
+  const products = Array.isArray(state.products) ? state.products : [];
+  const productMap = new Map(
+    products.map(product => [
+      normalizeProductId(product.productId),
+      product
+    ])
+  );
+
+  if (!skuText && !String(bulkState.value ?? "").trim()) {
+    return { items, errors };
+  }
+
+  if (!skuText) {
+    errors.push(bulkImportError(1, "", "productId", "กรุณาระบุ SKU อย่างน้อย 1 รายการ"));
+    return { items, errors };
+  }
+
+  const skus = skuText
+    .split(/[\s,]+/)
+    .map(normalizeProductId)
+    .filter(Boolean);
+
+  if (skus.length > 100) {
+    errors.push(bulkImportError(0, "", "items", "อัปเดตได้สูงสุด 100 รายการต่อครั้ง"));
+    return { items, errors };
+  }
+
+  skus.forEach((productId, index) => {
+    const rowNumber = index + 1;
+    const product = productMap.get(productId) || null;
+    const item = {
+      row: rowNumber,
+      productId,
+      product,
+      field,
+      oldValue: product ? product[field] : "",
+      newValue: valueResult.value
+    };
+
+    if (!productId) {
+      errors.push(bulkImportError(rowNumber, productId, "productId", "กรุณาระบุ SKU"));
+    } else if (seenSkus.has(productId)) {
+      errors.push(bulkImportError(rowNumber, productId, "productId", "SKU ซ้ำในรายการที่เลือก"));
+    }
+
+    if (productId) {
+      seenSkus.add(productId);
+    }
+
+    if (products.length && !product) {
+      errors.push(bulkImportError(rowNumber, productId, "productId", "ไม่พบสินค้าในรายการปัจจุบัน"));
+    }
+
+    if (!valueResult.valid) {
+      errors.push(bulkImportError(rowNumber, productId, field, valueResult.message));
+    }
+
+    items.push(item);
+  });
+
+  if (!items.length) {
+    errors.push(bulkImportError(1, "", "productId", "กรุณาระบุ SKU อย่างน้อย 1 รายการ"));
+  }
+
+  return { items, errors };
+}
+
+function getBulkProductUpdateBackendErrorMessage(error) {
+  const message = String(error?.message || "").trim();
+  const known = {
+    "Bulk update validation failed": "ตรวจสอบข้อมูลอัปเดตไม่ผ่าน",
+    "Items must be valid JSON": "รูปแบบข้อมูลไม่ถูกต้อง",
+    "Items must be an array": "รูปแบบข้อมูลไม่ถูกต้อง",
+    "At least one product update is required": "กรุณาระบุสินค้าอย่างน้อย 1 รายการ",
+    "Batch size limit is 100 rows": "อัปเดตได้สูงสุด 100 รายการต่อครั้ง",
+    "Item must be an object": "ข้อมูลรายการไม่ถูกต้อง",
+    "SKU is required": "กรุณาระบุ SKU",
+    "Duplicate SKU inside update batch": "SKU ซ้ำในรายการอัปเดต",
+    "Product not found": "ไม่พบสินค้า",
+    "Unknown field is not allowed": "มีฟิลด์ที่ไม่อนุญาตให้อัปเดต",
+    "Stock cannot be updated by bulkUpdateProducts": "ไม่สามารถอัปเดตสต็อกในหน้าจอนี้ได้",
+    "At least one allowed field is required": "กรุณาเลือกข้อมูลที่ต้องการอัปเดต",
+    "Price must be an integer >= 0": "ราคาขายต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป",
+    "Cost price must be an integer >= 0": "ต้นทุนต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป",
+    "Invalid product status": "สถานะสินค้าไม่ถูกต้อง",
+    "Active must be true/false or 1/0": "สถานะการขายต้องเป็น true/false หรือ 1/0"
+  };
+  return known[message] || message || "ข้อมูลไม่ถูกต้อง";
+}
+
+function getBulkProductUpdateStatus(items, errors) {
+  if (state.admin.isSubmitting) {
+    return {
+      label: "กำลังอัปเดตสินค้า...",
+      detail: "กรุณารอสักครู่ ระบบกำลังส่งข้อมูลไปยังหลังบ้าน",
+      type: "loading"
+    };
+  }
+  if (state.admin.bulkProductUpdate.summary) {
+    return {
+      label: "อัปเดตสินค้าสำเร็จ",
+      detail: state.admin.bulkProductUpdate.summary,
+      type: "success"
+    };
+  }
+  if (errors.length) {
+    return {
+      label: `พบข้อผิดพลาด ${errors.length} รายการ`,
+      detail: "กรุณาตรวจสอบ SKU และค่าใหม่ก่อนอัปเดต",
+      type: "error"
+    };
+  }
+  if (items.length) {
+    return {
+      label: `พร้อมอัปเดต ${items.length} รายการ`,
+      detail: `ตรวจสอบแล้ว ${items.length} รายการ พร้อมส่งไปอัปเดต`,
+      type: "ready"
+    };
+  }
+  return {
+    label: "ยังไม่ได้ตรวจสอบข้อมูล",
+    detail: "ระบุ SKU เลือกข้อมูลที่ต้องการแก้ไข แล้วกดตรวจสอบข้อมูล",
+    type: "idle"
+  };
+}
+
+function renderBulkProductUpdateStatus(items, errors) {
+  const status = getBulkProductUpdateStatus(items, errors);
+  const badgeClass = status.type === "success" || status.type === "ready"
+    ? "status-approved"
+    : status.type === "error"
+      ? "status-rejected"
+      : "status-pending";
+  return `
+    <div class="bulk-import-status" role="status" aria-live="polite">
+      <span class="status-badge ${badgeClass} compact">${esc(status.label)}</span>
+      <div class="helper-text" style="margin-top:8px">${esc(status.detail)}</div>
+    </div>
+  `;
+}
+
+function renderBulkProductUpdateSuccessCard() {
+  const updated = Number(state.admin.bulkProductUpdate.updatedCount || 0);
+  if (!state.admin.bulkProductUpdate.summary) return "";
+  return `
+    <div class="bulk-import-success-card" role="status" aria-live="polite">
+      <strong>อัปเดตสินค้าสำเร็จ</strong>
+      <div>อัปเดตสำเร็จ ${updated} รายการ</div>
+      <div class="bulk-import-success-actions">
+        <button class="btn btn-primary" type="button" onclick="closeBulkProductUpdateSheet(); refreshProducts();">
+          ดูรายการสินค้า
+        </button>
+        <button class="btn btn-outline" type="button" onclick="resetBulkProductUpdate()">
+          อัปเดตเพิ่ม
+        </button>
+        <button class="btn btn-secondary" type="button" onclick="closeBulkProductUpdateSheet(); openMainMenu();">
+          กลับเมนูแอดมิน
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderBulkProductUpdateValueInput(bulkState) {
+  const field = bulkState.field || "price";
+  if (field === "status") {
+    return `
+      <select id="bulkProductUpdateValue" onchange="state.admin.bulkProductUpdate.value = this.value; state.admin.bulkProductUpdate.backendErrors = []; state.admin.bulkProductUpdate.summary = ''; state.admin.bulkProductUpdate.updatedCount = 0; renderBulkProductUpdateSheet();">
+        <option value="">เลือกสถานะสินค้า</option>
+        <option value="ready" ${bulkState.value === "ready" ? "selected" : ""}>พร้อมส่ง</option>
+        <option value="ready_plus" ${bulkState.value === "ready_plus" ? "selected" : ""}>พร้อมส่ง + เพิ่มได้</option>
+        <option value="shipping" ${bulkState.value === "shipping" ? "selected" : ""}>อยู่ระหว่างจัดส่ง</option>
+        <option value="warehouse" ${bulkState.value === "warehouse" ? "selected" : ""}>อยู่โกดังไทย</option>
+        <option value="out" ${bulkState.value === "out" ? "selected" : ""}>หมด</option>
+      </select>
+    `;
+  }
+
+  if (field === "active") {
+    return `
+      <select id="bulkProductUpdateValue" onchange="state.admin.bulkProductUpdate.value = this.value; state.admin.bulkProductUpdate.backendErrors = []; state.admin.bulkProductUpdate.summary = ''; state.admin.bulkProductUpdate.updatedCount = 0; renderBulkProductUpdateSheet();">
+        <option value="">เลือกสถานะการขาย</option>
+        <option value="true" ${String(bulkState.value) === "true" ? "selected" : ""}>เปิดขาย</option>
+        <option value="false" ${String(bulkState.value) === "false" ? "selected" : ""}>ปิดขาย</option>
+      </select>
+    `;
+  }
+
+  return `
+    <input
+      id="bulkProductUpdateValue"
+      type="number"
+      min="0"
+      step="1"
+      value="${escAttr(bulkState.value || "")}"
+      placeholder="ระบุ${escAttr(getBulkProductUpdateFieldLabel(field))}"
+      oninput="state.admin.bulkProductUpdate.value = this.value; state.admin.bulkProductUpdate.backendErrors = []; state.admin.bulkProductUpdate.summary = ''; state.admin.bulkProductUpdate.updatedCount = 0;">
+  `;
+}
+
+function renderBulkProductUpdatePreview(items, errors) {
+  if (!items.length && !errors.length) {
+    return `
+      <div class="empty-state">
+        ระบุ SKU แล้วกดตรวจสอบข้อมูล เพื่อดูค่าเดิมและค่าใหม่ก่อนบันทึก
+      </div>
+    `;
+  }
+
+  const errorsByRow = new Map();
+  errors.forEach(error => {
+    const row = Number(error.row) || 0;
+    if (!errorsByRow.has(row)) errorsByRow.set(row, []);
+    errorsByRow.get(row).push(error);
+  });
+
+  const globalErrors = errorsByRow.get(0) || [];
+  const cards = items.map((item, index) => {
+    const rowNumber = item.row || index + 1;
+    const rowErrors = errorsByRow.get(rowNumber) || [];
+    const product = item.product || {};
+    const oldValue = item.product
+      ? renderBulkProductUpdateValueDisplay(item.field, item.oldValue)
+      : "-";
+    const newValue = item.newValue !== null && item.newValue !== undefined
+      ? renderBulkProductUpdateValueDisplay(item.field, item.newValue)
+      : "-";
+
+    return `
+      <div class="bulk-preview-card bulk-update-preview-card ${rowErrors.length ? "has-error" : ""}">
+        ${renderCartItemThumb({
+          productId: item.productId,
+          name: product.name || item.productId || "สินค้า",
+          image: product.image || ""
+        })}
+        <div>
+          <div class="name">${esc(product.name || item.productId || "-")}</div>
+          <div class="bulk-preview-meta">
+            SKU: ${esc(item.productId || "-")}<br>
+            อัปเดต: ${esc(getBulkProductUpdateFieldLabel(item.field))}
+          </div>
+          <div class="bulk-update-values">
+            <div class="bulk-update-value">
+              ค่าเดิม
+              <strong>${oldValue}</strong>
+            </div>
+            <div class="bulk-update-value">
+              ค่าใหม่
+              <strong>${newValue}</strong>
+            </div>
+          </div>
+          ${
+            rowErrors.length
+              ? `<ul class="bulk-error-list">${rowErrors.map(error => `<li>${esc(error.field)}: ${esc(error.message || getBulkProductUpdateBackendErrorMessage(error))}</li>`).join("")}</ul>`
+              : `<div class="status-badge status-approved compact" style="margin-top:8px">พร้อมอัปเดต</div>`
+          }
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    ${globalErrors.length ? `<ul class="bulk-error-list">${globalErrors.map(error => `<li>${esc(error.message || getBulkProductUpdateBackendErrorMessage(error))}</li>`).join("")}</ul>` : ""}
+    <div class="bulk-preview-list">${cards}</div>
+  `;
+}
+
+function renderBulkProductUpdateSheet() {
+  const bulkState = state.admin.bulkProductUpdate;
+  const parsed = parseBulkProductUpdateInput();
+  bulkState.items = parsed.items;
+  bulkState.errors = parsed.errors;
+
+  const backendErrors = Array.isArray(bulkState.backendErrors)
+    ? bulkState.backendErrors.map(error => ({
+        ...error,
+        message: getBulkProductUpdateBackendErrorMessage(error)
+      }))
+    : [];
+  const allErrors = parsed.errors.concat(backendErrors);
+  const canSubmit = parsed.items.length > 0 &&
+    allErrors.length === 0 &&
+    !state.admin.isSubmitting &&
+    !bulkState.summary;
+
+  adminBulkProductUpdateSheet.innerHTML = `
+    <div class="sheet-topbar">
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="closeBulkProductUpdateSheet()"
+        aria-label="ปิดหน้าต่างอัปเดตสินค้า">×</button>
+      <h3 id="adminBulkProductUpdateSheetTitle">อัปเดตราคา/สถานะหลายรายการ</h3>
+      <div aria-hidden="true"></div>
+    </div>
+
+    <div class="helper-text" style="margin-bottom:10px">
+      ใช้สำหรับอัปเดตราคาขาย ต้นทุน สถานะสินค้า หรือเปิด/ปิดการขายหลายรายการพร้อมกัน
+      โดยไม่เปลี่ยน SKU และไม่เปลี่ยนจำนวนสต็อก
+    </div>
+
+    <div class="form-group">
+      <label for="bulkProductUpdateSkus">รายการ SKU</label>
+      <textarea
+        id="bulkProductUpdateSkus"
+        class="input"
+        rows="5"
+        placeholder="เช่น BN007, BN008 หรือวางหนึ่ง SKU ต่อบรรทัด"
+        oninput="state.admin.bulkProductUpdate.skuText = this.value; state.admin.bulkProductUpdate.backendErrors = []; state.admin.bulkProductUpdate.summary = ''; state.admin.bulkProductUpdate.updatedCount = 0;">${esc(bulkState.skuText || "")}</textarea>
+      <div class="helper-text">รองรับการคั่นด้วยบรรทัดใหม่ เครื่องหมายจุลภาค หรือช่องว่าง สูงสุด 100 รายการ</div>
+    </div>
+
+    <div class="form-group">
+      <label for="bulkProductUpdateField">ข้อมูลที่ต้องการอัปเดต</label>
+      <select id="bulkProductUpdateField"
+        onchange="state.admin.bulkProductUpdate.field = this.value; state.admin.bulkProductUpdate.value = ''; state.admin.bulkProductUpdate.backendErrors = []; state.admin.bulkProductUpdate.summary = ''; state.admin.bulkProductUpdate.updatedCount = 0; renderBulkProductUpdateSheet();">
+        <option value="price" ${bulkState.field === "price" ? "selected" : ""}>ตั้งราคาขาย</option>
+        <option value="costPrice" ${bulkState.field === "costPrice" ? "selected" : ""}>ตั้งต้นทุน</option>
+        <option value="status" ${bulkState.field === "status" ? "selected" : ""}>เปลี่ยนสถานะ</option>
+        <option value="active" ${bulkState.field === "active" ? "selected" : ""}>เปิด/ปิดการขาย</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="bulkProductUpdateValue">ค่าใหม่</label>
+      ${renderBulkProductUpdateValueInput(bulkState)}
+    </div>
+
+    <button class="btn btn-outline" onclick="previewBulkProductUpdate()">
+      ตรวจสอบข้อมูล
+    </button>
+
+    ${renderBulkProductUpdateStatus(parsed.items, allErrors)}
+    ${renderBulkProductUpdateSuccessCard()}
+    ${renderBulkProductUpdatePreview(parsed.items, allErrors)}
+
+    <div class="sheet-action-footer">
+      <button class="btn btn-primary"
+        ${canSubmit ? "" : "disabled"}
+        onclick="submitBulkProductUpdate(this)">
+        ${state.admin.isSubmitting ? "กำลังอัปเดต..." : "อัปเดตสินค้า"}
+      </button>
+      <button class="btn btn-outline" onclick="closeBulkProductUpdateSheet()">
+        ยกเลิก
+      </button>
+    </div>
+  `;
+}
+
+function previewBulkProductUpdate() {
+  const skuInput = document.getElementById("bulkProductUpdateSkus");
+  const valueInput = document.getElementById("bulkProductUpdateValue");
+  if (skuInput) {
+    state.admin.bulkProductUpdate.skuText = skuInput.value;
+  }
+  if (valueInput) {
+    state.admin.bulkProductUpdate.value = valueInput.value;
+  }
+  state.admin.bulkProductUpdate.backendErrors = [];
+  state.admin.bulkProductUpdate.summary = "";
+  state.admin.bulkProductUpdate.updatedCount = 0;
+  renderBulkProductUpdateSheet();
+}
+
+async function submitBulkProductUpdate(btn) {
+  if (!ensureAdminSessionForBulkUpdate()) return;
+  if (state.admin.isSubmitting) return;
+
+  previewBulkProductUpdate();
+
+  const bulkState = state.admin.bulkProductUpdate;
+  if (!bulkState.items.length || bulkState.errors.length) {
+    showToast("กรุณาแก้ไขข้อผิดพลาดก่อนอัปเดตสินค้า", "warning");
+    return;
+  }
+
+  state.admin.isSubmitting = true;
+  renderBulkProductUpdateSheet();
+
+  try {
+    showLoading("กำลังอัปเดตสินค้า...");
+    const items = bulkState.items.map(item => ({
+      productId: item.productId,
+      [item.field]: item.newValue
+    }));
+
+    const form = new URLSearchParams();
+    form.append("action", "bulkUpdateProducts");
+    form.append("token", state.admin.token);
+    form.append("items", JSON.stringify(items));
+
+    const res = await fetchWithTimeout(API_URL, {
+      method: "POST",
+      body: form
+    }, 45000);
+    const json = await res.json();
+
+    if (json?.success === true) {
+      const updated = Number(json.updated || json.data?.updated || 0);
+      bulkState.backendErrors = [];
+      bulkState.updatedCount = updated;
+      bulkState.summary = `อัปเดตสินค้าสำเร็จ ${updated} รายการ`;
+      showToast(bulkState.summary, "success");
+      await refreshProducts();
+      renderBulkProductUpdateSheet();
+      return;
+    }
+
+    bulkState.backendErrors = Array.isArray(json?.data?.errors)
+      ? json.data.errors
+      : [];
+    bulkState.summary = "";
+    bulkState.updatedCount = 0;
+    renderBulkProductUpdateSheet();
+    if (isAuthError(json?.error)) {
+      showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+      exitAdmin({ silent: true });
+      return;
+    }
+    showToast(getBulkProductUpdateBackendErrorMessage({ message: json?.error }) || "อัปเดตสินค้าไม่สำเร็จ", "error");
+  } catch (err) {
+    console.error(err);
+    showToast("อัปเดตสินค้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง", "error");
+  } finally {
+    safeHideLoading();
+    state.admin.isSubmitting = false;
+    renderBulkProductUpdateSheet();
   }
 }
 
