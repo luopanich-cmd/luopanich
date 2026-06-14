@@ -2730,6 +2730,18 @@ textarea.input{
   line-height:1.45;
 }
 
+.bulk-raw-input{
+  margin-top:12px;
+}
+
+.bulk-raw-input summary{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  color:#fff;
+  cursor:pointer;
+}
+
 .bulk-preview-list{
   display:grid;
   gap:10px;
@@ -2746,6 +2758,11 @@ textarea.input{
 
 .bulk-data-preview-table tr.has-error td{
   background:rgba(255,59,48,.08);
+}
+
+.bulk-data-preview-table .placeholder-row td{
+  color:rgba(235,235,245,.60);
+  text-align:center;
 }
 
 .bulk-preview-card{
@@ -9413,14 +9430,14 @@ function getBulkProductImportStatus(items, errors) {
   }
   if (errors.length > 0) {
     return {
-      label: "พบข้อผิดพลาด",
+      label: `พบข้อผิดพลาด ${errors.length} รายการ`,
       detail: "กรุณาตรวจสอบรายการที่มีปัญหาก่อนนำเข้า",
       type: "error"
     };
   }
   if (items.length > 0) {
     return {
-      label: "พร้อมนำเข้า",
+      label: `พร้อมนำเข้า ${items.length} รายการ`,
       detail: `ตรวจสอบแล้ว ${items.length} รายการ พร้อมนำเข้าสู่ระบบ`,
       type: "ready"
     };
@@ -9521,12 +9538,7 @@ function renderBulkProductImportSheet() {
     ${renderBulkProductTemplateTable()}
 
     <div class="form-group">
-      <label for="bulkProductImportText">วางข้อมูลจาก Excel / Google Sheets</label>
-      <textarea
-        id="bulkProductImportText"
-        class="input bulk-import-textarea"
-        placeholder="${escAttr(BULK_PRODUCT_SAMPLE)}"
-        oninput="state.admin.bulkProductImport.rawText = this.value; state.admin.bulkProductImport.backendErrors = []; state.admin.bulkProductImport.summary = ''; state.admin.bulkProductImport.importedCount = 0;">${esc(bulkState.rawText || "")}</textarea>
+      <label>วางข้อมูลจาก Excel / Google Sheets</label>
       <div class="bulk-paste-actions">
         <button class="btn btn-outline" type="button" onclick="pasteBulkProductImportFromClipboard()">
           วางจากคลิปบอร์ด
@@ -9536,15 +9548,26 @@ function renderBulkProductImportSheet() {
         </button>
       </div>
     </div>
-
-    <button class="btn btn-outline" onclick="previewBulkProductImport()">
-      ตรวจสอบข้อมูล
-    </button>
-
     ${renderBulkProductImportStatus(parsed.items, allErrors)}
     ${renderBulkProductImportSuccessCard()}
     ${renderBulkProductImportSummary(parsed.items, allErrors)}
     ${hasImportSuccess ? "" : renderBulkProductImportPreview(parsed.items, allErrors)}
+
+    <details class="bulk-raw-input">
+      <summary>แก้ไขข้อความต้นฉบับ</summary>
+      <div class="form-group">
+        <label for="bulkProductImportText">ข้อความ TSV ต้นฉบับ</label>
+        <textarea
+          id="bulkProductImportText"
+          class="input bulk-import-textarea"
+          placeholder="${escAttr(BULK_PRODUCT_SAMPLE)}"
+          oninput="state.admin.bulkProductImport.rawText = this.value; state.admin.bulkProductImport.backendErrors = []; state.admin.bulkProductImport.summary = ''; state.admin.bulkProductImport.importedCount = 0;">${esc(bulkState.rawText || "")}</textarea>
+      </div>
+    </details>
+
+    <button class="btn btn-outline" onclick="previewBulkProductImport()">
+      ตรวจสอบข้อมูล
+    </button>
 
     <div class="sheet-action-footer">
       <button class="btn btn-primary"
@@ -9764,8 +9787,7 @@ function renderBulkProductImportSummary(items, errors) {
 }
 
 function renderBulkProductDataPreviewTable(items, errorsByRow) {
-  if (!items.length) return "";
-  const columns = ["productId", "name", "price", "costPrice", "stock", "status"];
+  const columns = BULK_PRODUCT_COLUMNS;
   return `
     <div class="bulk-template-table bulk-data-preview-table" aria-label="ตัวอย่างข้อมูลที่นำเข้า">
       <table>
@@ -9773,20 +9795,28 @@ function renderBulkProductDataPreviewTable(items, errorsByRow) {
           <tr>${columns.map(column => `<th>${esc(column)}</th>`).join("")}<th>สถานะ</th></tr>
         </thead>
         <tbody>
-          ${items.map((item, index) => {
-            const rowNumber = index + 1;
-            const rowErrors = errorsByRow.get(rowNumber) || [];
-            return `
-              <tr class="${rowErrors.length ? "has-error" : ""}">
-                ${columns.map(column => `<td>${esc(item[column] || "-")}</td>`).join("")}
-                <td>
-                  <span class="status-badge ${rowErrors.length ? "status-rejected" : "status-approved"} compact">
-                    ${rowErrors.length ? "พบข้อผิดพลาด" : "พร้อมนำเข้า"}
-                  </span>
-                </td>
-              </tr>
-            `;
-          }).join("")}
+          ${
+            items.length
+              ? items.map((item, index) => {
+                  const rowNumber = index + 1;
+                  const rowErrors = errorsByRow.get(rowNumber) || [];
+                  return `
+                    <tr class="${rowErrors.length ? "has-error" : ""}">
+                      ${columns.map(column => `<td>${esc(item[column] || "-")}</td>`).join("")}
+                      <td>
+                        <span class="status-badge ${rowErrors.length ? "status-rejected" : "status-approved"} compact">
+                          ${rowErrors.length ? "พบข้อผิดพลาด" : "พร้อมนำเข้า"}
+                        </span>
+                      </td>
+                    </tr>
+                  `;
+                }).join("")
+              : `
+                <tr class="placeholder-row">
+                  <td colspan="${columns.length + 1}">วาง/อัปโหลดข้อมูลเพื่อแสดงตัวอย่าง</td>
+                </tr>
+              `
+          }
         </tbody>
       </table>
     </div>
@@ -9796,6 +9826,7 @@ function renderBulkProductDataPreviewTable(items, errorsByRow) {
 function renderBulkProductImportPreview(items, errors) {
   if (!items.length && !errors.length) {
     return `
+      ${renderBulkProductDataPreviewTable(items, new Map())}
       <div class="empty-state">
         วางข้อมูล TSV หรืออัปโหลดไฟล์ แล้วกดตรวจสอบข้อมูล
       </div>
