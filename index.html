@@ -340,6 +340,28 @@ header.scrolled{
     gap:10px;
   }
 
+  .admin-product-summary{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+  }
+
+  .admin-product-summary-main{
+    flex:1;
+    min-width:0;
+    display:grid;
+    gap:6px;
+  }
+
+  .admin-product-summary-meta{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:6px 10px;
+    font-size:12px;
+    color:rgba(235,235,245,.68);
+  }
+
   .info-card{
     margin-top:12px;
     display:grid;
@@ -7448,25 +7470,57 @@ function openStockAction(p){
   if (state.mode !== "admin") return;
 
   state.selectedProduct = p;
+  const stockQty = Number(p.stock) || 0;
+  const statusKey = normalizeProductStatus(p.status || (stockQty <= 0 ? "out" : "ready"));
+  const statusLabelMap = {
+    ready: "พร้อมส่ง",
+    ready_plus: "พร้อมส่ง + เพิ่มได้",
+    shipping: "อยู่ระหว่างจัดส่ง",
+    warehouse: "อยู่โกดังไทย",
+    out: "หมด"
+  };
+  const statusBadgeClass = stockQty <= 0
+    ? "status-rejected"
+    : statusKey === "shipping"
+      ? "status-pending"
+      : statusKey === "warehouse"
+        ? "status-neutral"
+        : "status-approved";
 
   adminStockActionSheet.innerHTML = `
     <div class="sheet-topbar">
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closeOverlay(adminStockActionSheet)"
-        aria-label="ปิดหน้าจัดการสต๊อก">×</button>
-      <h3 id="adminStockActionSheetTitle">จัดการสต๊อก</h3>
+        aria-label="ปิดหน้าจัดการสต็อก">×</button>
+      <h3 id="adminStockActionSheetTitle">จัดการสต็อก</h3>
       <div aria-hidden="true"></div>
     </div>
     <div class="admin-detail-section">
-      <div class="admin-detail-title">${esc(p.name)}</div>
-      <div class="summary-row">
-        <span>คงเหลือ</span>
-        <strong>${Number(p.stock) || 0}</strong>
+      <div class="admin-product-summary">
+        ${renderCartItemThumb({
+          productId: p.productId,
+          name: p.name || p.productId || "สินค้า",
+          image: p.image || ""
+        })}
+        <div class="admin-product-summary-main">
+          <div class="admin-detail-title">${esc(p.name || "-")}</div>
+          <div class="admin-product-summary-meta">
+            <span>SKU: ${esc(p.productId || "-")}</span>
+            <span>คงเหลือ ${stockQty} ชิ้น</span>
+            <span class="status-badge compact ${statusBadgeClass}">
+              ${esc(statusLabelMap[statusKey] || "พร้อมส่ง")}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="form-group">
-      <label>จำนวน</label>
+      <label>จำนวน / ยอดคงเหลือใหม่</label>
+      <div class="helper-text" style="margin-bottom:8px">
+        รับสินค้าเข้า = เพิ่มจำนวนจากยอดเดิม<br>
+        ปรับยอดคงเหลือ = ตั้งค่ายอดใหม่แทนยอดเดิม
+      </div>
       <div class="qty-input">
         <input
           id="stockQty"
@@ -7481,7 +7535,7 @@ function openStockAction(p){
       <label>หมายเหตุ</label>
       <input
         id="stockReason"
-        placeholder="ถ้ามี"
+        placeholder="ระบุเหตุผล ถ้ามี"
       >
     </div>
 
@@ -7489,13 +7543,13 @@ function openStockAction(p){
       <button
         class="btn btn-success"
         onclick="submitStockIn()">
-        ➕ รับเข้า (IN)
+        รับสินค้าเข้า
       </button>
 
       <button
         class="btn btn-primary"
         onclick="submitStockAdjust()">
-        ✏️ ปรับยอด
+        ปรับยอดคงเหลือ
       </button>
     </div>
   `;
@@ -8112,10 +8166,21 @@ function openAddProduct(force = false){
       <div aria-hidden="true"></div>
     </div>
 
-    <div class="helper-text" style="margin-bottom:12px">
-      ℹ️ การเพิ่มสินค้าใหม่จะถูกบันทึกใน Stock Timeline
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">เพิ่มสินค้าใหม่</div>
+      <div class="helper-text">
+        กรอกข้อมูลหลักของสินค้าให้ครบก่อนบันทึก<br>
+        ต้องมีรหัสสินค้า ชื่อสินค้า ราคา ต้นทุน จำนวน และสถานะ
+      </div>
+      <div class="admin-product-summary-meta" style="margin-top:10px">
+        <span>SKU ที่แนะนำ: ${esc(nextProductId || "-")}</span>
+        <span>สินค้าใหม่จะเปิดใช้งานอัตโนมัติ</span>
+        <span>บันทึกแล้วจะถูกเพิ่มใน Stock Timeline</span>
+      </div>
     </div>
 
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">ข้อมูลหลัก</div>
     <div class="form-group">
       <label>รหัสสินค้า (SKU)</label>
       <input id="addProductId" value="${safeNextProductId}" placeholder="เช่น P002">
@@ -8125,7 +8190,10 @@ function openAddProduct(force = false){
       <label>ชื่อสินค้า</label>
       <input id="addName" value="${safeDraftName}" placeholder="ชื่อสินค้า">
     </div>
+    </div>
 
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">ราคา</div>
     <div class="form-group">
       <label>ราคาขาย</label>
       <input id="addPrice" type="number" value="${safeDraftPrice}" placeholder="0">
@@ -8135,7 +8203,10 @@ function openAddProduct(force = false){
       <label>ราคาต้นทุน</label>
       <input id="addCostPrice" type="number" value="${safeDraftCostPrice}" placeholder="0">
     </div>
+    </div>
 
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">สต็อก / สถานะ</div>
     <div class="form-group">
       <label>จำนวน (สต๊อกเริ่มต้น)</label>
       <input id="addStock" type="number" value="${safeDraftStock}" placeholder="0">
@@ -8155,8 +8226,11 @@ function openAddProduct(force = false){
         <option value="out" ${draft.status==="out"?"selected":""}>หมด</option>
       </select>
     </div>
+    </div>
 
 <!-- 📝 NEW: NOTE FIELD -->
+<div class="admin-detail-section">
+  <div class="admin-detail-title">หมายเหตุ / รายละเอียด</div>
 <div class="form-group">
   <label>หมายเหตุสินค้า</label>
   <textarea
@@ -8171,7 +8245,10 @@ function openAddProduct(force = false){
     "
   >${safeNote}</textarea>
 </div>
+</div>
 
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">รูปภาพ</div>
     <div class="form-group">
       <label>รูปสินค้า</label>
       <img id="addImagePreview"
@@ -8181,6 +8258,7 @@ function openAddProduct(force = false){
    type="file"
    accept="image/*"
    onchange="handleAddImagePreview(this)">
+    </div>
     </div>
 
     <!-- 🔁 CONTINUE MODE -->
@@ -8554,6 +8632,26 @@ function openProductEdit(p){
   const safeEditStock = escAttr(latestProduct.stock ?? "");
   const safeEditNote = esc(latestProduct.note || "");
   const safeEditDetailsText = esc(latestProduct.detailsText || "");
+  const editStockQty = Number(latestProduct.stock) || 0;
+  const editStatusKey = normalizeProductStatus(
+    latestProduct.status || (editStockQty <= 0 ? "out" : "ready")
+  );
+  const editStatusLabelMap = {
+    ready: "พร้อมส่ง",
+    ready_plus: "พร้อมส่ง + เพิ่มได้",
+    shipping: "อยู่ระหว่างจัดส่ง",
+    warehouse: "อยู่โกดังไทย",
+    out: "หมด"
+  };
+  const editStatusBadgeClass = editStockQty <= 0
+    ? "status-rejected"
+    : editStatusKey === "shipping"
+      ? "status-pending"
+      : editStatusKey === "warehouse"
+        ? "status-neutral"
+        : "status-approved";
+  const editPriceText = Number(latestProduct.price || 0).toLocaleString("th-TH");
+  const editCostText = Number(latestProduct.costPrice || 0).toLocaleString("th-TH");
 
   adminProductEditSheet.innerHTML = `
     <div class="sheet-topbar">
@@ -8562,6 +8660,28 @@ function openProductEdit(p){
         aria-label="ปิดหน้าแก้ไขสินค้า">×</button>
       <h3 id="adminProductEditSheetTitle">แก้ไขสินค้า</h3>
       <div aria-hidden="true"></div>
+    </div>
+
+    <div class="admin-detail-section">
+      <div class="admin-product-summary">
+        ${renderCartItemThumb({
+          productId: latestProduct.productId,
+          name: latestProduct.name || latestProduct.productId || "สินค้า",
+          image: latestProduct.image || ""
+        })}
+        <div class="admin-product-summary-main">
+          <div class="admin-detail-title">${esc(latestProduct.name || "-")}</div>
+          <div class="admin-product-summary-meta">
+            <span>SKU: ${esc(latestProduct.productId || "-")}</span>
+            <span>คงเหลือ ${editStockQty} ชิ้น</span>
+            <span class="status-badge compact ${editStatusBadgeClass}">
+              ${esc(editStatusLabelMap[editStatusKey] || "พร้อมส่ง")}
+            </span>
+            <span>ขาย ฿${editPriceText}</span>
+            <span>ต้นทุน ฿${editCostText}</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="form-group">
