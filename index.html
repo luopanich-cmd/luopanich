@@ -2300,6 +2300,7 @@ const state = {
     expiredAt: null,
     orders: [],
     selectedOrder: null,
+    dashboardMode: "SUMMARY",
     logs: [],
     filters: {
       status: "all",
@@ -2657,6 +2658,39 @@ function isAuthError(message = "") {
 /* ================= API LAYER ================= */
 const API_URL="https://script.google.com/macros/s/AKfycbzx9WlWXUqZ9OM_R0tO9wJvw79RPWIn40iakCPNuPDLBmvcuHXkqp9EMPoRiuMRnaM2Wg/exec";
 
+let adminLogoutPromise = null;
+
+async function adminLogout(token) {
+  const form = new URLSearchParams();
+  form.append("action", "adminLogout");
+  form.append("token", token);
+
+  return await postFormAction(form);
+}
+
+function handleAdminLogout() {
+  if (adminLogoutPromise) {
+    return adminLogoutPromise;
+  }
+
+  const token = String(state.admin?.token || "").trim();
+
+  adminLogoutPromise = (async () => {
+    try {
+      if (token) {
+        await adminLogout(token);
+      }
+    } catch (err) {
+      console.warn("Backend logout failed:", err);
+    } finally {
+      exitAdmin();
+      adminLogoutPromise = null;
+    }
+  })();
+
+  return adminLogoutPromise;
+}
+
 const fetchProducts = async () => {
   const res = await fetchWithTimeout(
    `${API_URL}?action=products`,
@@ -2668,7 +2702,9 @@ const fetchProducts = async () => {
   // 🔒 enforce standard response
   if (!json || json.success !== true || !Array.isArray(json.data)) {
     console.error("fetchProducts invalid response:", json);
-    return []; // ✅ คืน array เสมอ
+    throw new Error(
+      json?.error || json?.message || "โหลดรายการสินค้าไม่สำเร็จ"
+    );
   }
 
   return json.data;
@@ -2761,7 +2797,13 @@ async function refreshProducts() {
   }
 
   try {
-    const list = state.admin?.token
+    const useAdminProducts =
+      state.mode === "admin" &&
+      state.admin?.loggedIn &&
+      state.admin?.token &&
+      !isAdminSessionExpired();
+
+    const list = useAdminProducts
       ? await fetchAdminProducts()
       : await fetchProducts();
    
@@ -3079,6 +3121,20 @@ async function checkStockBeforeSubmit() {
  // 🔒 Attribute-safe (สำหรับ src/alt/href)
  const escAttr = (s) => esc(s);
 
+function toInlineJsStringLiteral(value) {
+  return "'" + String(value ?? "")
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/"/g, "\\x22")
+    .replace(/&/g, "\\x26")
+    .replace(/</g, "\\x3C")
+    .replace(/>/g, "\\x3E")
+    .replace(/\r/g, "\\r")
+    .replace(/\n/g, "\\n")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029") + "'";
+}
+
 
 // 🔴 CHANGED: ADD renderFloatingBar() (fix: cart added but bar never appears because function was missing)
 function renderFloatingBar(){
@@ -3118,7 +3174,7 @@ function renderFloatingBar(){
     <div class="bar-left" style="width:100%;">
       <div style="font-weight:700">ตะกร้า</div>
       <div class="bar-subtext">
-        ${listText} • รวม ฿${money(total)}
+        ${esc(listText)} • รวม ฿${money(total)}
       </div>
     </div>
   `;
@@ -3197,11 +3253,11 @@ function closeImageViewer(ev){
            <div class="product-info-images">
  ${images.map((url) => {
    // ✅ embed JS arg safely + keep src attribute safe
-   const jsArg = JSON.stringify(String(url ?? ""));
+   const jsArg = toInlineJsStringLiteral(url);
    return `
 <img src="${escAttr(url)}"
      class="product-info-zoom"
-     onclick='openImageViewer(${jsArg})'>
+     onclick="openImageViewer(${jsArg})">
    `;
  }).join("")}
            </div>
@@ -3342,7 +3398,16 @@ if (
     };
  
     const statusKey = p.resolvedStatus;
-    let statusClass = statusKey;
+    const allowedStatusClasses = new Set([
+      "ready",
+      "ready_plus",
+      "shipping",
+      "warehouse",
+      "out"
+    ]);
+    const statusClass = allowedStatusClasses.has(statusKey)
+      ? statusKey
+      : "ready";
     let statusText  = statusMap[statusKey] || "พร้อมส่ง";
 
     /* ================= CARD ================= */
@@ -3359,8 +3424,8 @@ if (
 
     card.innerHTML = `
       <img class="thumb"
-        src="${p.image ? escapeHTML(p.image) : "about:blank"}"
-        alt="${escapeHTML(p.name)}"
+        src="${p.image ? escAttr(p.image) : "about:blank"}"
+        alt="${escAttr(p.name)}"
         onerror="this.style.display='none'">
 
       <div class="info">
@@ -3369,7 +3434,7 @@ if (
         <div class="price">ราคา: ฿${Number(p.price).toLocaleString()}</div>
 
         <div class="meta">
-          <span class="qty">จำนวน: ${p.stock}</span>
+          <span class="qty">จำนวน: ${Number(p.stock) || 0}</span>
           <span class="status ${statusClass}">
             ${statusText}
           </span>
@@ -3493,11 +3558,11 @@ function renderProductSheet(){
    src="${escAttr(p.image || '')}"
    alt="${escAttr(p.name)}"
    class="product-image product-info-zoom"
-   onclick='openImageViewer(${JSON.stringify(String(p.image || ""))})'
+   onclick="openImageViewer(${toInlineJsStringLiteral(p.image || "")})"
  >
 
-    <div class="price">฿${p.price}</div>
-    <div class="stock">คงเหลือ ${p.stock} ชิ้น</div>
+    <div class="price">฿${Number(p.price) || 0}</div>
+    <div class="stock">คงเหลือ ${Number(p.stock) || 0} ชิ้น</div>
     
      ${
       p.detailsText || p.compareImages
@@ -3515,9 +3580,7 @@ function renderProductSheet(){
    p.note
      ? `
 <div class="product-note">
-         📝 ${String(p.note)
-       .replace(/</g, "&lt;")
-       .replace(/>/g, "&gt;")}
+         📝 ${esc(p.note)}
        </div>
      `
      : ""
@@ -3560,13 +3623,13 @@ function renderCart(){
       <div>
         <div class="name">${esc(i.name)}</div>
         <div style="font-size:12px;color:#888">
-          รหัส: ${i.productId}
+          รหัส: ${esc(i.productId)}
         </div>
-        <div class="price">฿${i.price}</div>
+        <div class="price">฿${Number(i.price) || 0}</div>
       </div>
  <div class="cart-item-right">
    <div style="font-size:14px;color:#555">
-     จำนวน: ${i.qty || 1}
+     จำนวน: ${Number(i.qty) || 1}
    </div>
    <button class="btn-remove"
      onclick="removeItem(${idx})">
@@ -3625,10 +3688,10 @@ function renderConfirmSheet(){
       <div class="cart-item">
         <div>
           <div class="name">${esc(i.name)}</div>
-          <div style="font-size:12px;color:#888">รหัส: ${i.productId}</div>
-          <div style="font-size:13px">จำนวน ${i.qty}</div>
+          <div style="font-size:12px;color:#888">รหัส: ${esc(i.productId)}</div>
+          <div style="font-size:13px">จำนวน ${Number(i.qty) || 0}</div>
         </div>
-        <div>฿${sum}</div>
+        <div>฿${Number(sum) || 0}</div>
       </div>
     `;
   });
@@ -3640,7 +3703,7 @@ function renderConfirmSheet(){
      <label>เลข PO <span style="color:#ff3b30">*</span></label>
       <input
         id="poInput"
-        value="${esc(state.poNumber || "")}"
+        value="${escAttr(state.poNumber || "")}"
         placeholder="กรอกเลข PO"
         required
         oninput="state.poNumber = this.value.trim()">
@@ -4018,6 +4081,13 @@ async function enterAdmin(){
 
   // 🔴 CHANGED: ต้องโหลด admin products ให้เสร็จก่อน
   await refreshProducts();
+
+  try {
+    const orders = await fetchOrders();
+    state.admin.orders = Array.isArray(orders) ? orders : [];
+  } catch (err) {
+    console.warn("enterAdmin: preload orders failed", err);
+  }
 }
 
 // ✅ STEP 1: UI-only mode switch (ไม่ยุ่ง session/token)
@@ -4066,16 +4136,21 @@ function closeTopSheet(){
     // 🔴 ADMIN FLOW (top → bottom)
     document.getElementById("imageViewerSheet"),
     document.getElementById("productInfoSheet"),
+    document.getElementById("confirmSheet"),
     document.getElementById("mainMenuSheet"),           // main menu (side)
+    document.getElementById("createPendingDeliverySheet"),
+    document.getElementById("bulkPendingDeliverySheet"),
+    document.getElementById("pendingDeliverySheet"),
+    document.getElementById("adminAddProductSheet"),
     document.getElementById("adminProductActionSheet"),
     document.getElementById("adminProductEditSheet"),
     document.getElementById("adminStockActionSheet"),
     document.getElementById("adminOrderSheet"),
     document.getElementById("adminDashboardSheet"),
     document.getElementById("adminStockSheet"),
+    document.getElementById("adminLoginSheet"),
 
     // 🔵 VIEWER FLOW
-    document.getElementById("confirmSheet"),
     document.getElementById("cartSheet"),
     document.getElementById("qtySheet"),
     document.getElementById("productSheet"),
@@ -4085,7 +4160,11 @@ function closeTopSheet(){
   for (const sheet of sheets) {
     if (sheet && sheet.classList.contains("show")) {
       // ✅ ใช้ Overlay Manager เท่านั้น
-      closeOverlay(sheet);
+      if (sheet === adminOrderSheet) {
+        closeAdminOrderSheet();
+      } else {
+        closeOverlay(sheet);
+      }
       break;
     }
   }
@@ -4164,6 +4243,8 @@ function openQtySheet(){
     return;
   }
 
+  state.qty = 1;
+
   // 🔒 ปิด product sheet ผ่าน overlay manager
   closeOverlay(productSheet);
 
@@ -4176,9 +4257,10 @@ function openQtySheet(){
         <input
           type="number"
           min="1"
-          max="${state.selectedProduct.stock}"
+          step="1"
+          max="${escAttr(Number(state.selectedProduct.stock) || 0)}"
           value="1"
-          oninput="state.qty = Number(this.value) || 1">
+          oninput="state.qty = Number(this.value)">
       </div>
     </div>
 
@@ -4210,7 +4292,15 @@ function confirmAddToCart(){
   const p = state.selectedProduct;
   if (!p) return;
 
-  const qty = Number(state.qty) || 1;
+  const qty = Number(state.qty);
+
+  if (!Number.isInteger(qty) || qty <= 0) {
+    showToast(
+      "จำนวนสินค้าต้องเป็นจำนวนเต็มมากกว่า 0",
+      "warning"
+    );
+    return;
+  }
 
   // 🔒 GUARD: ห้ามเกิน stock
   const existing = state.cart.find(i => i.productId === p.productId);
@@ -4664,6 +4754,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
   }
 
   allowOpenOrders = false;
+  state.admin.dashboardMode = mode === "PENDING" ? "PENDING" : "SUMMARY";
   closeOverlay(adminStockSheet);
   state.search = "";
 
@@ -4736,7 +4827,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
         ${
           pendingOrders.length
             ? pendingOrders.map(o => `
-                <div class="card" onclick="openAdminOrder('${escAttr(o.orderId)}')">
+                <div class="card" onclick="openAdminOrder(${toInlineJsStringLiteral(o.orderId)})">
                   <div class="name">${esc(o.orderId)}</div>
                   <div>Status: ${esc(o.status)}</div>
                   <div>Total: ฿${Number(o.total || 0).toLocaleString("th-TH")}</div>
@@ -4827,7 +4918,7 @@ ${
             )
         )
         .map(o => `
-            <div class="card" onclick="openAdminOrder('${escAttr(o.orderId)}')">
+            <div class="card" onclick="openAdminOrder(${toInlineJsStringLiteral(o.orderId)})">
               <div class="name">${esc(o.orderId)}</div>
               <div>Status: ${esc(o.status)}</div>
               <div>Total: ฿${Number(o.total || 0).toLocaleString("th-TH")}</div>
@@ -5091,10 +5182,10 @@ async function openStockTimeline(force = false) {
 
       ${
         timeline.length
-          ? timeline.map(t => {
+          ? timeline.map((t, timelineIndex) => {
 
               if (t.kind === "ORDER") {
-                const detailId = `stock-detail-${esc(t.orderId)}`;
+                const detailId = `stock-detail-${timelineIndex}`;
                
                 return `
                   <div class="card">
@@ -5103,7 +5194,7 @@ async function openStockTimeline(force = false) {
                     </div>
 
                     <div class="timeline-summary">
-                      ${t.totalLines} รายการ · ${t.totalQty} ชิ้น · ${money(t.totalSalesAmount)}
+                      ${Number(t.totalLines) || 0} รายการ · ${Number(t.totalQty) || 0} ชิ้น · ${money(t.totalSalesAmount)}
                     </div>                    
 
                     ${t.items.map(i => `
@@ -5112,9 +5203,10 @@ async function openStockTimeline(force = false) {
                         ${i.productName ? ` — ${esc(i.productName)}` : ""}
                         x ${Number(i.qty || 0)}
                         ${
-                          Number.isFinite(Number(i.before))
+                          Number.isFinite(Number(i.before)) &&
+                          Number.isFinite(Number(i.after))
                             ? `<span class="timeline-muted">
-                                (${i.before} → ${i.after})
+                                (${Number(i.before)} → ${Number(i.after)})
                               </span>`
                             : ""
                         }
@@ -5126,7 +5218,7 @@ async function openStockTimeline(force = false) {
                         type="button"
                         class="timeline-detail-toggle"
                         onclick="
-                          const panel = document.getElementById('${detailId}');
+                          const panel = document.getElementById(${toInlineJsStringLiteral(detailId)});
                           if (!panel) return;
                           panel.classList.toggle('show');
                           this.textContent = panel.classList.contains('show')
@@ -5137,10 +5229,10 @@ async function openStockTimeline(force = false) {
                         ดูรายละเอียดเพิ่มเติม
                       </button>
 
-                      <div id="${detailId}" class="timeline-detail-panel">
+                      <div id="${escAttr(detailId)}" class="timeline-detail-panel">
                         <div class="timeline-detail-meta">
-                          ยอดรวมสินค้า: ${t.totalLines} รายการ<br>
-                          ยอดรวมจำนวนชิ้น: ${t.totalQty}<br>
+                          ยอดรวมสินค้า: ${Number(t.totalLines) || 0} รายการ<br>
+                          ยอดรวมจำนวนชิ้น: ${Number(t.totalQty) || 0}<br>
                           ยอดขายรวม: ${money(t.totalSalesAmount)}
                           ${t.note ? `<br>หมายเหตุ: ${esc(t.note)}` : ""}
                         </div>
@@ -5151,7 +5243,12 @@ async function openStockTimeline(force = false) {
                               ${esc(i.productId)}
                               ${i.productName ? ` — ${esc(i.productName)}` : ""} |
                               ${Number(i.qty || 0)} ชิ้น
-                              ${Number.isFinite(Number(i.before)) ? ` | ${i.before} → ${i.after}` : ""}
+                              ${
+                                Number.isFinite(Number(i.before)) &&
+                                Number.isFinite(Number(i.after))
+                                  ? ` | ${Number(i.before)} → ${Number(i.after)}`
+                                  : ""
+                              }
                               | ${money(i.salePrice)}/ชิ้น
                               | รวม ${money(i.lineTotal)}
                             </div>
@@ -5163,7 +5260,7 @@ async function openStockTimeline(force = false) {
                     <div style="font-size:12px;color:#888;margin-top:6px">
                       ${t.time.toLocaleDateString("th-TH")}
                       ${t.time.toLocaleTimeString("th-TH")}
-                      · โดย ${t.by}
+                      · โดย ${esc(t.by)}
                     </div>
                   </div>
                 `;
@@ -5179,8 +5276,8 @@ async function openStockTimeline(force = false) {
 
               return `
                 <div class="card">
-                  <div class="timeline-tag ${cfg.class}">
-                    ${cfg.text}
+                  <div class="timeline-tag ${escAttr(cfg.class)}">
+                    ${esc(cfg.text)}
                   </div>
 
                   <div class="timeline-row">
@@ -5188,8 +5285,9 @@ async function openStockTimeline(force = false) {
                     ${t.productName ? ` — ${esc(t.productName)}` : ""}
                     ${Number.isFinite(Number(t.qty)) ? ` x ${Math.abs(Number(t.qty))}` : ""}
                     ${
-                      Number.isFinite(Number(t.before))
-                        ? ` (${t.before} → ${t.after})`
+                      Number.isFinite(Number(t.before)) &&
+                      Number.isFinite(Number(t.after))
+                        ? ` (${Number(t.before)} → ${Number(t.after)})`
                         : ""
                     }
                   </div>
@@ -5225,7 +5323,7 @@ async function openStockTimeline(force = false) {
                   <div style="font-size:12px;color:#888;margin-top:6px">
                     ${t.time.toLocaleDateString("th-TH")}
                     ${t.time.toLocaleTimeString("th-TH")}
-                    · โดย ${t.by}
+                    · โดย ${esc(t.by)}
                   </div>
                 </div>
               `;
@@ -5268,9 +5366,6 @@ function openAdminOrder(orderId){
   const order = orders.find(o => o.orderId === orderId);
   if (!order) return;
 
- state.admin.lastDashboardStatus =
-   state.admin.filters?.status || "all"; 
- 
   state.admin.selectedOrder = order;
 
   state.admin.pendingDeliveryOrder = order;
@@ -5289,7 +5384,7 @@ adminOrderSheet.innerHTML = `
     ×
   </button>
 
-  <h3>${order.orderId}</h3>
+  <h3>${esc(order.orderId)}</h3>
 
  ${
    order.status !== "PENDING" &&
@@ -5308,7 +5403,7 @@ adminOrderSheet.innerHTML = `
     ${items.map(i => `
       <div class="cart-item">
    <div>
-     <div>${i.name} x ${i.qty}</div>
+     <div>${esc(i.name)} x ${Number(i.qty) || 0}</div>
 
      ${
        order.status !== "PENDING" &&
@@ -5324,9 +5419,9 @@ adminOrderSheet.innerHTML = `
          "
          onclick="
            openCreatePendingDelivery(
-             '${order.orderId}',
-             '${String(order.poNumber || "").replace(/'/g,"\\'")}',
-             '${String(i.productId || "").replace(/'/g,"\\'")}',
+             ${toInlineJsStringLiteral(order.orderId)},
+             ${toInlineJsStringLiteral(order.poNumber || "")},
+             ${toInlineJsStringLiteral(i.productId || "")},
              ${Number(i.qty) || 0}
            )
          ">
@@ -5343,9 +5438,9 @@ adminOrderSheet.innerHTML = `
       </div>
     `).join("")}
 
-    <div class="total">Total: ฿${order.total}</div>
+    <div class="total">Total: ฿${Number(order.total) || 0}</div>
     <div style="margin-top:8px;color:rgba(235,235,245,.72);font-size:14px">
-      สถานะ: ${order.status}
+      สถานะ: ${esc(order.status)}
     </div>
 
     ${
@@ -5372,42 +5467,6 @@ adminOrderSheet.innerHTML = `
   openOverlay(adminOrderSheet);
 }
 
- function createAllPendingDelivery() {
-
-   const order =
-     state.admin.pendingDeliveryOrder;
-
-   if (!order) {
-     showToast(
-       "ไม่พบข้อมูลออเดอร์",
-       "warning"
-     );
-     return;
-   }
-
-   const items = Array.isArray(order.items)
-     ? order.items
-     : [];
-
-   if (!items.length) {
-     showToast(
-       "ไม่มีรายการสินค้า",
-       "warning"
-     );
-     return;
-   }
-
-   // STEP 1
-   // ยังไม่สร้างจริง
-   // แค่ส่งรายการทั้งหมดเข้า Flow เดียว
-
-   openCreatePendingDeliveryBulk(
-     order.orderId,
-     order.poNumber || "",
-     items
-   );
- }
- 
 function closeAdminOrderSheet() {
 
   closeOverlay(adminOrderSheet);
@@ -5415,7 +5474,7 @@ function closeAdminOrderSheet() {
   allowOpenOrders = true;
 
   openAdminDashboard(
-    state.admin.lastDashboardStatus || "all",
+    state.admin.dashboardMode || "SUMMARY",
     true
   );
 } 
@@ -5438,8 +5497,31 @@ function closeAdminOrderSheet() {
        ? order.items
        : [];
 
+   const pendingDeliveries =
+     Array.isArray(state.admin.pendingDeliveries)
+       ? state.admin.pendingDeliveries
+       : [];
+
    state.admin.bulkPendingItems =
-     items.map(item => ({
+     items.map(item => {
+       const orderedQty = Number(item.qty) || 0;
+       const existingOpenQty = pendingDeliveries
+         .filter(pending =>
+           String(pending.status || "").toUpperCase() === "OPEN" &&
+           String(pending.orderId || "") === String(order.orderId || "") &&
+           String(pending.productId || "") === String(item.productId || "")
+         )
+         .reduce(
+           (sum, pending) =>
+             sum + Math.max(0, Number(pending.qty) || 0),
+           0
+         );
+       const remainingQty = Math.max(
+         0,
+         orderedQty - existingOpenQty
+       );
+
+       return {
    productId:
      item.productId ||
      "",
@@ -5447,12 +5529,13 @@ function closeAdminOrderSheet() {
      item.name || "",
 
    orderedQty:
-     Number(item.qty) || 0,
+     orderedQty,
 
    qty:
-     Number(item.qty) || 0,
+     remainingQty,
        selected: true
-     }));
+       };
+     });
 
    bulkPendingDeliverySheet.innerHTML = `
 
@@ -5529,7 +5612,7 @@ function closeAdminOrderSheet() {
     word-break:break-word;
     line-height:1.4;
   ">
-           ${item.name || item.productId || "-"}
+           ${esc(item.name || item.productId || "-")}
          </div>
 
   </div>
@@ -5553,6 +5636,8 @@ function closeAdminOrderSheet() {
          <input
            type="number"
            min="1"
+           step="1"
+           max="${item.qty}"
            value="${item.qty}"
            class="input"
 style="
@@ -5592,121 +5677,213 @@ style="
  }
 
  async function submitBulkPendingDelivery() {
-
-   const order =
-     state.admin.pendingDeliveryOrder;
-
-   if (!order) return;
-
-   const items =
-     state.admin.bulkPendingItems
-       .filter(i =>
-         i.selected &&
-         i.qty > 0
-       );
-
-   if (!items.length) {
-     showToast(
-       "กรุณาเลือกสินค้า",
-       "warning"
-     );
-     return;
-   }
+   if (state.admin.isSubmitting) return;
+   state.admin.isSubmitting = true;
 
    try {
+     const order =
+       state.admin.pendingDeliveryOrder;
+
+     if (!order) return;
+
+     const items =
+       state.admin.bulkPendingItems
+         .filter(i => i.selected);
+
+     if (!items.length) {
+       showToast(
+         "กรุณาเลือกสินค้า",
+         "warning"
+       );
+       return;
+     }
+
+     const invalidItem = items.find(item => {
+       const qty = Number(item.qty);
+
+       return (
+         !Number.isInteger(qty) ||
+         qty <= 0
+       );
+     });
+
+     if (invalidItem) {
+       showToast(
+         `จำนวนค้างส่งของ "${invalidItem.name || invalidItem.productId}" ต้องเป็นจำนวนเต็ม 1-${invalidItem.orderedQty}`,
+         "warning"
+       );
+       return;
+     }
+
+     let pendingDeliveries =
+       state.admin.pendingDeliveries;
+
+     if (!Array.isArray(pendingDeliveries)) {
+       try {
+         pendingDeliveries =
+           await fetchPendingDeliveries();
+         state.admin.pendingDeliveries =
+           pendingDeliveries;
+       } catch (err) {
+         console.error(err);
+         showToast(
+           err.message ||
+           "ไม่สามารถตรวจสอบรายการค้างส่งได้",
+           "error"
+         );
+         return;
+       }
+     }
+     const batchQtyByProduct = new Map();
+     const cumulativeInvalidItem = items.find(item => {
+       const productId = String(item.productId || "");
+       const qty = Number(item.qty);
+       const orderedQty = Number(item.orderedQty);
+       const existingOpenQty = pendingDeliveries
+         .filter(pending =>
+           String(pending.status || "").toUpperCase() === "OPEN" &&
+           String(pending.orderId || "") === String(order.orderId || "") &&
+           String(pending.productId || "") === productId
+         )
+         .reduce(
+           (sum, pending) =>
+             sum + Math.max(0, Number(pending.qty) || 0),
+           0
+         );
+       const batchQty =
+         (batchQtyByProduct.get(productId) || 0) + qty;
+
+       batchQtyByProduct.set(productId, batchQty);
+
+       return existingOpenQty + batchQty > orderedQty;
+     });
+
+     if (cumulativeInvalidItem) {
+       showToast(
+         `จำนวนค้างส่งของ "${cumulativeInvalidItem.name || cumulativeInvalidItem.productId}" เกินจำนวนใน PO`,
+         "warning"
+       );
+       return;
+     }
 
      showLoading(
        "กำลังสร้างรายการค้างส่ง..."
      );
 
+     const succeededItems = [];
+     const failedItems = [];
+
      for (const item of items) {
+       try {
+         const form =
+           new URLSearchParams();
 
-       const form =
-         new URLSearchParams();
+         form.append("action", "createPendingDelivery");
+         form.append("token", state.admin.token);
+         form.append("orderId", order.orderId);
+         form.append("poNumber", order.poNumber || "");
+         form.append("productId", item.productId);
+         form.append("qty", item.qty);
+         form.append("orderedQty", item.orderedQty);
+         form.append("note", "Bulk Pending Delivery");
 
-       form.append(
-         "action",
-         "createPendingDelivery"
-       );
+         const result =
+           await postFormAction(form);
 
-       form.append(
-         "token",
-         state.admin.token
-       );
+         if (!result?.success) {
+           throw new Error(
+             result?.error ||
+             "Create pending failed"
+           );
+         }
 
-       form.append(
-         "orderId",
-         order.orderId
-       );
-
-       form.append(
-         "poNumber",
-         order.poNumber || ""
-       );
-
-       form.append(
-         "productId",
-         item.productId
-       );
-
-       form.append(
-         "qty",
-         item.qty
-       );
-
- form.append(
-   "orderedQty",
-   item.orderedQty
- );
-      
-       form.append(
-         "note",
-         "Bulk Pending Delivery"
-       );
-
-       const result =
-         await postFormAction(form);
-
-       if (!result?.success) {
-         throw new Error(
-           result?.error ||
-           "Create pending failed"
-         );
+         succeededItems.push(item);
+       } catch (err) {
+         failedItems.push({
+           item,
+           error: err.message || "Create pending failed"
+         });
        }
      }
 
-     showToast(
-       "สร้างรายการสำเร็จ",
-       "success"
-     );
+     if (failedItems.length === 0) {
+       showToast(
+         "สร้างรายการสำเร็จ",
+         "success"
+       );
 
-     closeOverlay(
-       bulkPendingDeliverySheet
-     );
+       closeOverlay(
+         bulkPendingDeliverySheet
+       );
 
-     openPendingDeliverySheet();
+       openPendingDeliverySheet();
+       return;
+     }
 
-   } catch(err) {
+     if (succeededItems.length > 0) {
+       const successText = succeededItems
+         .map(item => `- ${item.name || item.productId}`)
+         .join("\n");
+       const failureText = failedItems
+         .map(({ item, error }) =>
+           `- ${item.name || item.productId}: ${error}`
+         )
+         .join("\n");
 
-     console.error(err);
+       alert(
+         `สร้างสำเร็จ:\n${successText}\n\nสร้างไม่สำเร็จ:\n${failureText}`
+       );
+
+       closeOverlay(
+         bulkPendingDeliverySheet
+       );
+
+       openPendingDeliverySheet();
+       return;
+     }
 
      alert(
-       err.message ||
-       "สร้างรายการไม่สำเร็จ"
+       "สร้างรายการไม่สำเร็จ\n" +
+       failedItems
+         .map(({ item, error }) =>
+           `- ${item.name || item.productId}: ${error}`
+         )
+         .join("\n")
      );
 
    } finally {
-
+     state.admin.isSubmitting = false;
      safeHideLoading();
    }
  }
- 
+
 function openCreatePendingDelivery(
   orderId,
   poNumber,
   productId,
   maxQty
 ) {
+
+const orderedQty = Number(maxQty) || 0;
+const existingOpenQty = (
+  Array.isArray(state.admin.pendingDeliveries)
+    ? state.admin.pendingDeliveries
+    : []
+)
+  .filter(item =>
+    String(item.status || "").toUpperCase() === "OPEN" &&
+    String(item.orderId || "") === String(orderId || "") &&
+    String(item.productId || "") === String(productId || "")
+  )
+  .reduce(
+    (sum, item) =>
+      sum + Math.max(0, Number(item.qty) || 0),
+    0
+  );
+const remainingQty = Math.max(
+  0,
+  orderedQty - existingOpenQty
+);
 
 createPendingDeliverySheet.dataset.orderId =
   orderId;
@@ -5718,15 +5895,15 @@ createPendingDeliverySheet.dataset.productId =
   productId;
 
 createPendingDeliverySheet.dataset.orderedQty =
-   Number(maxQty) || 0; 
+   orderedQty;
 
 createPendingDeliverySheet.innerHTML = `
   
  <div
    id="pendingDeliveryMeta"
-   data-order-id="${orderId}"
-   data-po-number="${poNumber}"
-   data-product-id="${productId}"
+   data-order-id="${escAttr(orderId)}"
+   data-po-number="${escAttr(poNumber)}"
+   data-product-id="${escAttr(productId)}"
  ></div>
 
     <div class="admin-sheet-topbar">
@@ -5749,12 +5926,12 @@ createPendingDeliverySheet.innerHTML = `
 
       <div>
         <b>สินค้า:</b>
-        ${productId}
+        ${esc(productId)}
       </div>
 
       <div style="margin-top:8px;">
         <b>จำนวนใน PO:</b>
-        ${Number(maxQty) || 0}
+        ${orderedQty}
       </div>
 
       <div style="margin-top:16px;">
@@ -5767,8 +5944,9 @@ createPendingDeliverySheet.innerHTML = `
           id="pendingQtyInput"
           type="number"
           min="1"
-          max="${Number(maxQty) || 0}"
-          value="1"
+          step="1"
+          max="${remainingQty}"
+          value="${remainingQty > 0 ? 1 : 0}"
           class="input"
         />
 
@@ -5857,19 +6035,35 @@ async function createPendingDelivery() {
       throw new Error("Missing productId");
     }
 
-    if (qty <= 0) {
+    if (!Number.isInteger(qty) || qty <= 0) {
       throw new Error(
-        "จำนวนค้างส่งต้องมากกว่า 0"
+        "จำนวนค้างส่งต้องเป็นจำนวนเต็มมากกว่า 0"
       );
     }
 
- const maxQty = Number(
-   document.getElementById(
-     "pendingQtyInput"
-   )?.max || 0
- );
+ let pendingDeliveries =
+   state.admin.pendingDeliveries;
 
- if (qty > maxQty) {
+ if (!Array.isArray(pendingDeliveries)) {
+   pendingDeliveries =
+     await fetchPendingDeliveries();
+   state.admin.pendingDeliveries =
+     pendingDeliveries;
+ }
+
+ const existingOpenQty = pendingDeliveries
+   .filter(item =>
+     String(item.status || "").toUpperCase() === "OPEN" &&
+     String(item.orderId || "") === String(orderId || "") &&
+     String(item.productId || "") === String(productId || "")
+   )
+   .reduce(
+     (sum, item) =>
+       sum + Math.max(0, Number(item.qty) || 0),
+     0
+   );
+
+ if (existingOpenQty + qty > orderedQty) {
    throw new Error(
      "จำนวนค้างส่งเกินจำนวนใน PO"
    );
@@ -5956,114 +6150,116 @@ async function createPendingDelivery() {
 }
 
  async function createAllPendingDelivery() {
-
-   const order =
-     state.admin.pendingDeliveryOrder;
-
-   if (!order) {
-     showToast(
-       "ไม่พบข้อมูลออเดอร์",
-       "warning"
-     );
-     return;
-   }
-
-   const items =
-     Array.isArray(order.items)
-       ? order.items
-       : [];
-
-   if (!items.length) {
-     showToast(
-       "ไม่มีรายการสินค้า",
-       "warning"
-     );
-     return;
-   }
+   if (state.admin.isSubmitting) return;
+   state.admin.isSubmitting = true;
 
    try {
+     const order =
+       state.admin.pendingDeliveryOrder;
+
+     if (!order) {
+       showToast(
+         "ไม่พบข้อมูลออเดอร์",
+         "warning"
+       );
+       return;
+     }
+
+     const items =
+       Array.isArray(order.items)
+         ? order.items
+         : [];
+
+     if (!items.length) {
+       showToast(
+         "ไม่มีรายการสินค้า",
+         "warning"
+       );
+       return;
+     }
 
      showLoading(
        "กำลังสร้างรายการค้างส่ง..."
      );
 
+     const succeededItems = [];
+     const failedItems = [];
+
      for (const item of items) {
+       try {
+         const form =
+           new URLSearchParams();
 
-       const form =
-         new URLSearchParams();
+         form.append("action", "createPendingDelivery");
+         form.append("token", state.admin.token);
+         form.append("orderId", order.orderId);
+         form.append("poNumber", order.poNumber || "");
+         form.append("productId", item.productId);
+         form.append("orderedQty", Number(item.qty) || 0);
+         form.append("qty", Number(item.qty) || 0);
+         form.append("note", "Bulk Pending Delivery");
 
-       form.append(
-         "action",
-         "createPendingDelivery"
-       );
+         const result =
+           await postFormAction(form);
 
-       form.append(
-         "token",
-         state.admin.token
-       );
+         if (!result?.success) {
+           throw new Error(
+             result?.error ||
+             "Create pending delivery failed"
+           );
+         }
 
-       form.append(
-         "orderId",
-         order.orderId
-       );
-
-       form.append(
-         "poNumber",
-         order.poNumber || ""
-       );
-
-       form.append(
-         "productId",
-         item.productId
-       );
-
-       form.append(
-         "orderedQty",
-         Number(item.qty) || 0
-       );
-
-       form.append(
-         "qty",
-         Number(item.qty) || 0
-       );
-
-       form.append(
-         "note",
-         "Bulk Pending Delivery"
-       );
-
-       const result =
-         await postFormAction(form);
-
-       if (!result?.success) {
-         throw new Error(
-           result?.error ||
-           "Create pending delivery failed"
-         );
+         succeededItems.push(item);
+       } catch (err) {
+         failedItems.push({
+           item,
+           error: err.message || "Create pending delivery failed"
+         });
        }
      }
 
-     showToast(
-       "สร้างรายการค้างส่งทั้งหมดสำเร็จ",
-       "success"
-     );
+     if (failedItems.length === 0) {
+       showToast(
+         "สร้างรายการค้างส่งทั้งหมดสำเร็จ",
+         "success"
+       );
 
-     openPendingDeliverySheet();
+       openPendingDeliverySheet();
+       return;
+     }
 
-   } catch (err) {
+     if (succeededItems.length > 0) {
+       const successText = succeededItems
+         .map(item => `- ${item.name || item.productId}`)
+         .join("\n");
+       const failureText = failedItems
+         .map(({ item, error }) =>
+           `- ${item.name || item.productId}: ${error}`
+         )
+         .join("\n");
 
-     console.error(err);
+       alert(
+         `สร้างสำเร็จ:\n${successText}\n\nสร้างไม่สำเร็จ:\n${failureText}`
+       );
+
+       openPendingDeliverySheet();
+       return;
+     }
 
      alert(
-       err.message ||
-       "ไม่สามารถสร้างรายการค้างส่งได้"
+       "ไม่สามารถสร้างรายการค้างส่งได้\n" +
+       failedItems
+         .map(({ item, error }) =>
+           `- ${item.name || item.productId}: ${error}`
+         )
+         .join("\n")
      );
 
    } finally {
-
+     state.admin.isSubmitting = false;
      safeHideLoading();
    }
- } 
+ }
 
 async function handleApprove() {
   // 🔒 GUARD: ต้องอยู่ใน admin mode และมี order
@@ -6254,8 +6450,8 @@ function openStockAction(p){
 
   adminStockActionSheet.innerHTML = `
     <h3>จัดการสต๊อก</h3>
-    <div>${p.name}</div>
-    <div>คงเหลือ: ${p.stock}</div>
+    <div>${esc(p.name)}</div>
+    <div>คงเหลือ: ${Number(p.stock) || 0}</div>
 
     <div class="form-group">
       <label>จำนวน</label>
@@ -6459,10 +6655,10 @@ container.innerHTML =
   class="name"
  onclick="
    state.admin.pendingDeliveryExpanded[
-     '${po}'
+     ${toInlineJsStringLiteral(po)}
    ] =
    !state.admin.pendingDeliveryExpanded[
-     '${po}'
+     ${toInlineJsStringLiteral(po)}
    ];
 
    renderPendingDeliveries(
@@ -6479,7 +6675,7 @@ container.innerHTML =
  <div>
 
    <div>
-     📦 PO: ${po}
+     📦 PO: ${esc(po)}
      (${items.length} รายการ)
    </div>
 
@@ -6541,7 +6737,7 @@ ${
 
         <div class="stock">
           สินค้า:
-          ${item.productId || "-"}
+          ${esc(item.productId || "-")}
         </div>
 
         <div class="stock">
@@ -6569,7 +6765,7 @@ ${
        "
        onclick="
          markPendingDelivered(
-           '${item.pendingId}'
+           ${toInlineJsStringLiteral(item.pendingId)}
          )
        ">
        ✅ ส่งครบแล้ว
@@ -6643,7 +6839,7 @@ async function markPendingDelivered(
        onclick="
          closeOverlay(confirmSheet);
          confirmClosePendingDelivery(
-           '${pendingId}'
+           ${toInlineJsStringLiteral(pendingId)}
          );
        ">
        ✅ ส่งครบแล้ว
@@ -6718,7 +6914,7 @@ async function markPendingDelivered(
      state.admin.pendingDeliveries =
        list;
 
-     openPendingDeliverySheet();
+     renderPendingDeliveries(list);
 
      showToast(
        "ส่งครบเรียบร้อย",
@@ -6842,7 +7038,7 @@ function openMainMenu(triggerEl){
           <hr>
           <div class="menu-group danger">
             <button class="btn btn-danger"
-               onclick="closeMainMenu(); exitAdmin();">
+               onclick="closeMainMenu(); handleAdminLogout();">
                🚪 Logout
              </button>
           </div>
@@ -6883,12 +7079,12 @@ function openAddProduct(force = false){
   const draft = state.smartAddDraft || {};
   // 🔴 ADDED: สร้าง SKU ถัดไปอัตโนมัติจาก state.products
   const nextProductId = getNextProductId();
-  const safeNextProductId = escapeHtml(nextProductId);
-  const safeDraftName = escapeHtml(draft.name || "");
-  const safeDraftPrice = escapeHtml(draft.price || "");
-  const safeDraftCostPrice = escapeHtml(draft.costPrice || "");
-  const safeDraftStock = escapeHtml(draft.stock || "");
-  const safeNote = escapeHtml(draft.note || "");
+  const safeNextProductId = escAttr(nextProductId);
+  const safeDraftName = escAttr(draft.name || "");
+  const safeDraftPrice = escAttr(draft.price || "");
+  const safeDraftCostPrice = escAttr(draft.costPrice || "");
+  const safeDraftStock = escAttr(draft.stock || "");
+  const safeNote = esc(draft.note || "");
  
   adminAddProductSheet.innerHTML = `
     <h3>➕ เพิ่มสินค้าใหม่</h3>
@@ -6988,22 +7184,6 @@ function openAddProduct(force = false){
   openOverlay(adminAddProductSheet);
 }
 
- const PRODUCT_IMAGE_MAX_MB = 5;
- const PRODUCT_IMAGE_ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
- 
-function validateProductImageFile(file) {
-   if (!file) return;
-
-   if (!PRODUCT_IMAGE_ALLOWED_TYPES.includes(file.type)) {
-     throw new Error("รองรับเฉพาะไฟล์ JPG, PNG, WEBP");
-   }
-
-   const maxBytes = PRODUCT_IMAGE_MAX_MB * 1024 * 1024;
-   if (file.size > maxBytes) {
-     throw new Error(`รูปต้องมีขนาดไม่เกิน ${PRODUCT_IMAGE_MAX_MB} MB`);
-   }
- }
- 
 function handleAddImagePreview(input){
   const file = input.files[0];
   if(!file) return;
@@ -7204,13 +7384,36 @@ async function submitOrder(){
     }
 
     // ================= SUCCESS =================
+    const localItems = JSON.parse(JSON.stringify(state.cart));
+    const localTotal = state.cart.reduce(
+      (sum, item) => sum + Number(item.price) * Number(item.qty),
+      0
+    );
+    const backendItems = res.data.items;
+    const hasValidBackendItems =
+      Array.isArray(backendItems) &&
+      backendItems.length > 0 &&
+      backendItems.every(item =>
+        item &&
+        typeof item === "object" &&
+        String(item.productId || "").trim() &&
+        Number.isInteger(Number(item.qty)) &&
+        Number(item.qty) > 0 &&
+        Number.isFinite(Number(item.price))
+      );
+    const backendTotal = Number(res.data.total);
+    const hasValidBackendTotal =
+      res.data.total !== null &&
+      res.data.total !== "" &&
+      Number.isFinite(backendTotal) &&
+      backendTotal >= 0;
+
     state.lastOrder = {
       orderId: res.data.orderId,
-      items: JSON.parse(JSON.stringify(state.cart)),
-      total: state.cart.reduce(
-        (s,i)=> s + Number(i.price) * Number(i.qty),
-        0
-      ),
+      items: JSON.parse(JSON.stringify(
+        hasValidBackendItems ? backendItems : localItems
+      )),
+      total: hasValidBackendTotal ? backendTotal : localTotal,
  createdAt: new Date(),
  poNumber: state.poNumber || ""
     };
@@ -7310,13 +7513,13 @@ function openProductEdit(p){
     .map(s => s.trim())
     .filter(Boolean);
 
-  const safeEditProductId = escapeHtml(latestProduct.productId || "");
-  const safeEditName = escapeHtml(latestProduct.name || "");
-  const safeEditPrice = escapeHtml(latestProduct.price ?? "");
-  const safeEditCostPrice = escapeHtml(latestProduct.costPrice ?? "");
-  const safeEditStock = escapeHtml(latestProduct.stock ?? ""); 
-  const safeEditNote = escapeHtml(latestProduct.note || "");
-  const safeEditDetailsText = escapeHtml(latestProduct.detailsText || "");
+  const safeEditProductId = escAttr(latestProduct.productId || "");
+  const safeEditName = escAttr(latestProduct.name || "");
+  const safeEditPrice = escAttr(latestProduct.price ?? "");
+  const safeEditCostPrice = escAttr(latestProduct.costPrice ?? "");
+  const safeEditStock = escAttr(latestProduct.stock ?? "");
+  const safeEditNote = esc(latestProduct.note || "");
+  const safeEditDetailsText = esc(latestProduct.detailsText || "");
 
   adminProductEditSheet.innerHTML = `
     <h3>แก้ไขสินค้า</h3>
@@ -7404,7 +7607,7 @@ function openProductEdit(p){
   ${
     state.compareImagesDraft.map((url, idx) => `
       <div style="position:relative">
-        <img src="${escapeHtml(url)}"
+        <img src="${escAttr(url)}"
              style="
                width:80px;
                height:80px;
@@ -7445,7 +7648,7 @@ function openProductEdit(p){
     <div class="form-group">
       <label>รูปสินค้า</label>
       <img id="imagePreview"
-        src="${p.image || ""}"
+        src="${escAttr(p.image || "")}"
         style="width:100%;border-radius:12px;margin-bottom:6px">
       <input id="editImageFile" type="file"
         accept="image/*"
@@ -7509,7 +7712,7 @@ function removeCompareImage(index){
 
   wrap.innerHTML = state.compareImagesDraft.map((url, idx) => `
     <div style="position:relative">
-      <img src="${escapeHtml(url)}"
+      <img src="${escAttr(url)}"
            style="
              width:80px;
              height:80px;
@@ -7592,7 +7795,7 @@ async function handleCompareImagesUpload(input){
    if (wrap) {
      wrap.innerHTML = state.compareImagesDraft.map((url, idx) => `
        <div style="position:relative">
-         <img src="${escapeHtml(url)}"
+         <img src="${escAttr(url)}"
               style="
                 width:80px;
                 height:80px;
@@ -7868,8 +8071,8 @@ function confirmDeleteProduct() {
   confirmSheet.innerHTML = `
     <h3>ลบสินค้าแบบถาวร</h3>
     <div style="margin-top:12px">
-      สินค้า: "${p.name}"<br>
-      รหัส: ${p.productId}<br><br>
+      สินค้า: "${esc(p.name)}"<br>
+      รหัส: ${esc(p.productId)}<br><br>
       การลบนี้ไม่สามารถกู้คืนได้
     </div>
     <button class="btn btn-danger" style="margin-top:16px"
@@ -7879,7 +8082,7 @@ function confirmDeleteProduct() {
     <button class="btn btn-outline" style="margin-top:8px"
       onclick="
         closeOverlay(confirmSheet);
-        openProductEditById('${p.productId}');
+        openProductEditById(${toInlineJsStringLiteral(p.productId)});
       ">
       ยกเลิก
     </button>
@@ -8130,7 +8333,7 @@ function openAdminProductAction(p){
       font-size:16px;
       margin-bottom:4px
     ">
-      ${p.name}
+      ${esc(p.name)}
     </div>
 
     <div style="
@@ -8138,7 +8341,7 @@ function openAdminProductAction(p){
       color:#888;
       margin-bottom:16px
     ">
-      รหัสสินค้า: ${p.productId}
+      รหัสสินค้า: ${esc(p.productId)}
     </div>
 
     <!-- ✏️ EDIT PRODUCT -->
@@ -8146,7 +8349,7 @@ function openAdminProductAction(p){
       style="width:100%;margin-bottom:10px"
       onclick="
         closeAdminProductAction();
-        openProductEditById('${p.productId}');
+        openProductEditById(${toInlineJsStringLiteral(p.productId)});
       ">
       ✏️ แก้ไขข้อมูลสินค้า
     </button>
@@ -8501,13 +8704,15 @@ function exportOrderPrint() {
     : new Date().toLocaleDateString("th-TH");
 
   const total = Number(order.total || 0).toLocaleString();
+  const safeOrderId = esc(order.orderId);
+  const safePo = esc(po);
 
   const printWindow = window.open("", "_blank");
 
   printWindow.document.write(`
     <html>
     <head>
-      <title>Order ${order.orderId}</title>
+      <title>Order ${safeOrderId}</title>
       <style>
         @page {
           size: A4;
@@ -8603,7 +8808,7 @@ function exportOrderPrint() {
   timeStyle: "short"
 })}
 </div>
-    <div>Order ${order.orderId}</div>
+    <div>Order ${safeOrderId}</div>
   </div>
 
      <div class="content">
@@ -8617,8 +8822,8 @@ function exportOrderPrint() {
         </div>
 
         <div>
-          <div>เลขที่: ${order.orderId}</div>
-          <div>PO: ${po}</div>
+          <div>เลขที่: ${safeOrderId}</div>
+          <div>PO: ${safePo}</div>
           <div>วันที่: ${today}</div>
         </div>
       </div>
@@ -8638,7 +8843,7 @@ function exportOrderPrint() {
             <tr>
               <td>${index + 1}</td>
               <td>[${esc(i.productId)}] ${esc(i.name)}</td>
-              <td>${i.qty}</td>
+              <td>${Number(i.qty) || 0}</td>
               <td>฿${Number(i.price).toLocaleString()}</td>
               <td>฿${(i.price * i.qty).toLocaleString()}</td>
             </tr>
