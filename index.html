@@ -2684,6 +2684,13 @@ textarea.input{
   margin:12px 0;
 }
 
+.bulk-paste-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:8px;
+}
+
 .bulk-import-file-input{
   width:100%;
 }
@@ -2727,6 +2734,18 @@ textarea.input{
   display:grid;
   gap:10px;
   margin-top:12px;
+}
+
+.bulk-data-preview-table{
+  margin-top:12px;
+}
+
+.bulk-data-preview-table table{
+  min-width:680px;
+}
+
+.bulk-data-preview-table tr.has-error td{
+  background:rgba(255,59,48,.08);
 }
 
 .bulk-preview-card{
@@ -2890,6 +2909,7 @@ Object.assign(window, {
   handleBulkProductFileUpload,
   copyBulkProductHeader,
   copyBulkProductSample,
+  pasteBulkProductImportFromClipboard,
   resetBulkProductImport,
   viewBulkProductImportProducts,
   backToAdminMenuFromBulkImport,
@@ -9271,6 +9291,26 @@ function copyBulkProductSample() {
   copyTextToClipboard(BULK_PRODUCT_SAMPLE, "คัดลอกแม่แบบตัวอย่างแล้ว");
 }
 
+async function pasteBulkProductImportFromClipboard() {
+  const input = document.getElementById("bulkProductImportText");
+  try {
+    if (!navigator.clipboard || typeof navigator.clipboard.readText !== "function") {
+      throw new Error("Clipboard API unavailable");
+    }
+    const text = await navigator.clipboard.readText();
+    state.admin.bulkProductImport.rawText = String(text || "");
+    state.admin.bulkProductImport.backendErrors = [];
+    state.admin.bulkProductImport.summary = "";
+    state.admin.bulkProductImport.importedCount = 0;
+    renderBulkProductImportSheet();
+    showToast("วางข้อมูลแล้ว", "success");
+  } catch (err) {
+    console.warn(err);
+    if (input) input.focus();
+    showToast("ไม่สามารถอ่านคลิปบอร์ดได้ กรุณาวางข้อมูลด้วยตนเอง", "warning");
+  }
+}
+
 function downloadBulkProductTemplate() {
   const blob = new Blob([BULK_PRODUCT_SAMPLE], {
     type: "text/tab-separated-values;charset=utf-8"
@@ -9487,6 +9527,14 @@ function renderBulkProductImportSheet() {
         class="input bulk-import-textarea"
         placeholder="${escAttr(BULK_PRODUCT_SAMPLE)}"
         oninput="state.admin.bulkProductImport.rawText = this.value; state.admin.bulkProductImport.backendErrors = []; state.admin.bulkProductImport.summary = ''; state.admin.bulkProductImport.importedCount = 0;">${esc(bulkState.rawText || "")}</textarea>
+      <div class="bulk-paste-actions">
+        <button class="btn btn-outline" type="button" onclick="pasteBulkProductImportFromClipboard()">
+          วางจากคลิปบอร์ด
+        </button>
+        <button class="btn btn-outline" type="button" onclick="resetBulkProductImport()">
+          ล้างข้อมูล
+        </button>
+      </div>
     </div>
 
     <button class="btn btn-outline" onclick="previewBulkProductImport()">
@@ -9715,6 +9763,36 @@ function renderBulkProductImportSummary(items, errors) {
   `;
 }
 
+function renderBulkProductDataPreviewTable(items, errorsByRow) {
+  if (!items.length) return "";
+  const columns = ["productId", "name", "price", "costPrice", "stock", "status"];
+  return `
+    <div class="bulk-template-table bulk-data-preview-table" aria-label="ตัวอย่างข้อมูลที่นำเข้า">
+      <table>
+        <thead>
+          <tr>${columns.map(column => `<th>${esc(column)}</th>`).join("")}<th>สถานะ</th></tr>
+        </thead>
+        <tbody>
+          ${items.map((item, index) => {
+            const rowNumber = index + 1;
+            const rowErrors = errorsByRow.get(rowNumber) || [];
+            return `
+              <tr class="${rowErrors.length ? "has-error" : ""}">
+                ${columns.map(column => `<td>${esc(item[column] || "-")}</td>`).join("")}
+                <td>
+                  <span class="status-badge ${rowErrors.length ? "status-rejected" : "status-approved"} compact">
+                    ${rowErrors.length ? "พบข้อผิดพลาด" : "พร้อมนำเข้า"}
+                  </span>
+                </td>
+              </tr>
+            `;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
 function renderBulkProductImportPreview(items, errors) {
   if (!items.length && !errors.length) {
     return `
@@ -9754,6 +9832,7 @@ function renderBulkProductImportPreview(items, errors) {
 
   return `
     ${globalErrors.length ? `<ul class="bulk-error-list">${globalErrors.map(error => `<li>${esc(getBulkImportErrorMessage(error))}</li>`).join("")}</ul>` : ""}
+    ${renderBulkProductDataPreviewTable(items, errorsByRow)}
     <div class="bulk-preview-list">${cards}</div>
   `;
 }
