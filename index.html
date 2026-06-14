@@ -39,15 +39,22 @@
    --tap-scale-icon:    .95;   /* icon circle buttons */
    --tap-scale-card:    .98;   /* cards should feel heavier */
 
-   /* Durations */
-   --dur-tap:   140ms;
-   --dur-sheet: 300ms;
-   --dur-chrome:360ms;
+   /* Motion tokens */
+   --motion-duration-fast: 140ms;
+   --motion-duration-normal: 300ms;
+   --motion-duration-slow: 360ms;
+   --motion-duration-toast: 220ms;
+   --motion-ease-standard: cubic-bezier(.22,.61,.36,1);
+   --motion-ease-emphasized: cubic-bezier(.2,.8,.2,1);
 
-   /* Easings (keep minimal, iOS-like) */
-   --ease-tap:   cubic-bezier(.2,.8,.2,1);
-   --ease-out:   cubic-bezier(.22,.61,.36,1);
-   --ease-chrome:cubic-bezier(.22,.61,.36,1); 
+   /* Legacy aliases */
+   --dur-tap:   var(--motion-duration-fast);
+   --dur-sheet: var(--motion-duration-normal);
+   --dur-chrome:var(--motion-duration-slow);
+
+   --ease-tap:   var(--motion-ease-emphasized);
+   --ease-out:   var(--motion-ease-standard);
+   --ease-chrome:var(--motion-ease-standard);
  }
   
  html, body {
@@ -70,9 +77,9 @@
   
   header{
   padding:
-    calc(env(safe-area-inset-top, 0px) + 20px)
+    calc(env(safe-area-inset-top, 0px) + 14px)
     calc(env(safe-area-inset-right, 0px) + 16px)
-    18px
+    12px
     calc(env(safe-area-inset-left, 0px) + 16px);
   font-size: inherit;
   font-weight: inherit;
@@ -98,7 +105,7 @@
   align-items: center;
 
   /* 🔴 FIX สำคัญ */
-  min-height: 110px; /* รองรับ Search + Filter (STEP 5.2) */
+  min-height: 96px; /* compact but still supports search + filter */
   box-sizing: border-box;
 
   transition:
@@ -110,11 +117,11 @@
 
 header.scrolled{
   padding:
-    calc(env(safe-area-inset-top, 0px) + 12px)
+    calc(env(safe-area-inset-top, 0px) + 10px)
     calc(env(safe-area-inset-right, 0px) + 16px)
-    10px
+    8px
     calc(env(safe-area-inset-left, 0px) + 16px);
-  min-height: 72px;
+  min-height: 64px;
   background: rgba(28,28,30,.75); /* 🔴 CHANGED: darker when scrolled */
   box-shadow:
     var(--shadow-header-scrolled),
@@ -131,7 +138,7 @@ header.scrolled{
 
   display: inline-flex;
   align-items: center;
-  padding: 7px 12px;
+  padding: 6px 11px;
   border-radius: 999px;
   position: relative;
   overflow: hidden;
@@ -175,7 +182,7 @@ header.scrolled{
 
 /* PHASE 3: Supporting line under title */
 .shop-subtitle{
-  margin-top: 6px;
+  margin-top: 4px;
   font-size: var(--subtitle-size);
   font-weight: var(--subtitle-weight);
   color: var(--text-secondary);
@@ -196,8 +203,8 @@ header.scrolled{
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-left: 12px;
+  gap: 8px;
+  margin-left: 10px;
 }  
   
 /* ================= ADMIN TITLE (only delta) ================= */
@@ -213,7 +220,7 @@ header.scrolled{
   font-size:12px;
   font-weight:700;
   letter-spacing:.2px;
-  background: rgba(255,59,48,.88);
+  background: #0066cc;
   border: 1px solid rgba(255,255,255,.28);
   box-shadow:
     0 10px 24px rgba(0,0,0,.14),
@@ -221,7 +228,42 @@ header.scrolled{
   margin-left:8px;
   flex-shrink:0;   
   }
-  .container{padding:16px;display:grid;gap:16px;}
+
+  .badge-count{
+    background:#d70015;
+  }
+  .container{padding:12px 16px 16px;display:grid;gap:16px;}
+
+.section-title{
+  margin: 18px 0 10px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: .1px;
+  color: rgba(245,245,247,.94);
+}
+
+.text-muted,
+.helper-text{
+  color: rgba(235,235,245,.68);
+}
+
+.helper-text{
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.empty-state{
+  margin-top: 24px;
+  text-align: center;
+  color: rgba(235,235,245,.68);
+  line-height: 1.45;
+}
+
+.action-row{
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
 
 .pagination{
   display:flex;
@@ -245,9 +287,81 @@ header.scrolled{
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border-radius:18px;
   padding:14px;
-  cursor:pointer;
+  cursor:default;
   box-shadow: var(--shadow-card);
   }
+
+  .card[role="button"]{
+    cursor:pointer;
+  }
+
+  .metric-card{
+    padding:16px;
+    border:1px solid rgba(255,255,255,.08);
+  }
+
+  .metric-card .price{
+    font-size:20px;
+    margin-top:6px;
+  }
+
+  .admin-card{
+    display:grid;
+    gap:8px;
+    border:1px solid rgba(255,255,255,.08);
+  }
+
+  .admin-card-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px 10px;
+    align-items:center;
+    color:rgba(235,235,245,.68);
+    font-size:13px;
+  }
+
+  .admin-detail-section{
+    margin-top:14px;
+    padding:14px;
+    border-radius:16px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.08);
+  }
+
+  .admin-detail-title{
+    margin:0 0 10px;
+    color:rgba(245,245,247,.94);
+    font-size:15px;
+    font-weight:700;
+  }
+
+  .admin-item-list{
+    display:grid;
+    gap:10px;
+  }
+
+  .info-card{
+    margin-top:12px;
+    display:grid;
+    gap:12px;
+  }
+
+  .info-row{
+    display:grid;
+    gap:4px;
+  }
+
+  .info-label{
+    font-size:12px;
+    color:rgba(235,235,245,.62);
+  }
+
+  .info-value{
+    font-size:15px;
+    color:rgba(245,245,247,.94);
+    font-weight:600;
+  }
+
   .name{
   font-weight:600;
   line-height:1.35;
@@ -284,7 +398,7 @@ header.scrolled{
     0 0 12px rgba(77,163,255,.18);
 }
  
-  .stock{font-size:14px;color:rgba(235,235,245,.72);}
+  .stock{font-size:14px;color:rgba(235,235,245,.74);}
 
   .backdrop{
   position: fixed;
@@ -307,21 +421,38 @@ header.scrolled{
   border-radius: 22px 22px 0 0;
   box-shadow: var(--shadow-float);
 
-  padding: 16px 16px 24px; /* ลดด้านข้างให้พอดีมือถือมากขึ้น */
+  padding:
+    16px
+    max(16px, env(safe-area-inset-right, 0px))
+    calc(24px + env(safe-area-inset-bottom, 0px))
+    max(16px, env(safe-area-inset-left, 0px));
 
-  /* ✅ CORE FIX */
-  max-height: calc(100dvh - 40px);   /* ใช้ dvh แทน vh */
+  max-height: calc(100dvh - max(24px, env(safe-area-inset-top, 0px)));
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
   -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 
-  transform: translateY(100%);
-  transition: transform var(--dur-sheet) var(--ease-out);
+  transform: translate3d(0, 100%, 0);
+  opacity: 0;
+  transition:
+    transform var(--dur-sheet) var(--ease-out),
+    opacity var(--motion-duration-fast) var(--motion-ease-standard);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 
   z-index: 101;
 }
 
 .sheet.show{
-  transform: translateY(0);
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+
+body:has(.sheet.show),
+body:has(.side-menu.show){
+  overflow: hidden;
 }
 
  #confirmSheet.show{
@@ -421,9 +552,11 @@ button:disabled {
 }
 
  .btn-remove{
+  min-width:44px;
+  min-height:44px;
   padding:6px 12px;
   border-radius:10px;
-  background:#ff3b30;
+  background:#d70015;
   color:#fff;
   border:none;
 
@@ -444,6 +577,7 @@ button:disabled {
 
 .btn {
   padding: 12px;
+  min-height: 44px;
   border: none;
   border-radius: 12px;
   font-weight: 600;
@@ -455,31 +589,39 @@ button:disabled {
   gap: 8px;
   transition:
     transform var(--dur-tap) var(--ease-tap),
-    box-shadow var(--dur-tap) ease;
+    box-shadow var(--dur-tap) ease,
+    filter var(--dur-tap) ease;
 }
 
 /* Primary */
 .btn-primary {
-  background: #007aff;
+  background: #0066cc;
   color: #fff;
 }
 
-/* Secondary (soft green) */
+/* Secondary / neutral utility */
 .btn-secondary {
-  background: #34c759;
+  background: rgba(72,72,74,.92);
+  color: #f5f5f7;
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+/* Success / completed action */
+.btn-success {
+  background: #1f7a35;
   color: #fff;
 }
 
-/* Outline (cancel / back) */
+/* Outline / low-emphasis action */
 .btn-outline {
-  background: rgba(44,44,46,.90);
+  background: rgba(44,44,46,.58);
   color: #f5f5f7;
-  border: 1px solid rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.16);
 }
 
 /* Danger (logout / destructive) */
 .btn-danger{
-  background:#ff3b30;
+  background:#d70015;
   color:#fff;
 }
 .btn-danger:active{
@@ -489,14 +631,35 @@ button:disabled {
 /* Interaction */
 .btn:active {
   transform: scale(var(--tap-scale-primary));
+  filter: brightness(.96);
+  box-shadow: var(--shadow-card-pressed);
+}
+
+.btn.is-submitting{
+  filter: saturate(.9) brightness(.92);
+  cursor: wait;
+  box-shadow: var(--shadow-card-pressed);
 }
 
 .admin-sheet-topbar{
+  position: sticky;
+  top: -16px;
+  z-index: 4;
   display:flex;
-  align-items:flex-start;
+  align-items:center;
   gap:10px;
-  margin-bottom:12px;
+  margin:-16px -16px 12px;
+  padding:
+    12px
+    max(16px, env(safe-area-inset-right, 0px))
+    12px
+    max(16px, env(safe-area-inset-left, 0px));
   width:100%;
+  box-sizing:border-box;
+  background:rgba(28,28,30,.94);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border-bottom:1px solid rgba(255,255,255,.08);
 }
 
 .admin-sheet-topbar .back-btn{
@@ -505,6 +668,77 @@ button:disabled {
   padding:10px 14px;
   min-height:44px;
   align-self:flex-start;
+}
+
+.sheet-topbar{
+  position:sticky;
+  top:-16px;
+  z-index:4;
+  display:grid;
+  grid-template-columns:44px minmax(0, 1fr) 44px;
+  align-items:center;
+  gap:10px;
+  margin:-16px -16px 12px;
+  padding:
+    12px
+    max(16px, env(safe-area-inset-right, 0px))
+    12px
+    max(16px, env(safe-area-inset-left, 0px));
+  background:rgba(28,28,30,.94);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.sheet-topbar h3{
+  margin:0;
+  min-width:0;
+  text-align:center;
+  overflow-wrap:anywhere;
+}
+
+.sheet-nav-btn{
+  width:44px !important;
+  min-width:44px;
+  height:44px;
+  min-height:44px;
+  padding:0 !important;
+  flex:0 0 44px;
+  font-size:20px;
+}
+
+.sheet-action-footer,
+.qty-action,
+.product-action-zone,
+.admin-action{
+  position:sticky;
+  bottom:calc(-24px - env(safe-area-inset-bottom, 0px));
+  z-index:3;
+  margin:
+    16px
+    -16px
+    calc(-24px - env(safe-area-inset-bottom, 0px));
+  padding:
+    12px
+    max(16px, env(safe-area-inset-right, 0px))
+    calc(12px + env(safe-area-inset-bottom, 0px))
+    max(16px, env(safe-area-inset-left, 0px));
+  background:rgba(28,28,30,.96);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.sheet-action-footer .btn + .btn{
+  margin-top:8px;
+}
+
+.sheet-action-footer .btn{
+  margin-bottom:0 !important;
+}
+
+.sheet-action-footer .btn:first-child{
+  margin-top:0 !important;
 }
 
 .admin-sheet-topbar h3{
@@ -574,8 +808,8 @@ button:disabled {
   justify-content:space-between;
   align-items:flex-start;
   gap:12px;
-  padding:12px 0;
-  border-bottom:1px dashed rgba(0,0,0,.08);
+  padding:14px 0;
+  border-bottom:1px solid rgba(255,255,255,.08);
   }
 
  .cart-item > div:first-child {
@@ -588,6 +822,18 @@ button:disabled {
    text-align: right;
  }
 
+ .cart-meta{
+   margin-top:3px;
+   font-size:12px;
+   color:rgba(235,235,245,.62);
+ }
+
+ .cart-qty{
+   font-size:14px;
+   color:rgba(235,235,245,.78);
+   white-space:nowrap;
+ }
+
  .cart-item .price{
    margin-top:2px;
  }
@@ -596,6 +842,64 @@ button:disabled {
    display:flex;
    align-items:center;   /* 🔴 หัวใจ: align กับราคา */
    gap:8px;
+ }
+
+ .cart-line-total{
+   font-size:15px;
+   font-weight:700;
+   color:rgba(245,245,247,.96);
+   white-space:nowrap;
+ }
+
+ .cart-summary,
+ .order-success-card{
+   margin-top:14px;
+   padding:14px;
+   border-radius:16px;
+   background:rgba(255,255,255,.05);
+   border:1px solid rgba(255,255,255,.08);
+ }
+
+ .summary-row{
+   display:flex;
+   align-items:center;
+   justify-content:space-between;
+   gap:12px;
+   padding:6px 0;
+   font-size:14px;
+   color:rgba(235,235,245,.74);
+ }
+
+ .summary-row strong{
+   font-size:17px;
+   color:rgba(245,245,247,.96);
+ }
+
+ .order-success-card{
+   display:grid;
+   gap:8px;
+ }
+
+ .order-success-card.success-enter{
+   animation: success-card-enter var(--motion-duration-normal) var(--motion-ease-standard);
+ }
+
+@keyframes success-card-enter{
+  from{
+    opacity:0;
+    transform:translateY(8px) scale(.985);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0) scale(1);
+  }
+}
+
+ .success-note{
+   margin-top:12px;
+   color:rgba(235,235,245,.74);
+   font-size:14px;
+   line-height:1.45;
  }
  
 
@@ -643,7 +947,7 @@ button:disabled {
 
 /* ================= HEADER SEARCH (iOS-LIKE) ================= */
 .viewer-search-wrap{
-   margin-top:6px;
+   margin-top:4px;
    max-width:100%;
  }  
 
@@ -657,8 +961,8 @@ button:disabled {
 }
 
 .search-btn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   padding: 0;
   display: flex;
@@ -721,7 +1025,7 @@ button:disabled {
    width: 0;             /* 🔴 สำคัญ: ตอนยังไม่ active ต้องไม่กินพื้นที่ */
    opacity: 0;
    margin-left: 0;
-   height: 40px;
+   height: 44px;
    padding: 0;
 
    font-size: 16px;
@@ -750,8 +1054,8 @@ button:disabled {
   opacity: 1;
   transform: translateX(0) scaleX(1);
   pointer-events: auto;
-  width: min(220px, calc(100vw - 200px)); /* 🔴 ลด/ยืดตามจอ ไม่ดัน filter+menu */
-  margin-left: 8px;
+  width: min(210px, calc(100vw - 176px)); /* compact mobile width without pushing filter+menu */
+  margin-left: 6px;
   padding: 8px 12px;
   border: 1px solid rgba(255,255,255,.08);
 }
@@ -779,9 +1083,9 @@ button:disabled {
  /* ================= FILTER ICON DROPDOWN ================= */
  .filter-wrap{ position:relative; }
 
- .filter-btn{
-   width:40px;
-   height:40px;
+.filter-btn{
+   width:44px;
+   height:44px;
    border-radius:50%;
    border:none;
    position: relative;          /* ✅ needed for glass layers */
@@ -806,6 +1110,11 @@ button:disabled {
   border: 1px solid rgba(255,255,255,.10);
   box-shadow: var(--shadow-control);
  }
+
+.filter-btn.has-active-filter{
+  border-color: rgba(100,181,255,.45);
+  background: rgba(0,102,204,.26);
+}
 
  /* ✅ Glass highlight (top-left glare) */
 .filter-btn::before{
@@ -851,11 +1160,11 @@ button:disabled {
   
  .filter-dropdown{
    position:absolute;
-   top:52px;
+   top:48px;
    right:0;
-   min-width:200px;
-   padding:10px;
-   border-radius:18px;
+   min-width:190px;
+   padding:8px;
+   border-radius:16px;
    /* 🔴 CHANGED: เพิ่ม contrast + ขอบ + แยกชั้นให้ชัด */
    background: rgba(44,44,46,.96);
    backdrop-filter: blur(26px) saturate(180%);
@@ -865,14 +1174,14 @@ button:disabled {
    color: rgba(245,245,247,.92);
    display:none;
    flex-direction:column;
-   gap:6px;
+   gap:4px;
  }
 
  .filter-dropdown.show{ display:flex; }
 
  .filter-item{
    /* 🔴 CHANGED: ทำให้แต่ละแถวอ่านง่าย + มี state */
-   padding: 10px 12px;
+   padding: 9px 10px;
    border-radius: 12px;
    font-size: 14px;
    font-weight: 600;
@@ -882,7 +1191,14 @@ button:disabled {
    cursor: pointer;
    user-select: none;
    transition: background .16s ease, transform .16s ease;
+   min-height:44px;
  }
+
+.filter-item.active{
+  background: rgba(0,102,204,.28);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(100,181,255,.32);
+}
 
  /* 🔴 CHANGED: เส้นแบ่งแบบ iOS (ช่วยแยก item ไม่ให้กลืน) */
  .filter-item + .filter-item{
@@ -902,8 +1218,8 @@ button:disabled {
   
 /* ================= HEADER MENU BUTTON (iOS TACTILE) ================= */
 .menu-btn{
-  width:40px;
-  height:40px;
+  width:44px;
+  height:44px;
   border:none;
   border-radius:50%;
   position: relative;
@@ -966,6 +1282,55 @@ button:disabled {
   }
 }
 
+@media (max-width: 430px){
+  header{
+    padding:
+      calc(env(safe-area-inset-top, 0px) + 12px)
+      calc(env(safe-area-inset-right, 0px) + 12px)
+      10px
+      calc(env(safe-area-inset-left, 0px) + 12px);
+    min-height: 92px;
+  }
+
+  header.scrolled{
+    padding:
+      calc(env(safe-area-inset-top, 0px) + 8px)
+      calc(env(safe-area-inset-right, 0px) + 12px)
+      8px
+      calc(env(safe-area-inset-left, 0px) + 12px);
+    min-height: 62px;
+  }
+
+  .shop-title,
+  .admin-title{
+    font-size: 20px;
+    padding: 5px 10px;
+  }
+
+  .shop-subtitle{
+    font-size: 12px;
+    margin-top: 3px;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header-actions{
+    gap: 6px;
+    margin-left: 8px;
+  }
+
+  .search-wrap.active .search-input{
+    width: min(190px, calc(100vw - 184px));
+  }
+
+  .filter-dropdown{
+    right: -52px;
+    max-width: calc(100vw - 32px);
+  }
+}
+
 /* ================= ACCESSIBILITY: KEYBOARD FOCUS ================= */
 .search-btn:focus-visible,
 .filter-btn:focus-visible,
@@ -975,6 +1340,9 @@ button:disabled {
 .sheet-close-btn:focus-visible,
 .filter-item:focus-visible,
 .search-input:focus-visible,
+.product-card:focus-visible,
+.card[role="button"]:focus-visible,
+.name[role="button"]:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
@@ -985,12 +1353,13 @@ textarea:focus-visible {
   /* ================= PRODUCT CARD (HORIZONTAL) ================= */
 .product-card {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   background: rgba(28,28,30,.72);
   backdrop-filter: blur(24px) saturate(160%);
   -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border-radius: 16px;
-  padding: 12px;
+  border-radius: 18px;
+  padding: 13px;
+  border: 1px solid rgba(255,255,255,.07);
   box-shadow: var(--shadow-card);
   align-items: center;
   cursor: pointer;
@@ -1017,9 +1386,9 @@ textarea:focus-visible {
 }
 
 .product-card .thumb {
-  width: 80px;
-  height: 80px;
-  border-radius: 12px;
+  width: 84px;
+  height: 84px;
+  border-radius: 14px;
   object-fit: cover;
   background: #1c1c1e;
   flex-shrink: 0;
@@ -1029,29 +1398,34 @@ textarea:focus-visible {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  min-width:0;
 }
 
 .product-card .name {
-  font-weight: 600;
-  font-size: 16px;
+  font-weight: 700;
+  font-size: 16.5px;
+  line-height: 1.28;
+  letter-spacing: .05px;
 }
 
 .product-card .sku {
   font-size: 12px;
-  color: rgba(235,235,245,.60);
+  color: rgba(235,235,245,.58);
 }
 
 .product-card .price {
-  color: #007aff;
+  color: #64b5ff;
   font-weight: 600;
+  font-size: 15px;
   margin-top: 2px;
 }
 
 .product-card .meta {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
   font-size: 13px;
   color: rgba(235,235,245,.72);
 }
@@ -1144,9 +1518,56 @@ textarea:focus-visible {
   gap: 4px;
 }
 
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 24px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: .1px;
+}
+
+.status-badge.compact{
+  min-height:22px;
+  padding:3px 8px;
+  font-size:11.5px;
+}
+
+.status-pending,
+.status-open {
+  color: #ffd60a;
+  background: rgba(255,214,10,.14);
+  border-color: rgba(255,214,10,.28);
+}
+
+.status-approved,
+.status-closed {
+  color: #63d471;
+  background: rgba(52,199,89,.14);
+  border-color: rgba(52,199,89,.26);
+}
+
+.status-rejected {
+  color: #ff6961;
+  background: rgba(255,59,48,.14);
+  border-color: rgba(255,59,48,.28);
+}
+
+.status-neutral {
+  color: rgba(245,245,247,.82);
+  background: rgba(142,142,147,.14);
+  border-color: rgba(142,142,147,.24);
+}
+
  .status.ready{
-  background: rgba(52,199,89,.15);
-  color:#34c759;
+  background: rgba(52,199,89,.16);
+  color:#63d471;
+  border: 1px solid rgba(52,199,89,.24);
 }
 /* พร้อมส่ง */
 .status.ready::before{
@@ -1188,25 +1609,29 @@ textarea:focus-visible {
  
  .status.ready_plus {
    background: rgba(52,199,89,.22);
-   color: #34c759;
+   color: #7ee787;
+   border: 1px solid rgba(52,199,89,.32);
  }
  
 /* อยู่ระหว่างจัดส่ง */
 .status.shipping {
   background: rgba(0,122,255,.15);
-  color: #007aff;
+  color: #64b5ff;
+  border: 1px solid rgba(10,132,255,.26);
 }
 
 /* อยู่โกดังไทย */
 .status.warehouse {
   background: rgba(90,140,255,.18);
-  color: #8fb2ff;
+  color: #a9c3ff;
+  border: 1px solid rgba(90,140,255,.28);
 }
 
 /* หมด */
 .status.out {
   background: rgba(255,59,48,.15);
-  color: #ff3b30;
+  color: #ff6961;
+  border: 1px solid rgba(255,59,48,.28);
 }
 
 
@@ -1216,15 +1641,20 @@ textarea:focus-visible {
   margin-top: 16px;
 }
 
+.admin-action .btn {
+  flex: 1;
+  width: auto;
+}
+
 .btn-approve {
   flex: 1;
-  background: #007aff;
+  background: #1f7a35;
   color: #fff;
 }
 
 .btn-reject {
   flex: 1;
-  background: #ff3b30;
+  background: #d70015;
   color: #fff;
 }
 
@@ -1241,7 +1671,8 @@ textarea:focus-visible {
 
   width: min(65vw, 260px);
    /* ✅ ลดลงอีกนิด กำลังพอดี */
-  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
 
   background: rgba(28,28,30,.82);
   backdrop-filter: blur(24px);
@@ -1249,15 +1680,54 @@ textarea:focus-visible {
   box-shadow: var(--shadow-side);
 
   z-index: 102;
-  padding: 16px;            /* ✅ ลด padding ให้ดูไม่อึดอัด */
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 16px)
+    max(16px, env(safe-area-inset-right, 0px))
+    calc(env(safe-area-inset-bottom, 0px) + 24px)
+    16px;
+  box-sizing:border-box;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
 
-  transform: translateX(100%);
-  transition: transform var(--dur-sheet) var(--ease-out);
-  will-change: transform;
+  transform: translate3d(100%, 0, 0);
+  opacity: 0;
+  transition:
+    transform var(--dur-sheet) var(--ease-out),
+    opacity var(--motion-duration-fast) var(--motion-ease-standard);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .side-menu.show {
-  transform: translateX(0);
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+
+.side-menu-topbar{
+  position:sticky;
+  top:calc(-16px - env(safe-area-inset-top, 0px));
+  z-index:2;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:
+    calc(-16px - env(safe-area-inset-top, 0px))
+    -16px
+    16px;
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 12px)
+    16px
+    12px;
+  background:rgba(28,28,30,.94);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.side-menu .side-menu-topbar h3{
+  margin:0;
 }
 
 /* ===== UI DETAILS ===== */
@@ -1369,6 +1839,7 @@ textarea {
 
 .timeline-detail-toggle{
   width:100%;
+  min-height:44px;
   border:none;
   border-radius:12px;
   padding:10px 12px;
@@ -1454,13 +1925,15 @@ textarea {
   color: #fff;
   font-size: 14px;
   font-weight: 500;
+  white-space: pre-line;
 
   box-shadow: var(--shadow-float);              /* 🔴 ใช้ token เดียวกับระบบ */
 
   backdrop-filter: blur(18px) saturate(160%);   /* 🔴 เพิ่ม glass */
   -webkit-backdrop-filter: blur(18px) saturate(160%);
 
-  animation: toast-slide-down .25s ease;
+  animation: toast-slide-down var(--motion-duration-toast) var(--motion-ease-standard);
+  transform-origin: top center;
 }
 
 /* ===== Toast Variants ===== */
@@ -1473,11 +1946,11 @@ textarea {
 @keyframes toast-slide-down {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-8px) scale(.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -1493,6 +1966,7 @@ textarea {
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  animation: loading-fade-in var(--motion-duration-fast) var(--motion-ease-standard);
 }
 
 #loading-overlay.hidden {
@@ -1508,6 +1982,23 @@ textarea {
   box-shadow: var(--shadow-float);
   text-align: center;
   min-width: 200px;
+  animation: loading-pop var(--motion-duration-normal) var(--motion-ease-standard);
+}
+
+@keyframes loading-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes loading-pop {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .skeleton-list{
@@ -1661,8 +2152,8 @@ textarea {
   top: calc(env(safe-area-inset-top) + 14px);
   right: 14px;
 
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: none;
 
@@ -1732,8 +2223,8 @@ textarea {
   top: calc(env(safe-area-inset-top) + 12px);
   right: 12px;
 
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
 
   border-radius: 50%;
   border: none;
@@ -1936,9 +2427,17 @@ border: 1px solid rgba(255,255,255,.16);
 #floatingBar.bounce-in{
   animation: float-bounce .65s cubic-bezier(.34,1.56,.64,1);
 }
+#floatingBar.cart-added-pulse{
+  animation: cart-added-pulse var(--motion-duration-normal) var(--motion-ease-emphasized);
+}
 @keyframes float-bounce{
   0%   { transform:translateY(120%) scale(.94); }
   60%  { transform:translateY(-6px) scale(1.02); }
+  100% { transform:translateY(0) scale(1); }
+}
+@keyframes cart-added-pulse{
+  0%   { transform:translateY(0) scale(1); }
+  45%  { transform:translateY(-2px) scale(1.018); }
   100% { transform:translateY(0) scale(1); }
 }
 
@@ -2007,7 +2506,8 @@ border: 1px solid rgba(255,255,255,.16);
 
    /* 🔴 Disable floating bar animations */
    #floatingBar,
-   #floatingBar.bounce-in{
+   #floatingBar.bounce-in,
+   #floatingBar.cart-added-pulse{
      transition: none !important;
      animation: none !important;
    }
@@ -2095,7 +2595,7 @@ textarea.input{
 }
 
 .btn-primary{
-  background:#0A84FF;
+  background:#0066cc;
   color:#fff;
   border:none;
 }
@@ -2132,6 +2632,58 @@ textarea.input{
   padding-right:6px; /* กันชิดขอบขาว */
 }
   
+.bulk-import-template{
+  margin:10px 0 12px;
+  padding:10px 12px;
+  border-radius:12px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  font-size:12px;
+  line-height:1.45;
+  overflow-x:auto;
+  white-space:pre;
+}
+
+.bulk-import-textarea{
+  min-height:150px;
+  font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size:13px;
+  line-height:1.45;
+}
+
+.bulk-preview-list{
+  display:grid;
+  gap:10px;
+  margin-top:12px;
+}
+
+.bulk-preview-card{
+  padding:12px;
+  border-radius:14px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.bulk-preview-card.has-error{
+  border-color:rgba(255,59,48,.55);
+  background:rgba(255,59,48,.10);
+}
+
+.bulk-preview-meta{
+  margin-top:6px;
+  font-size:12px;
+  color:rgba(235,235,245,.72);
+  line-height:1.45;
+}
+
+.bulk-error-list{
+  margin:8px 0 0;
+  padding-left:18px;
+  color:#ff9f0a;
+  font-size:12px;
+  line-height:1.45;
+}
+
 </style>
 </head>
 <body>
@@ -2151,29 +2703,34 @@ textarea.input{
  ></div>
 
 <!-- ================= VIEWER SHEETS ================= -->
- <div id="productSheet" class="sheet sheet-product" role="dialog" aria-modal="true" tabindex="-1"></div>
- <div id="qtySheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
- <div id="cartSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
- <div id="confirmSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
- <div id="stockSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
+ <div id="productSheet" class="sheet sheet-product" role="dialog" aria-modal="true" aria-labelledby="productSheetTitle" tabindex="-1"></div>
+ <div id="qtySheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="qtySheetTitle" tabindex="-1"></div>
+ <div id="cartSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="cartSheetTitle" tabindex="-1"></div>
+ <div id="confirmSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="confirmSheetTitle" tabindex="-1"></div>
+ <div id="stockSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="stockSheetTitle" tabindex="-1"></div>
 
 <!-- 🖼️ IMAGE VIEWER (FULLSCREEN) -->
-<div id="imageViewerSheet" class="sheet image-viewer-sheet" role="dialog" aria-modal="true" tabindex="-1">
+<div id="imageViewerSheet" class="sheet image-viewer-sheet" role="dialog" aria-modal="true" aria-label="ตัวอย่างรูปภาพ" tabindex="-1">
 </div>
 
 <!-- ================= ADMIN SHEETS ================= -->
- <div id="adminLoginSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
- <div id="adminDashboardSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
- <div id="adminOrderSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
- <div id="adminStockSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
+ <div id="adminLoginSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminLoginSheetTitle" tabindex="-1"></div>
+ <div id="adminDashboardSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminDashboardSheetTitle" tabindex="-1"></div>
+ <div id="adminOrderSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminOrderSheetTitle" tabindex="-1"></div>
+ <div id="adminStockSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminStockSheetTitle" tabindex="-1"></div>
  <div id="pendingDeliverySheet"
       class="sheet"
       role="dialog"
       aria-modal="true"
+      aria-labelledby="pendingDeliverySheetTitle"
       tabindex="-1"></div>
 <div
   id="createPendingDeliverySheet"
-  class="sheet">
+  class="sheet"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="createPendingDeliverySheetTitle"
+  tabindex="-1">
 </div>
 
  <div
@@ -2181,16 +2738,18 @@ textarea.input{
    class="sheet"
    role="dialog"
    aria-modal="true"
+   aria-labelledby="bulkPendingDeliverySheetTitle"
    tabindex="-1">
  </div>
  
 <!-- 🔹 Main Menu (Side Sheet Right) -->
-<div id="mainMenuSheet" class="side-menu" role="dialog" aria-modal="true" tabindex="-1"></div>
+<div id="mainMenuSheet" class="side-menu" role="dialog" aria-modal="true" aria-labelledby="mainMenuSheetTitle" tabindex="-1"></div>
 
- <div id="adminProductActionSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
- <div id="adminProductEditSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
- <div id="adminStockActionSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
- <div id="adminAddProductSheet" class="sheet" role="dialog" aria-modal="true" tabindex="-1"></div>
+ <div id="adminProductActionSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminProductActionSheetTitle" tabindex="-1"></div>
+ <div id="adminProductEditSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminProductEditSheetTitle" tabindex="-1"></div>
+ <div id="adminStockActionSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminStockActionSheetTitle" tabindex="-1"></div>
+ <div id="adminAddProductSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminAddProductSheetTitle" tabindex="-1"></div>
+ <div id="adminBulkProductImportSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBulkProductImportSheetTitle" tabindex="-1"></div>
 
   
 <script>
@@ -2223,6 +2782,8 @@ const adminProductActionSheet = document.getElementById("adminProductActionSheet
 const adminProductEditSheet = document.getElementById("adminProductEditSheet");
 const adminStockActionSheet = document.getElementById("adminStockActionSheet");
 const adminAddProductSheet = document.getElementById("adminAddProductSheet");
+const adminBulkProductImportSheet =
+  document.getElementById("adminBulkProductImportSheet");
 
 // ================= ADMIN UI REGISTRY =================
 // 🔒 รวม ref ฝั่ง admin ไว้จุดเดียว เพื่อให้เพิ่ม/ถอดเมนูในอนาคตง่ายขึ้น
@@ -2237,6 +2798,7 @@ const ADMIN_SHEETS = Object.freeze({
   productEdit: adminProductEditSheet,
   stockAction: adminStockActionSheet,
   addProduct: adminAddProductSheet,
+  bulkProductImport: adminBulkProductImportSheet,
   bulkPending: bulkPendingDeliverySheet
 });
 
@@ -2248,6 +2810,10 @@ function getAdminSheets() {
 Object.assign(window, {
   openBulkPendingDeliverySheet,
   submitBulkPendingDelivery,
+  openBulkProductImportSheet,
+  closeBulkProductImportSheet,
+  previewBulkProductImport,
+  submitBulkProductImport,
   openPendingDeliverySheet,
   closePendingDeliverySheet,
   openChangePasswordSheet,
@@ -2307,6 +2873,13 @@ const state = {
       dashboardFrom: "",
       dashboardTo: ""
     },
+    bulkProductImport: {
+      rawText: "",
+      items: [],
+      errors: [],
+      backendErrors: [],
+      summary: ""
+    },
     ui: {
       activeSheet: null
     },
@@ -2334,6 +2907,28 @@ const state = {
 
 const CART_KEY = "luopanich_cart";
 const LAST_ORDER_KEY = "luopanich_last_order"; 
+
+const MOTION = Object.freeze({
+  CARD_ENTRANCE_LIMIT: 24,
+  CARD_STAGGER_MS: 18,
+  DURATION_NORMAL_MS: 260,
+  EASING_STANDARD: "cubic-bezier(.22,.61,.36,1)"
+});
+
+function isReducedMotion() {
+  return !!(
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
+
+function replayMotionClass(el, className, duration = MOTION.DURATION_NORMAL_MS) {
+  if (!el || !className || isReducedMotion()) return;
+  el.classList.remove(className);
+  void el.offsetWidth;
+  el.classList.add(className);
+  window.setTimeout(() => el.classList.remove(className), duration + 80);
+}
 
 function escapeHtml(value = "") {
   return String(value)
@@ -2379,20 +2974,46 @@ function renderLastOrderSheet() {
     return;
   }
 
+  const items = Array.isArray(order.items) ? order.items : [];
+  const itemCount = items.length;
+  const totalQty = items.reduce(
+    (sum, item) => sum + (Number(item.qty) || 0),
+    0
+  );
+  const total = Number(order.total) || 0;
+
   confirmSheet.innerHTML = `
-    <h3>บิลล่าสุด</h3>
-    <div style="margin-top:12px">
-      เลขที่ใบสั่งซื้อ: ${escapeHtml(order.orderId)}
+    <h3 id="confirmSheetTitle">สร้างใบสั่งซื้อสำเร็จ</h3>
+
+    <div class="order-success-card success-enter">
+      <div class="summary-row">
+        <span>เลขที่ใบสั่งซื้อ</span>
+        <strong>${escapeHtml(order.orderId)}</strong>
+      </div>
+      <div class="summary-row">
+        <span>PO</span>
+        <strong>${escapeHtml(order.poNumber || "-")}</strong>
+      </div>
+      <div class="summary-row">
+        <span>จำนวนรายการ</span>
+        <strong>${itemCount} รายการ / ${totalQty} ชิ้น</strong>
+      </div>
+      <div class="summary-row">
+        <span>ยอดรวม</span>
+        <strong>฿${total.toLocaleString("th-TH")}</strong>
+      </div>
     </div>
-    <div style="margin-top:6px;color:rgba(235,235,245,.72);font-size:14px">
-      PO: ${escapeHtml(order.poNumber || "-")}
+
+    <div class="success-note">
+      ระบบบันทึกใบสั่งซื้อแล้ว และกำลังรอแอดมินตรวจสอบ/อนุมัติคำสั่งซื้อ
     </div>
+
     <button class="btn btn-primary"
       style="margin-top:16px"
       onclick="exportOrderPrint()">
       ดาวน์โหลดใบสั่งซื้อ
     </button>
-    <button class="btn btn-secondary"
+    <button class="btn btn-outline"
       style="margin-top:8px"
       onclick="
         state.ui.backdropLocked = false;
@@ -2511,6 +3132,8 @@ function showToast(message, type = 'info', timeout = 2500) {
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   toast.textContent = message;
+  toast.setAttribute("role", type === "error" ? "alert" : "status");
+  toast.setAttribute("aria-live", type === "error" ? "assertive" : "polite");
 
   container.appendChild(toast);
 
@@ -2537,6 +3160,8 @@ function showLoading(message, timeoutMs = 60000) {
 
   text.textContent = message;
   overlay.classList.remove("hidden");
+  overlay.setAttribute("aria-hidden", "false");
+  overlay.setAttribute("aria-busy", "true");
 
   // บังคับ render
   overlay.offsetHeight;
@@ -2568,7 +3193,11 @@ function safeHideLoading(fromTimeout = false) {
 
   setTimeout(() => {
     try {
-      if (overlay) overlay.classList.add("hidden");
+      if (overlay) {
+        overlay.classList.add("hidden");
+        overlay.setAttribute("aria-hidden", "true");
+        overlay.setAttribute("aria-busy", "false");
+      }
 
       // 🔥 หัวใจ: เคลียร์ timer ของ showLoading
       if (_loadingTimer) {
@@ -2814,7 +3443,7 @@ async function refreshProducts() {
     console.error("refreshProducts failed:", err);
     if (app) {
       app.innerHTML = `
-        <div style="
+        <div role="alert" style="
           text-align:center;
           color:#d93025;
           margin-top:40px;
@@ -3135,6 +3764,13 @@ function toInlineJsStringLiteral(value) {
     .replace(/\u2029/g, "\\u2029") + "'";
 }
 
+function handleKeyboardActivation(event, element) {
+  if (!event || !element) return;
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  element.click();
+}
+
 
 // 🔴 CHANGED: ADD renderFloatingBar() (fix: cart added but bar never appears because function was missing)
 function renderFloatingBar(){
@@ -3188,6 +3824,12 @@ bar.style.cursor = "pointer";
   bar.classList.add("show","bounce-in");
   setTimeout(()=> bar.classList.remove("bounce-in"), 650);
 }  
+
+function triggerCartAddedFeedback() {
+  if (typeof renderFloatingBar === "function") renderFloatingBar();
+  const bar = document.getElementById("floatingBar");
+  replayMotionClass(bar, "cart-added-pulse");
+}
   
 function openImageViewer(url){
   if (!url) return;
@@ -3245,7 +3887,7 @@ function closeImageViewer(ev){
      : [];
 
    const html = `
-     <h3>${esc(p.name)}</h3>
+     <h3 id="productInfoSheetTitle">${esc(p.name)}</h3>
 
      ${
        images.length
@@ -3277,7 +3919,7 @@ function closeImageViewer(ev){
          : ""
      }
 
-<button class="btn btn-secondary product-info-close-btn"
+<button class="btn btn-outline product-info-close-btn"
    onclick="closeProductInfoSheet()">
    ปิด
  </button>
@@ -3290,6 +3932,7 @@ function closeImageViewer(ev){
    sheet.className = "sheet";
    sheet.setAttribute("role", "dialog");
    sheet.setAttribute("aria-modal", "true");
+   sheet.setAttribute("aria-labelledby", "productInfoSheetTitle");
    sheet.setAttribute("tabindex", "-1");  
    document.body.appendChild(sheet);
  }
@@ -3319,7 +3962,7 @@ function renderProducts(){
   if (!Array.isArray(state.products)) {
     console.error("renderProducts: products is not array", state.products);
     app.innerHTML = `
-      <div style="
+      <div role="alert" style="
         text-align:center;
         color:#d93025;
         margin-top:40px;
@@ -3413,6 +4056,8 @@ if (
     /* ================= CARD ================= */
     const card = document.createElement("div");
     card.className = "product-card";
+    card.setAttribute("role", "button");
+    card.setAttribute("tabindex", "0");
 
     card.onclick = () => {
       if (state.mode === "admin") {
@@ -3421,6 +4066,7 @@ if (
         openProduct(p);
       }
     };
+    card.onkeydown = event => handleKeyboardActivation(event, card);
 
     card.innerHTML = `
       <img class="thumb"
@@ -3448,14 +4094,25 @@ if (
 
   // ❌ ไม่พบสินค้า
   if (!found) {
+    const hasSearch = String(state.search || "").trim().length > 0;
+    const activeFilter = state.mode === "admin"
+      ? state.admin?.filters?.status
+      : state.viewerFilter?.status;
+    const hasFilter = activeFilter && activeFilter !== "all";
+    const emptyMessage = hasSearch
+      ? "ไม่พบสินค้าที่ค้นหา"
+      : hasFilter
+        ? "ไม่มีสินค้าที่ตรงกับตัวกรอง"
+        : "ยังไม่มีสินค้าให้แสดง";
+
     app.innerHTML = `
-      <div style="
+      <div role="status" style="
         text-align:center;
         color:#888;
         margin-top:40px;
         font-size:15px;
       ">
-        ไม่พบสินค้าที่ค้นหา
+        ${emptyMessage}
       </div>
     `;
     return;   
@@ -3492,31 +4149,32 @@ if (
     app.appendChild(pagination);
   }
 
- // Product Card Stagger Animation
-  const cards = document.querySelectorAll('.product-card');
+  // Product card entrance is intentionally limited for mobile performance.
+  if (!isReducedMotion()) {
+    const cards = Array.from(document.querySelectorAll(".product-card"))
+      .slice(0, MOTION.CARD_ENTRANCE_LIMIT);
 
-  cards.forEach((card,index)=>{
-
-    card.animate(
-      [
+    cards.forEach((card, index) => {
+      card.animate(
+        [
+          {
+            opacity: 0,
+            transform: "translateY(10px)"
+          },
+          {
+            opacity: 1,
+            transform: "translateY(0)"
+          }
+        ],
         {
-          opacity:0,
-          transform:'translateY(10px)'
-        },
-        {
-          opacity:1,
-          transform:'translateY(0)'
+          duration: MOTION.DURATION_NORMAL_MS,
+          delay: index * MOTION.CARD_STAGGER_MS,
+          easing: MOTION.EASING_STANDARD,
+          fill: "both"
         }
-      ],
-      {
-        duration:300,
-        delay:index * 25,
-        easing:'ease-out',
-        fill:'both'
-      }
-    );
-
-  });
+      );
+    });
+  }
 
 }
 
@@ -3547,7 +4205,7 @@ function renderProductSheet(){
       ×
     </button>
 
-    <h3 class="product-title">${esc(p.name)}</h3>
+    <h3 id="productSheetTitle" class="product-title">${esc(p.name)}</h3>
 
     <div class="product-sku">
       รหัสสินค้า: ${esc(p.productId)}
@@ -3609,10 +4267,22 @@ function renderProductSheet(){
 }
   
 function renderCart(){
-  cartSheet.innerHTML="<h3>ตะกร้า</h3>";
+  cartSheet.innerHTML=`
+    <div class="sheet-topbar">
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="closeCart()"
+        aria-label="ปิดตะกร้า">×</button>
+      <h3 id="cartSheetTitle">ตะกร้า</h3>
+      <div aria-hidden="true"></div>
+    </div>
+  `;
 
   if(state.cart.length===0){
-    cartSheet.innerHTML+=`<div style="color:#888">ยังไม่มีสินค้าในตะกร้า</div>
+    cartSheet.innerHTML+=`
+      <div class="empty-state">
+        ยังไม่มีสินค้าในตะกร้า<br>
+        <span class="helper-text">เลือกสินค้าแล้วกดเพิ่มลงตะกร้าเพื่อเริ่มสร้างใบสั่งซื้อ</span>
+      </div>
 `;
     return;
   }
@@ -3622,14 +4292,15 @@ function renderCart(){
     <div class="cart-item">
       <div>
         <div class="name">${esc(i.name)}</div>
-        <div style="font-size:12px;color:#888">
+        <div class="cart-meta">
           รหัส: ${esc(i.productId)}
         </div>
-        <div class="price">฿${Number(i.price) || 0}</div>
+        <div class="price">฿${Number(i.price) || 0} / ชิ้น</div>
       </div>
  <div class="cart-item-right">
-   <div style="font-size:14px;color:#555">
-     จำนวน: ${Number(i.qty) || 1}
+   <div>
+     <div class="cart-line-total">฿${(Number(i.price) || 0) * (Number(i.qty) || 0)}</div>
+     <div class="cart-qty">จำนวน ${Number(i.qty) || 1}</div>
    </div>
    <button class="btn-remove"
      onclick="removeItem(${idx})">
@@ -3645,11 +4316,22 @@ const total = state.cart.reduce(
  );
 
 cartSheet.innerHTML += `
-  <div class="total">Total: ฿${total}</div>
-  <button class="btn btn-primary"
-    onclick="openConfirm()">
-    สร้างใบสั่งซื้อ
-  </button>
+  <div class="cart-summary">
+    <div class="summary-row">
+      <span>จำนวนรายการ</span>
+      <strong>${state.cart.length}</strong>
+    </div>
+    <div class="summary-row">
+      <span>ยอดรวม</span>
+      <strong>฿${total}</strong>
+    </div>
+  </div>
+  <div class="sheet-action-footer">
+    <button class="btn btn-primary"
+      onclick="openConfirm()">
+      สร้างใบสั่งซื้อ
+    </button>
+  </div>
 `;
 }
 
@@ -3678,7 +4360,7 @@ function renderConfirmSheet(){
   if (!confirmSheet) return;
   let total = 0;
 
-  confirmSheet.innerHTML = "<h3>ยืนยันใบสั่งซื้อ</h3>";
+  confirmSheet.innerHTML = '<h3 id="confirmSheetTitle">ยืนยันใบสั่งซื้อ</h3>';
 
   state.cart.forEach(i=>{
     const sum = i.price * i.qty;
@@ -3688,18 +4370,27 @@ function renderConfirmSheet(){
       <div class="cart-item">
         <div>
           <div class="name">${esc(i.name)}</div>
-          <div style="font-size:12px;color:#888">รหัส: ${esc(i.productId)}</div>
-          <div style="font-size:13px">จำนวน ${Number(i.qty) || 0}</div>
+          <div class="cart-meta">รหัส: ${esc(i.productId)}</div>
+          <div class="cart-qty">จำนวน ${Number(i.qty) || 0}</div>
         </div>
-        <div>฿${Number(sum) || 0}</div>
+        <div class="cart-line-total">฿${Number(sum) || 0}</div>
       </div>
     `;
   });
 
   confirmSheet.innerHTML += `
-    <div class="total">ยอดรวม: ฿${total}</div>
+    <div class="cart-summary">
+      <div class="summary-row">
+        <span>จำนวนรายการ</span>
+        <strong>${state.cart.length}</strong>
+      </div>
+      <div class="summary-row">
+        <span>ยอดรวม</span>
+        <strong>฿${total}</strong>
+      </div>
+    </div>
 
-    <div class="form-group" style="margin-top:12px">
+    <div class="form-group">
      <label>เลข PO <span style="color:#ff3b30">*</span></label>
       <input
         id="poInput"
@@ -3710,12 +4401,20 @@ function renderConfirmSheet(){
     </div>
 
 
-<button class="btn btn-primary"
-  id="submitBtn"
-  ${state.isSubmitting ? "disabled" : ""}
-  onclick="submitOrder()">
-  ยืนยันสร้างใบสั่งซื้อ
-</button>
+<div class="sheet-action-footer">
+  <button class="btn btn-primary ${state.isSubmitting ? "is-submitting" : ""}"
+    id="submitBtn"
+    ${state.isSubmitting ? "disabled" : ""}
+    aria-busy="${state.isSubmitting ? "true" : "false"}"
+    onclick="submitOrder()">
+    ยืนยันสร้างใบสั่งซื้อ
+  </button>
+
+  <button class="btn btn-outline"
+    onclick="cancelConfirm()">
+    ยกเลิก
+  </button>
+</div>
   `;
  
 }
@@ -3766,7 +4465,7 @@ function renderHeader(){
 <div class="header-actions">
 
    <div class="filter-wrap">
- <button class="filter-btn"
+ <button class="filter-btn ${state.viewerFilter.status !== "all" ? "has-active-filter" : ""}"
     onclick="toggleFilterDropdown(this)"
     aria-label="กรองสินค้า"
     aria-expanded="false"
@@ -3780,16 +4479,16 @@ function renderHeader(){
      </button>
 
  <div id="filterDropdown" class="filter-dropdown" role="menu" aria-label="ตัวกรองสินค้า">
-   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('all')">ทั้งหมด</button>
-   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('ready')">พร้อมส่ง</button>
-   <button type="button" class="filter-item"
+   <button type="button" class="filter-item ${state.viewerFilter.status === "all" ? "active" : ""}" role="menuitem" onclick="selectFilter('all')">ทั้งหมด</button>
+   <button type="button" class="filter-item ${state.viewerFilter.status === "ready" ? "active" : ""}" role="menuitem" onclick="selectFilter('ready')">พร้อมส่ง</button>
+   <button type="button" class="filter-item ${state.viewerFilter.status === "ready_plus" ? "active" : ""}" role="menuitem"
      onclick="selectFilter('ready_plus')">
      พร้อมส่ง<br>
      สามารถบวกเพิ่มได้
    </button>
-   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</button>
-   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('warehouse')">โกดังไทย</button>
-   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('out')">หมด</button>
+   <button type="button" class="filter-item ${state.viewerFilter.status === "shipping" ? "active" : ""}" role="menuitem" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</button>
+   <button type="button" class="filter-item ${state.viewerFilter.status === "warehouse" ? "active" : ""}" role="menuitem" onclick="selectFilter('warehouse')">โกดังไทย</button>
+   <button type="button" class="filter-item ${state.viewerFilter.status === "out" ? "active" : ""}" role="menuitem" onclick="selectFilter('out')">หมด</button>
  </div>
    </div>
       
@@ -3849,7 +4548,7 @@ function renderHeader(){
     <div class="header-actions">
 
       <div class="filter-wrap">
- <button class="filter-btn"
+ <button class="filter-btn ${state.admin.filters.status !== "all" ? "has-active-filter" : ""}"
    onclick="toggleFilterDropdown(this)"
    aria-label="กรองสินค้า"
    aria-expanded="false"
@@ -3862,11 +4561,11 @@ function renderHeader(){
         </button>
 
  <div id="filterDropdown" class="filter-dropdown" role="menu" aria-label="ตัวกรองสินค้า">
-   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('all')">ทั้งหมด</button>
-   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('ready')">พร้อมส่ง</button>
-   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</button>
-   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('warehouse')">โกดังไทย</button>
-   <button type="button" class="filter-item" role="menuitem" onclick="selectFilter('out')">หมด</button>
+   <button type="button" class="filter-item ${state.admin.filters.status === "all" ? "active" : ""}" role="menuitem" onclick="selectFilter('all')">ทั้งหมด</button>
+   <button type="button" class="filter-item ${state.admin.filters.status === "ready" ? "active" : ""}" role="menuitem" onclick="selectFilter('ready')">พร้อมส่ง</button>
+   <button type="button" class="filter-item ${state.admin.filters.status === "shipping" ? "active" : ""}" role="menuitem" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</button>
+   <button type="button" class="filter-item ${state.admin.filters.status === "warehouse" ? "active" : ""}" role="menuitem" onclick="selectFilter('warehouse')">โกดังไทย</button>
+   <button type="button" class="filter-item ${state.admin.filters.status === "out" ? "active" : ""}" role="menuitem" onclick="selectFilter('out')">หมด</button>
  </div>
       </div>
 
@@ -4142,6 +4841,7 @@ function closeTopSheet(){
     document.getElementById("bulkPendingDeliverySheet"),
     document.getElementById("pendingDeliverySheet"),
     document.getElementById("adminAddProductSheet"),
+    document.getElementById("adminBulkProductImportSheet"),
     document.getElementById("adminProductActionSheet"),
     document.getElementById("adminProductEditSheet"),
     document.getElementById("adminStockActionSheet"),
@@ -4173,7 +4873,7 @@ function closeTopSheet(){
 
 function showStockError(message){
   stockSheet.innerHTML = `
-    <h3 style="color:#ff3b30">สต๊อกไม่เพียงพอ</h3>
+    <h3 id="stockSheetTitle" style="color:#ff3b30">สต๊อกไม่เพียงพอ</h3>
 
     <div style="
       font-size:15px;
@@ -4212,15 +4912,6 @@ function openConfirm(){
   // render เนื้อหา
   renderConfirmSheet();
 
-  // ปุ่มยกเลิก
-  confirmSheet.innerHTML += `
-    <button class="btn btn-secondary"
-      style="width:100%;margin-top:8px"
-      onclick="cancelConfirm()">
-      ยกเลิก
-    </button>
-  `;
-
   // 🔥 หัวใจ: ต้องเปิด sheet จริง
   openOverlay(confirmSheet);
 }
@@ -4249,7 +4940,13 @@ function openQtySheet(){
   closeOverlay(productSheet);
 
   qtySheet.innerHTML = `
-    <h3>ระบุจำนวน</h3>
+    <div class="sheet-topbar">
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="closeQty()"
+        aria-label="ปิดหน้าระบุจำนวน">×</button>
+      <h3 id="qtySheetTitle">ระบุจำนวน</h3>
+      <div aria-hidden="true"></div>
+    </div>
 
     <div class="form-group">
       <label>จำนวนที่ต้องการ</label>
@@ -4341,6 +5038,7 @@ function confirmAddToCart(){
   );
 
   resetToHome();
+  requestAnimationFrame(triggerCartAddedFeedback);
 }
   
 function resetToHome(){
@@ -4372,34 +5070,42 @@ if (typeof renderFloatingBar === "function") renderFloatingBar();
 
 function renderAdminLogin(){
   adminLoginSheet.innerHTML = `
-    <h3>Admin Login</h3>
+    <div class="sheet-topbar">
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="cancelAdminLogin()"
+        aria-label="ปิดหน้าเข้าสู่ระบบ">×</button>
+      <h3 id="adminLoginSheetTitle">Admin Login</h3>
+      <div aria-hidden="true"></div>
+    </div>
 
     <div class="form-group">
+      <label for="adminUser">Username</label>
       <input id="adminUser"
         placeholder="Username"
         onfocus="focusInput(this)">
     </div>
 
     <div class="form-group">
+      <label for="adminPass">Password</label>
       <input id="adminPass"
         type="password"
         placeholder="Password"
         onfocus="focusInput(this)">
     </div>
 
-    <button class="btn btn-primary"
-      id="adminLoginBtn"
-      style="width:100%;margin-top:12px"
-      onclick="handleAdminLogin(this)">
-      Login
-    </button>
+    <div class="sheet-action-footer">
+      <button class="btn btn-primary"
+        id="adminLoginBtn"
+        onclick="handleAdminLogin(this)">
+        Login
+      </button>
 
-    <button class="btn btn-outline"
-      id="adminCancelBtn"
-      style="width:100%;margin-top:8px"
-      onclick="cancelAdminLogin()">
-      ยกเลิก
-    </button>
+      <button class="btn btn-outline"
+        id="adminCancelBtn"
+        onclick="cancelAdminLogin()">
+        ยกเลิก
+      </button>
+    </div>
   `;
 
   // อนุญาตให้กด backdrop ปิดได้
@@ -4421,7 +5127,13 @@ function openChangePasswordSheet(){
   }
 
   adminLoginSheet.innerHTML = `
-    <h3>เปลี่ยนรหัสผ่าน</h3>
+    <div class="sheet-topbar">
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="closeOverlay(adminLoginSheet)"
+        aria-label="ปิดหน้าเปลี่ยนรหัสผ่าน">×</button>
+      <h3 id="adminLoginSheetTitle">เปลี่ยนรหัสผ่าน</h3>
+      <div aria-hidden="true"></div>
+    </div>
 
     <div class="form-group">
       <label>รหัสผ่านปัจจุบัน</label>
@@ -4438,15 +5150,17 @@ function openChangePasswordSheet(){
       <input id="confirmNewPassword" type="password" placeholder="ยืนยันรหัสผ่านใหม่">
     </div>
 
-    <button class="btn btn-primary" style="width:100%;margin-top:12px"
-      onclick="submitChangePassword(this)">
-      บันทึกรหัสผ่านใหม่
-    </button>
+    <div class="sheet-action-footer">
+      <button class="btn btn-primary"
+        onclick="submitChangePassword(this)">
+        บันทึกรหัสผ่านใหม่
+      </button>
 
-    <button class="btn btn-outline" style="width:100%;margin-top:8px"
-      onclick="closeOverlay(adminLoginSheet)">
-      ยกเลิก
-    </button>
+      <button class="btn btn-outline"
+        onclick="closeOverlay(adminLoginSheet)">
+        ยกเลิก
+      </button>
+    </div>
   `;
 
   openOverlay(adminLoginSheet);
@@ -4769,7 +5483,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
   }
 
   adminDashboardSheet.innerHTML = `
-    <h3>📊 Admin Dashboard</h3>
+    <h3 id="adminDashboardSheetTitle">📊 Admin Dashboard</h3>
     <div class="loading">กำลังโหลดข้อมูล</div>
   `;
 
@@ -4821,28 +5535,30 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
             onclick="backToAdminMainMenu()">
             ← กลับเมนู
           </button>
-          <h3>📦 Pending Orders</h3>
+          <h3 id="adminDashboardSheetTitle">📦 Pending Orders</h3>
         </div>
 
         ${
           pendingOrders.length
             ? pendingOrders.map(o => `
-                <div class="card" onclick="openAdminOrder(${toInlineJsStringLiteral(o.orderId)})">
+                <div class="card admin-card"
+                  role="button"
+                  tabindex="0"
+                  onclick="openAdminOrder(${toInlineJsStringLiteral(o.orderId)})"
+                  onkeydown="handleKeyboardActivation(event, this)">
                   <div class="name">${esc(o.orderId)}</div>
-                  <div>Status: ${esc(o.status)}</div>
-                  <div>Total: ฿${Number(o.total || 0).toLocaleString("th-TH")}</div>
- <div class="stock">
-   วันที่:
-   ${esc(
-     formatThaiDate(
-       getOrderDateValue(o)
-     )
-   )}
- </div>
+                  <div class="admin-card-meta">
+                    <span class="status-badge compact status-pending">${esc(o.status)}</span>
+                    <span>รวม ฿${Number(o.total || 0).toLocaleString("th-TH")}</span>
+                  </div>
+                  <div class="price">฿${Number(o.total || 0).toLocaleString("th-TH")}</div>
+                  <div class="stock">
+                    วันที่: ${esc(formatThaiDate(getOrderDateValue(o)))}
+                  </div>
                 </div>
               `).join("")
             : `
-              <div style="color:#888;text-align:center;margin-top:24px">
+              <div class="empty-state">
                 ไม่มีออเดอร์รอดำเนินการ
               </div>
             `
@@ -4857,7 +5573,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
           onclick="backToAdminMainMenu()">
           ← กลับเมนู
         </button>
-        <h3>
+        <h3 id="adminDashboardSheetTitle">
           <span class="dashboard-title-main">📊 Admin Dashboard</span>
           <span class="dashboard-title-sub">(เฉพาะ APPROVED)</span>
         </h3>
@@ -4875,7 +5591,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
         </div>
       </div>
 
-      <div style="display:flex;gap:8px;margin-bottom:14px">
+      <div class="action-row">
         <button class="btn btn-primary" onclick="applyAdminDashboardRange()">
           ดูสรุป
         </button>
@@ -4884,25 +5600,25 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
         </button>
       </div>
 
-      <div class="card">
+      <div class="card metric-card">
         <div class="name">ยอดขายรวม</div>
         <div class="price">฿${Number(summary.totalSales).toLocaleString("th-TH")}</div>
         <div class="stock">จำนวนออเดอร์: ${summary.orderCount}</div>
       </div>
 
-      <div class="card">
+      <div class="card metric-card">
         <div class="name">ต้นทุนรวม</div>
         <div class="price">฿${Number(summary.totalCost).toLocaleString("th-TH")}</div>
         <div class="stock">จำนวนสินค้าที่ขาย: ${summary.totalQty}</div>
       </div>
 
-      <div class="card">
+      <div class="card metric-card">
         <div class="name">กำไรรวม</div>
         <div class="price">฿${Number(summary.totalProfit).toLocaleString("th-TH")}</div>
         <div class="stock">Orders รอดำเนินการ: ${pendingCount}</div>
       </div>
 
-      <h3 style="margin-top:18px">รายการออเดอร์ APPROVED ที่นำมาคิด</h3>
+      <h3 class="section-title">รายการออเดอร์ APPROVED ที่นำมาคิด</h3>
 
 ${
   approvedOrders.length
@@ -4918,22 +5634,24 @@ ${
             )
         )
         .map(o => `
-            <div class="card" onclick="openAdminOrder(${toInlineJsStringLiteral(o.orderId)})">
+            <div class="card admin-card"
+              role="button"
+              tabindex="0"
+              onclick="openAdminOrder(${toInlineJsStringLiteral(o.orderId)})"
+              onkeydown="handleKeyboardActivation(event, this)">
               <div class="name">${esc(o.orderId)}</div>
-              <div>Status: ${esc(o.status)}</div>
-              <div>Total: ฿${Number(o.total || 0).toLocaleString("th-TH")}</div>
-<div class="stock">
-  วันที่:
-  ${esc(
-    formatThaiDate(
-      getOrderDateValue(o)
-    )
-  )}
-</div>
+              <div class="admin-card-meta">
+                <span class="status-badge compact status-approved">${esc(o.status)}</span>
+                <span>รวม ฿${Number(o.total || 0).toLocaleString("th-TH")}</span>
+              </div>
+              <div class="price">฿${Number(o.total || 0).toLocaleString("th-TH")}</div>
+              <div class="stock">
+                วันที่: ${esc(formatThaiDate(getOrderDateValue(o)))}
+              </div>
             </div>
           `).join("")
           : `
-            <div style="color:#888;text-align:center;margin-top:24px">
+            <div class="empty-state">
               ไม่มีออเดอร์สถานะ APPROVED ในช่วงวันที่ที่เลือก
             </div>
           `
@@ -4952,19 +5670,19 @@ ${
     }
 
     adminDashboardSheet.innerHTML = `
-      <h3>📊 Admin Dashboard</h3>
+      <h3 id="adminDashboardSheetTitle">📊 Admin Dashboard</h3>
 
       <div style="text-align:center;color:#d93025;margin-top:32px">
         ไม่สามารถโหลดข้อมูลแดชบอร์ดได้
       </div>
 
-      <button class="btn btn-secondary"
+      <button class="btn btn-primary"
         style="width:100%;margin-top:16px"
         onclick="allowOpenOrders = true; openAdminDashboard('SUMMARY', true)">
         🔄 ลองใหม่
       </button>
 
-      <button class="btn"
+      <button class="btn btn-outline"
         style="width:100%;margin-top:8px"
         onclick="finishAdminAction({ refresh:false })">
         ← กลับ
@@ -5031,7 +5749,7 @@ async function openStockTimeline(force = false) {
   closeOverlay(adminDashboardSheet);
 
   adminStockSheet.innerHTML = `
-    <h3>📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
+    <h3 id="adminStockSheetTitle">📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
     <div class="loading">กำลังโหลด...</div>
   `;
 
@@ -5172,9 +5890,9 @@ async function openStockTimeline(force = false) {
 
     /* ================= RENDER ================= */
     adminStockSheet.innerHTML = `
-      <h3>📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
+      <h3 id="adminStockSheetTitle">📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
 
-      <button class="btn btn-secondary"
+      <button class="btn btn-outline"
         style="width:100%;margin-bottom:12px"
         onclick="finishAdminAction({ refresh:false })">
         ← กลับ
@@ -5340,7 +6058,7 @@ async function openStockTimeline(force = false) {
     console.error(err);
 
     adminStockSheet.innerHTML = `
-      <h3>📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
+      <h3 id="adminStockSheetTitle">📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
       <div style="text-align:center;color:#d93025;margin-top:32px">
         ไม่สามารถโหลดข้อมูลได้
       </div>
@@ -5376,6 +6094,12 @@ function openAdminOrder(orderId){
     : [];
 
   const isPending = order.status === "PENDING";
+  const normalizedOrderStatus = String(order.status || "").toUpperCase();
+  const orderStatusClass = {
+    PENDING: "status-pending",
+    APPROVED: "status-approved",
+    REJECTED: "status-rejected"
+  }[normalizedOrderStatus] || "status-neutral";
 
 adminOrderSheet.innerHTML = `
   <button
@@ -5384,7 +6108,7 @@ adminOrderSheet.innerHTML = `
     ×
   </button>
 
-  <h3>${esc(order.orderId)}</h3>
+  <h3 id="adminOrderSheetTitle">${esc(order.orderId)}</h3>
 
  ${
    order.status !== "PENDING" &&
@@ -5400,10 +6124,15 @@ adminOrderSheet.innerHTML = `
    : ""
  }
 
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">รายการสินค้า</div>
+      <div class="admin-item-list">
     ${items.map(i => `
       <div class="cart-item">
    <div>
-     <div>${esc(i.name)} x ${Number(i.qty) || 0}</div>
+     <div class="name">${esc(i.name)}</div>
+     <div class="cart-meta">SKU: ${esc(i.productId || "-")}</div>
+     <div class="cart-qty">จำนวน ${Number(i.qty) || 0}</div>
 
      ${
        order.status !== "PENDING" &&
@@ -5432,26 +6161,40 @@ adminOrderSheet.innerHTML = `
      }
 
    </div>
- <div>
+ <div class="price">
    ฿${(Number(i.price) || 0) * (Number(i.qty) || 0)}
  </div>
       </div>
     `).join("")}
+      </div>
+    </div>
 
-    <div class="total">Total: ฿${Number(order.total) || 0}</div>
-    <div style="margin-top:8px;color:rgba(235,235,245,.72);font-size:14px">
-      สถานะ: ${esc(order.status)}
+    <div class="cart-summary">
+      <div class="summary-row">
+        <span>สถานะ</span>
+        <span class="status-badge ${orderStatusClass}">
+          ${esc(order.status)}
+        </span>
+      </div>
+      <div class="summary-row">
+        <span>จำนวนรายการ</span>
+        <strong>${items.length}</strong>
+      </div>
+      <div class="summary-row">
+        <span>ยอดรวม</span>
+        <strong>฿${Number(order.total) || 0}</strong>
+      </div>
     </div>
 
     ${
       isPending
         ? `
           <div class="admin-action">
-            <button class="btn btn-approve" onclick="handleApprove()">
+            <button class="btn btn-success" onclick="handleApprove()">
               Approve
             </button>
 
-            <button class="btn btn-reject" onclick="handleReject()">
+            <button class="btn btn-danger" onclick="handleReject()">
               Reject
             </button>
           </div>
@@ -5557,7 +6300,7 @@ function closeAdminOrderSheet() {
     ✕
   </button>
 
-<h3
+<h3 id="bulkPendingDeliverySheetTitle"
   style="
     margin:0;
     text-align:center;
@@ -5656,17 +6399,15 @@ style="
 
      `).join("")}
 
-     <button
-       class="btn btn-primary"
-       style="
-         width:100%;
-         margin-top:16px;
-       "
-       onclick="
-         submitBulkPendingDelivery()
-       ">
-       สร้างรายการ
-     </button>
+     <div class="sheet-action-footer">
+       <button
+         class="btn btn-primary"
+         onclick="
+           submitBulkPendingDelivery()
+         ">
+         สร้างรายการ
+       </button>
+     </div>
 
    </div>
    `;
@@ -5830,8 +6571,10 @@ style="
          )
          .join("\n");
 
-       alert(
-         `สร้างสำเร็จ:\n${successText}\n\nสร้างไม่สำเร็จ:\n${failureText}`
+       showToast(
+         `สร้างสำเร็จ:\n${successText}\n\nสร้างไม่สำเร็จ:\n${failureText}`,
+         "warning",
+         7000
        );
 
        closeOverlay(
@@ -5842,13 +6585,15 @@ style="
        return;
      }
 
-     alert(
+     showToast(
        "สร้างรายการไม่สำเร็จ\n" +
-       failedItems
-         .map(({ item, error }) =>
-           `- ${item.name || item.productId}: ${error}`
-         )
-         .join("\n")
+         failedItems
+           .map(({ item, error }) =>
+             `- ${item.name || item.productId}: ${error}`
+           )
+           .join("\n"),
+       "error",
+       7000
      );
 
    } finally {
@@ -5918,23 +6663,23 @@ createPendingDeliverySheet.innerHTML = `
         ← กลับ
       </button>
 
-      <h3>📦 เพิ่มรายการค้างส่ง</h3>
+      <h3 id="createPendingDeliverySheetTitle">📦 เพิ่มรายการค้างส่ง</h3>
 
     </div>
 
-      <div class="card" style="margin-top:12px;">
+      <div class="card info-card">
 
-      <div>
-        <b>สินค้า:</b>
-        ${esc(productId)}
+      <div class="info-row">
+        <span class="info-label">สินค้า</span>
+        <span class="info-value">${esc(productId)}</span>
       </div>
 
-      <div style="margin-top:8px;">
-        <b>จำนวนใน PO:</b>
-        ${orderedQty}
+      <div class="info-row">
+        <span class="info-label">จำนวนใน PO</span>
+        <span class="info-value">${orderedQty}</span>
       </div>
 
-      <div style="margin-top:16px;">
+      <div class="form-group">
 
 <label class="stock">
   จำนวนค้างส่ง
@@ -5952,7 +6697,7 @@ createPendingDeliverySheet.innerHTML = `
 
       </div>
 
-      <div style="margin-top:12px;">
+      <div class="form-group">
 
         <label>
           หมายเหตุ
@@ -5966,15 +6711,13 @@ createPendingDeliverySheet.innerHTML = `
 
       </div>
 
-<button
-  onclick="createPendingDelivery()"
-  class="btn btn-primary"
-  style="
-    margin-top:16px;
-    width:100%;
-  ">
-  บันทึก
-</button>
+<div class="sheet-action-footer">
+  <button
+    onclick="createPendingDelivery()"
+    class="btn btn-primary">
+    บันทึก
+  </button>
+</div>
 
     </div>
   `;
@@ -6136,9 +6879,11 @@ async function createPendingDelivery() {
 
     console.error(err);
 
-    alert(
+    showToast(
       err.message ||
-      "ไม่สามารถสร้างรายการค้างส่งได้"
+        "ไม่สามารถสร้างรายการค้างส่งได้",
+      "error",
+      5000
     );
 } finally {
 
@@ -6238,21 +6983,25 @@ async function createPendingDelivery() {
          )
          .join("\n");
 
-       alert(
-         `สร้างสำเร็จ:\n${successText}\n\nสร้างไม่สำเร็จ:\n${failureText}`
+       showToast(
+         `สร้างสำเร็จ:\n${successText}\n\nสร้างไม่สำเร็จ:\n${failureText}`,
+         "warning",
+         7000
        );
 
        openPendingDeliverySheet();
        return;
      }
 
-     alert(
+     showToast(
        "ไม่สามารถสร้างรายการค้างส่งได้\n" +
-       failedItems
-         .map(({ item, error }) =>
-           `- ${item.name || item.productId}: ${error}`
-         )
-         .join("\n")
+         failedItems
+           .map(({ item, error }) =>
+             `- ${item.name || item.productId}: ${error}`
+           )
+           .join("\n"),
+       "error",
+       7000
      );
 
    } finally {
@@ -6449,9 +7198,20 @@ function openStockAction(p){
   state.selectedProduct = p;
 
   adminStockActionSheet.innerHTML = `
-    <h3>จัดการสต๊อก</h3>
-    <div>${esc(p.name)}</div>
-    <div>คงเหลือ: ${Number(p.stock) || 0}</div>
+    <div class="sheet-topbar">
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="closeOverlay(adminStockActionSheet)"
+        aria-label="ปิดหน้าจัดการสต๊อก">×</button>
+      <h3 id="adminStockActionSheetTitle">จัดการสต๊อก</h3>
+      <div aria-hidden="true"></div>
+    </div>
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">${esc(p.name)}</div>
+      <div class="summary-row">
+        <span>คงเหลือ</span>
+        <strong>${Number(p.stock) || 0}</strong>
+      </div>
+    </div>
 
     <div class="form-group">
       <label>จำนวน</label>
@@ -6473,18 +7233,19 @@ function openStockAction(p){
       >
     </div>
 
-    <button
-      class="btn btn-secondary"
-      onclick="submitStockIn()">
-      ➕ รับเข้า (IN)
-    </button>
+    <div class="sheet-action-footer">
+      <button
+        class="btn btn-success"
+        onclick="submitStockIn()">
+        ➕ รับเข้า (IN)
+      </button>
 
-    <button
-      class="btn btn-primary"
-      style="margin-top:8px"
-      onclick="submitStockAdjust()">
-      ✏️ ปรับยอด
-    </button>
+      <button
+        class="btn btn-primary"
+        onclick="submitStockAdjust()">
+        ✏️ ปรับยอด
+      </button>
+    </div>
   `;
 
   // ✅ เปิดผ่าน Overlay Manager เท่านั้น
@@ -6522,7 +7283,7 @@ async function refreshProductsWithFeedback({
     if (!silent) {
       showToast("ไม่สามารถโหลดข้อมูลสินค้าได้", "error");
       confirmSheet.innerHTML = `
-        <h3>โหลดข้อมูลไม่สำเร็จ</h3>
+        <h3 id="confirmSheetTitle">โหลดข้อมูลไม่สำเร็จ</h3>
         <div style="margin-top:12px;color:rgba(235,235,245,.78)">
           กรุณาลองใหม่อีกครั้ง
         </div>
@@ -6549,7 +7310,7 @@ function openPendingDeliverySheet() {
         ← กลับ
       </button>
 
-      <h3>
+      <h3 id="pendingDeliverySheetTitle">
         <span class="dashboard-title-main">
           📦 ค้างส่ง
         </span>
@@ -6607,7 +7368,7 @@ function renderPendingDeliveries(list) {
 
   if (!Array.isArray(list) || !list.length) {
     container.innerHTML = `
-      <div class="card">
+      <div class="card admin-card">
         <div class="name">
           ไม่มีรายการค้างส่ง
         </div>
@@ -6649,10 +7410,18 @@ container.innerHTML =
   Object.entries(grouped)
     .map(([po, items]) => `
 
-<div class="card">
+<div class="card admin-card">
 
 <div
   class="name"
+ role="button"
+ tabindex="0"
+ aria-expanded="${
+   state.admin.pendingDeliveryExpanded[po]
+     ? "true"
+     : "false"
+ }"
+ onkeydown="handleKeyboardActivation(event, this)"
  onclick="
    state.admin.pendingDeliveryExpanded[
      ${toInlineJsStringLiteral(po)}
@@ -6680,16 +7449,12 @@ container.innerHTML =
    </div>
 
    <div
-     style="
-       font-size:13px;
-       margin-top:4px;
-       color:
-       ${
-         poStatus[po] > 0
-           ? "#ffcc00"
-           : "#34c759"
-       };
-     ">
+     class="status-badge ${
+       poStatus[po] > 0
+         ? "status-open"
+         : "status-closed"
+     }"
+     style="margin-top:6px">
 
      ${
        poStatus[po] > 0
@@ -6735,30 +7500,20 @@ ${
             rgba(255,255,255,.08);
         ">
 
-        <div class="stock">
-          สินค้า:
-          ${esc(item.productId || "-")}
+        <div class="admin-card-meta">
+          <span>SKU: ${esc(item.productId || "-")}</span>
+          <span>ใน PO: ${Number(item.orderedQty || 0)}</span>
+          <span>ค้างส่ง: ${Number(item.qty || 0)}</span>
         </div>
-
-        <div class="stock">
-          จำนวนใน PO :
-          ${Number(
-            item.orderedQty || 0
-          )}
-        </div>
-
-<div class="stock">
-  ค้างส่ง :
-  ${Number(
-    item.qty || 0
-  )}
-</div>
 
  ${
    item.status === "OPEN"
      ? `
+     <div class="status-badge status-open" style="margin-top:10px">
+       OPEN
+     </div>
      <button
-       class="btn btn-secondary"
+       class="btn btn-success"
        style="
          margin-top:12px;
          width:100%;
@@ -6772,8 +7527,8 @@ ${
      </button>
      `
      : `
-     <div class="stock">
-       ✅ CLOSED
+     <div class="status-badge status-closed" style="margin-top:10px">
+       CLOSED
      </div>
      `
  }
@@ -6811,12 +7566,12 @@ async function markPendingDelivered(
 
  <div class="confirm-complete-sheet">
 
+   <h3 id="confirmSheetTitle" class="confirm-complete-title">
+     ยืนยันการส่งครบ
+   </h3>
+
    <div class="confirm-complete-icon">
      ✅
-   </div>
-
-   <div class="confirm-complete-title">
-     ยืนยันการส่งครบ
    </div>
 
    <div class="confirm-complete-desc">
@@ -6835,7 +7590,7 @@ async function markPendingDelivered(
      </button>
 
      <button
-       class="btn btn-secondary"
+       class="btn btn-success"
        onclick="
          closeOverlay(confirmSheet);
          confirmClosePendingDelivery(
@@ -6957,7 +7712,12 @@ function openMainMenu(triggerEl){
 
   // ✅ STEP 2: Main Menu v1 = Login only (ถ้ายังไม่อยู่ admin mode)
   mainMenuSheet.innerHTML = `
-    <h3>Main Menu</h3>
+    <div class="side-menu-topbar">
+      <h3 id="mainMenuSheetTitle">Main Menu</h3>
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="closeMainMenu()"
+        aria-label="ปิดเมนูหลัก">×</button>
+    </div>
 
     <!-- 🔹 MAIN ACTIONS -->
     <div class="menu-group">
@@ -6973,7 +7733,7 @@ function openMainMenu(triggerEl){
                ${
                  hasLastOrder
                    ? `
-                       <button class="btn btn-primary"
+                       <button class="btn btn-secondary"
                          onclick="closeMainMenu(); reopenLastOrderSheet();">
                          🧾 บิลล่าสุด
                        </button>
@@ -6988,7 +7748,7 @@ function openMainMenu(triggerEl){
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); handleOpenPendingOrders();">
-                  📦 Pending Orders ${pendingCount > 0 ? `<span class="badge">${pendingCount}</span>` : ``}
+                  📦 Pending Orders ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
                 </button>
 
                 <button class="btn btn-secondary"
@@ -7006,6 +7766,11 @@ function openMainMenu(triggerEl){
                   ➕ เพิ่มสินค้าใหม่
                 </button>
                 
+                <button class="btn btn-secondary"
+                  onclick="closeMainMenu(); openBulkProductImportSheet();">
+                  Bulk Import Products
+                </button>
+
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openChangePasswordSheet();">
                   🔐 เปลี่ยนรหัสผ่าน
@@ -7067,7 +7832,7 @@ function openAddProduct(force = false){
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    alert("Session หมดอายุ กรุณา login ใหม่");
+    showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
     exitAdmin();
     return;
   }
@@ -7087,9 +7852,15 @@ function openAddProduct(force = false){
   const safeNote = esc(draft.note || "");
  
   adminAddProductSheet.innerHTML = `
-    <h3>➕ เพิ่มสินค้าใหม่</h3>
+    <div class="sheet-topbar">
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="closeAddProduct()"
+        aria-label="ปิดหน้าเพิ่มสินค้า">×</button>
+      <h3 id="adminAddProductSheetTitle">➕ เพิ่มสินค้าใหม่</h3>
+      <div aria-hidden="true"></div>
+    </div>
 
-    <div style="font-size:13px;color:#666;margin-bottom:12px">
+    <div class="helper-text" style="margin-bottom:12px">
       ℹ️ การเพิ่มสินค้าใหม่จะถูกบันทึกใน Stock Timeline
     </div>
 
@@ -7168,17 +7939,17 @@ function openAddProduct(force = false){
       </label>
     </div>
 
-    <button class="btn btn-primary"
-      style="width:100%;margin-top:16px"
-      onclick="submitAddProduct(this)">
-      บันทึกสินค้า
-    </button>
+    <div class="sheet-action-footer">
+      <button class="btn btn-primary"
+        onclick="submitAddProduct(this)">
+        บันทึกสินค้า
+      </button>
 
-    <button class="btn btn-secondary"
-      style="width:100%;margin-top:8px"
-      onclick="closeAddProduct()">
-      ยกเลิก
-    </button>
+      <button class="btn btn-outline"
+        onclick="closeAddProduct()">
+        ยกเลิก
+      </button>
+    </div>
   `;
 
   openOverlay(adminAddProductSheet);
@@ -7364,6 +8135,12 @@ async function submitOrder(){
 
   state.isSubmitting = true;
   state.ui.backdropLocked = true;
+  const submitBtn = document.getElementById("submitBtn");
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.classList.add("is-submitting");
+    submitBtn.setAttribute("aria-busy", "true");
+  }
 
   try {
     // ================= STEP 1: CHECK STOCK =================
@@ -7448,6 +8225,11 @@ async function submitOrder(){
   } finally {
     safeHideLoading();
     state.isSubmitting = false;
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove("is-submitting");
+      submitBtn.setAttribute("aria-busy", "false");
+    }
     // 🔒 ปลด lock เฉพาะเมื่อไม่มี sheet เปิดอยู่ (กัน race condition)
     if (state.ui.overlayCount === 0) {
       state.ui.backdropLocked = false;
@@ -7522,7 +8304,13 @@ function openProductEdit(p){
   const safeEditDetailsText = esc(latestProduct.detailsText || "");
 
   adminProductEditSheet.innerHTML = `
-    <h3>แก้ไขสินค้า</h3>
+    <div class="sheet-topbar">
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="closeProductEdit()"
+        aria-label="ปิดหน้าแก้ไขสินค้า">×</button>
+      <h3 id="adminProductEditSheetTitle">แก้ไขสินค้า</h3>
+      <div aria-hidden="true"></div>
+    </div>
 
     <div class="form-group">
       <label>รหัสสินค้า (SKU)</label>
@@ -7655,18 +8443,6 @@ function openProductEdit(p){
         onchange="handleImagePreview(this)">
     </div>
 
-    <button class="btn btn-primary"
-      style="width:100%;margin-top:16px"
-      onclick="submitProductEdit()">
-      บันทึก
-    </button>
-
-    <button class="btn btn-secondary"
-      style="width:100%;margin-top:8px"
-      onclick="closeProductEdit()">
-      ยกเลิก
-    </button>
-
     <!-- 🔴 SOFT DELETE PRODUCT -->
 
  ${p.active === false ? `
@@ -7685,6 +8461,18 @@ function openProductEdit(p){
      🗑️ ลบสินค้า
    </button>
  `}
+
+    <div class="sheet-action-footer">
+      <button class="btn btn-primary"
+        onclick="submitProductEdit()">
+        บันทึก
+      </button>
+
+      <button class="btn btn-outline"
+        onclick="closeProductEdit()">
+        ยกเลิก
+      </button>
+    </div>
   `;
 
   openOverlay(adminProductEditSheet); // ✅ ใช้ Overlay Manager
@@ -8069,7 +8857,7 @@ function confirmDeleteProduct() {
   closeOverlay(adminProductEditSheet);
 
   confirmSheet.innerHTML = `
-    <h3>ลบสินค้าแบบถาวร</h3>
+    <h3 id="confirmSheetTitle">ลบสินค้าแบบถาวร</h3>
     <div style="margin-top:12px">
       สินค้า: "${esc(p.name)}"<br>
       รหัส: ${esc(p.productId)}<br><br>
@@ -8319,6 +9107,393 @@ async function submitAddProduct(btn){
   }
 }
 
+const BULK_PRODUCT_COLUMNS = [
+  "productId",
+  "name",
+  "price",
+  "costPrice",
+  "stock",
+  "status",
+  "image",
+  "active",
+  "note",
+  "detailsText",
+  "compareImages"
+];
+
+const BULK_PRODUCT_SAMPLE =
+  BULK_PRODUCT_COLUMNS.join("\t") +
+  "\nSKU001\tSample product\t100\t70\t10\tready\thttps://example.com/image.jpg\ttrue\tNote\tDetails\thttps://example.com/compare.jpg";
+
+function ensureAdminSessionForBulkImport() {
+  if (
+    state.mode !== "admin" ||
+    !state.admin.loggedIn ||
+    !state.admin.token ||
+    isAdminSessionExpired()
+  ) {
+    showToast("Session expired. Please login again.", "warning");
+    exitAdmin();
+    return false;
+  }
+  return true;
+}
+
+function openBulkProductImportSheet() {
+  if (!ensureAdminSessionForBulkImport()) return;
+
+  const bulkState = state.admin.bulkProductImport;
+  bulkState.rawText = bulkState.rawText || "";
+  bulkState.backendErrors = [];
+  bulkState.summary = "";
+
+  renderBulkProductImportSheet();
+  openOverlay(adminBulkProductImportSheet);
+}
+
+function closeBulkProductImportSheet() {
+  closeOverlay(adminBulkProductImportSheet);
+}
+
+function renderBulkProductImportSheet() {
+  const bulkState = state.admin.bulkProductImport;
+  const parsed = parseBulkProductImportText(bulkState.rawText || "");
+  bulkState.items = parsed.items;
+  bulkState.errors = parsed.errors;
+
+  const backendErrors = Array.isArray(bulkState.backendErrors)
+    ? bulkState.backendErrors
+    : [];
+  const allErrors = parsed.errors.concat(backendErrors);
+  const canSubmit = parsed.items.length > 0 && allErrors.length === 0;
+
+  adminBulkProductImportSheet.innerHTML = `
+    <div class="sheet-topbar">
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="closeBulkProductImportSheet()"
+        aria-label="Close bulk import">×</button>
+      <h3 id="adminBulkProductImportSheetTitle">Bulk Import Products</h3>
+      <div aria-hidden="true"></div>
+    </div>
+
+    <div class="helper-text" style="margin-bottom:10px">
+      Paste TSV copied from Excel or Google Sheets. The first row may be a header.
+      Backend validation remains authoritative.
+    </div>
+
+    <div class="bulk-import-template">${esc(BULK_PRODUCT_SAMPLE)}</div>
+
+    <div class="form-group">
+      <label>Paste product rows</label>
+      <textarea
+        id="bulkProductImportText"
+        class="input bulk-import-textarea"
+        placeholder="${escAttr(BULK_PRODUCT_SAMPLE)}"
+        oninput="state.admin.bulkProductImport.rawText = this.value; state.admin.bulkProductImport.backendErrors = []; state.admin.bulkProductImport.summary = '';">${esc(bulkState.rawText || "")}</textarea>
+    </div>
+
+    <button class="btn btn-outline" onclick="previewBulkProductImport()">
+      Preview TSV
+    </button>
+
+    ${bulkState.summary ? `
+      <div class="success-note" role="status">${esc(bulkState.summary)}</div>
+    ` : ""}
+
+    ${renderBulkProductImportSummary(parsed.items, allErrors)}
+    ${renderBulkProductImportPreview(parsed.items, allErrors)}
+
+    <div class="sheet-action-footer">
+      <button class="btn btn-primary"
+        ${canSubmit && !state.admin.isSubmitting ? "" : "disabled"}
+        onclick="submitBulkProductImport(this)">
+        ${state.admin.isSubmitting ? "Importing..." : "Import Products"}
+      </button>
+      <button class="btn btn-outline" onclick="closeBulkProductImportSheet()">
+        Cancel
+      </button>
+    </div>
+  `;
+}
+
+function previewBulkProductImport() {
+  const input = document.getElementById("bulkProductImportText");
+  if (input) {
+    state.admin.bulkProductImport.rawText = input.value;
+  }
+  state.admin.bulkProductImport.backendErrors = [];
+  state.admin.bulkProductImport.summary = "";
+  renderBulkProductImportSheet();
+}
+
+function parseBulkProductImportText(rawText) {
+  const text = String(rawText || "").replace(/\r/g, "").trimEnd();
+  const errors = [];
+  const items = [];
+
+  if (!text.trim()) {
+    return { items, errors };
+  }
+
+  const lines = text
+    .split("\n")
+    .filter(line => line.trim());
+
+  const firstCells = splitTsvLine(lines[0]);
+  const hasHeader = isBulkProductHeaderRow(firstCells);
+  const dataLines = hasHeader ? lines.slice(1) : lines;
+  const columns = hasHeader
+    ? firstCells.map(normalizeBulkHeader)
+    : BULK_PRODUCT_COLUMNS;
+  const seenSkus = new Set();
+
+  if (dataLines.length > 100) {
+    errors.push(bulkImportError(0, "", "items", "Maximum 100 product rows allowed"));
+    return { items, errors };
+  }
+
+  dataLines.forEach((line, index) => {
+    const rowNumber = index + 1;
+    const cells = splitTsvLine(line);
+    const row = {};
+
+    columns.forEach((column, cellIndex) => {
+      if (!column) return;
+      row[column] = String(cells[cellIndex] || "").trim();
+    });
+
+    const item = normalizeBulkProductImportRow(row);
+    validateBulkProductImportRow(item, rowNumber, seenSkus, errors);
+    items.push(item);
+  });
+
+  if (items.length === 0) {
+    errors.push(bulkImportError(1, "", "items", "At least one product row is required"));
+  }
+
+  return { items, errors };
+}
+
+function splitTsvLine(line) {
+  return String(line || "").split("\t");
+}
+
+function isBulkProductHeaderRow(cells) {
+  const normalized = cells.map(normalizeBulkHeader).filter(Boolean);
+  return normalized.includes("productId") &&
+    normalized.includes("name") &&
+    normalized.includes("price");
+}
+
+function normalizeBulkHeader(value) {
+  const key = String(value || "").trim().toLowerCase();
+  const map = {
+    productid: "productId",
+    sku: "productId",
+    name: "name",
+    price: "price",
+    costprice: "costPrice",
+    cost: "costPrice",
+    stock: "stock",
+    qty: "stock",
+    status: "status",
+    image: "image",
+    active: "active",
+    note: "note",
+    detailstext: "detailsText",
+    details: "detailsText",
+    compareimages: "compareImages"
+  };
+  return map[key] || "";
+}
+
+function normalizeBulkProductImportRow(row) {
+  const stock = Number(row.stock);
+  const status = Number.isInteger(stock) && stock === 0
+    ? "out"
+    : String(row.status || "").trim();
+
+  return {
+    productId: normalizeProductId(row.productId || ""),
+    name: String(row.name || "").trim(),
+    price: String(row.price || "").trim(),
+    costPrice: String(row.costPrice || "").trim(),
+    stock: String(row.stock || "").trim(),
+    status,
+    image: String(row.image || "").trim(),
+    active: String(row.active || "").trim(),
+    note: String(row.note || "").trim(),
+    detailsText: String(row.detailsText || "").trim(),
+    compareImages: String(row.compareImages || "").trim()
+  };
+}
+
+function validateBulkProductImportRow(item, rowNumber, seenSkus, errors) {
+  const allowedStatuses = ["ready", "ready_plus", "shipping", "warehouse", "out"];
+  const productId = item.productId;
+  const price = Number(item.price);
+  const costPrice = Number(item.costPrice);
+  const stock = Number(item.stock);
+
+  if (!productId) {
+    errors.push(bulkImportError(rowNumber, productId, "productId", "SKU is required"));
+  } else if (seenSkus.has(productId)) {
+    errors.push(bulkImportError(rowNumber, productId, "productId", "Duplicate SKU inside pasted rows"));
+  }
+
+  if (productId) {
+    seenSkus.add(productId);
+  }
+
+  if (!item.name) {
+    errors.push(bulkImportError(rowNumber, productId, "name", "Name is required"));
+  }
+
+  if (item.price === "" || !Number.isInteger(price) || price < 0) {
+    errors.push(bulkImportError(rowNumber, productId, "price", "Price must be an integer >= 0"));
+  }
+
+  if (item.costPrice === "" || !Number.isInteger(costPrice) || costPrice < 0) {
+    errors.push(bulkImportError(rowNumber, productId, "costPrice", "Cost price must be an integer >= 0"));
+  }
+
+  if (item.stock === "" || !Number.isInteger(stock) || stock < 0) {
+    errors.push(bulkImportError(rowNumber, productId, "stock", "Stock must be an integer >= 0"));
+  }
+
+  if (!item.status || !allowedStatuses.includes(item.status)) {
+    errors.push(bulkImportError(rowNumber, productId, "status", "Invalid status"));
+  }
+
+  if (
+    item.active &&
+    !["true", "false", "1", "0"].includes(item.active.toLowerCase())
+  ) {
+    errors.push(bulkImportError(rowNumber, productId, "active", "Active must be true/false/1/0 or blank"));
+  }
+}
+
+function bulkImportError(row, productId, field, message) {
+  return { row, productId, field, message };
+}
+
+function renderBulkProductImportSummary(items, errors) {
+  return `
+    <div class="cart-summary">
+      <div class="summary-row">
+        <span>Rows ready</span>
+        <strong>${items.length}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Errors</span>
+        <strong>${errors.length}</strong>
+      </div>
+    </div>
+  `;
+}
+
+function renderBulkProductImportPreview(items, errors) {
+  if (!items.length && !errors.length) {
+    return `
+      <div class="empty-state">
+        Paste TSV rows and tap Preview TSV.
+      </div>
+    `;
+  }
+
+  const errorsByRow = new Map();
+  errors.forEach(error => {
+    const row = Number(error.row) || 0;
+    if (!errorsByRow.has(row)) errorsByRow.set(row, []);
+    errorsByRow.get(row).push(error);
+  });
+
+  const cards = items.map((item, index) => {
+    const rowNumber = index + 1;
+    const rowErrors = errorsByRow.get(rowNumber) || [];
+    return `
+      <div class="bulk-preview-card ${rowErrors.length ? "has-error" : ""}">
+        <div class="name">${esc(item.productId || "(missing SKU)")}</div>
+        <div class="bulk-preview-meta">
+          ${esc(item.name || "(missing name)")}<br>
+          Price: ${esc(item.price)} | Cost: ${esc(item.costPrice)} | Stock: ${esc(item.stock)} | Status: ${esc(item.status || "-")}
+        </div>
+        ${
+          rowErrors.length
+            ? `<ul class="bulk-error-list">${rowErrors.map(error => `<li>${esc(error.field)}: ${esc(error.message)}</li>`).join("")}</ul>`
+            : `<div class="status-badge status-approved compact" style="margin-top:8px">Ready</div>`
+        }
+      </div>
+    `;
+  }).join("");
+
+  const globalErrors = errorsByRow.get(0) || [];
+
+  return `
+    ${globalErrors.length ? `<ul class="bulk-error-list">${globalErrors.map(error => `<li>${esc(error.message)}</li>`).join("")}</ul>` : ""}
+    <div class="bulk-preview-list">${cards}</div>
+  `;
+}
+
+async function submitBulkProductImport(btn) {
+  if (!ensureAdminSessionForBulkImport()) return;
+  if (state.admin.isSubmitting) return;
+
+  previewBulkProductImport();
+
+  const bulkState = state.admin.bulkProductImport;
+  if (!bulkState.items.length || bulkState.errors.length) {
+    showToast("Please fix bulk import errors before submitting.", "warning");
+    return;
+  }
+
+  state.admin.isSubmitting = true;
+  renderBulkProductImportSheet();
+
+  try {
+    showLoading("Importing products...");
+    const form = new URLSearchParams();
+    form.append("action", "bulkAddProducts");
+    form.append("token", state.admin.token);
+    form.append("items", JSON.stringify(bulkState.items));
+
+    const res = await fetchWithTimeout(API_URL, {
+      method: "POST",
+      body: form
+    }, 45000);
+    const json = await res.json();
+
+    if (json?.success === true) {
+      const imported = Number(json.imported || json.data?.imported || 0);
+      bulkState.backendErrors = [];
+      bulkState.summary = `Imported ${imported} products successfully.`;
+      showToast(bulkState.summary, "success");
+      await refreshProducts();
+      renderBulkProductImportSheet();
+      return;
+    }
+
+    bulkState.backendErrors = Array.isArray(json?.data?.errors)
+      ? json.data.errors
+      : [];
+    bulkState.summary = "";
+    renderBulkProductImportSheet();
+    if (isAuthError(json?.error)) {
+      showToast("Session expired. Please login again.", "warning");
+      exitAdmin({ silent: true });
+      return;
+    }
+    showToast(json?.error || "Bulk import failed", "error");
+  } catch (err) {
+    console.error(err);
+    showToast(err.message || "Bulk import failed", "error");
+  } finally {
+    safeHideLoading();
+    state.admin.isSubmitting = false;
+    renderBulkProductImportSheet();
+  }
+}
+
 function openAdminProductAction(p){
   // 🔒 guard
   if (state.mode !== "admin") return;
@@ -8326,21 +9501,13 @@ function openAdminProductAction(p){
   state.selectedProduct = p;
 
   adminProductActionSheet.innerHTML = `
-    <h3>จัดการสินค้า</h3>
+    <h3 id="adminProductActionSheetTitle">จัดการสินค้า</h3>
 
-    <div style="
-      font-weight:600;
-      font-size:16px;
-      margin-bottom:4px
-    ">
+    <div class="name">
       ${esc(p.name)}
     </div>
 
-    <div style="
-      font-size:12px;
-      color:#888;
-      margin-bottom:16px
-    ">
+    <div class="cart-meta" style="margin-bottom:16px">
       รหัสสินค้า: ${esc(p.productId)}
     </div>
 
@@ -9096,8 +10263,7 @@ async function restoreAdminSessionIfValid() {
 // ================= BACK TO TOP =================
 let btnTop = null; // 🔴 must bind after DOM parsed (button is below this <script>)
 const prefersReducedMotion =
-  window.matchMedia &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  isReducedMotion();
 
 window.addEventListener("DOMContentLoaded", () => {
   btnTop = document.getElementById("btnTop");
@@ -9517,7 +10683,8 @@ window.testBarHide = function testBarHide(){
 </script>
   
 <!-- Toast Container -->
-<div id="toast-container"></div>
+<div id="toast-container"
+  aria-atomic="false"></div>
 
 <!-- Floating Bottom Bar -->
 <div id="floatingBar"></div> 
@@ -9528,7 +10695,12 @@ window.testBarHide = function testBarHide(){
 </button>  
 
 <!-- Loading Overlay -->
-<div id="loading-overlay" class="hidden">
+<div id="loading-overlay"
+  class="hidden"
+  role="status"
+  aria-live="polite"
+  aria-busy="false"
+  aria-hidden="true">
   <div class="loading-box">
     <div class="spinner"></div>
     <div id="loading-text">กำลังดำเนินการ...</div>
