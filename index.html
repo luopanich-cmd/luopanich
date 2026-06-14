@@ -844,6 +844,58 @@ button:disabled {
    gap:8px;
  }
 
+.cart-with-thumb{
+  align-items:flex-start;
+}
+
+.cart-item.cart-with-thumb > .cart-thumb{
+  flex:0 0 56px;
+  width:56px;
+  min-width:56px;
+  max-width:56px;
+  height:56px;
+  aspect-ratio:1 / 1;
+  align-self:flex-start;
+}
+
+.cart-thumb{
+  width:56px;
+  min-width:56px;
+  max-width:56px;
+  height:56px;
+  aspect-ratio:1 / 1;
+  box-sizing:border-box;
+  border-radius:14px;
+  overflow:hidden;
+  background:#1c1c1e;
+  border:1px solid rgba(255,255,255,.08);
+  display:grid;
+   place-items:center;
+ }
+
+ .cart-thumb img{
+   width:100%;
+   height:100%;
+   object-fit:contain;
+   object-position:center;
+   display:block;
+ }
+
+.cart-thumb-placeholder{
+  width:100%;
+  height:100%;
+  aspect-ratio:1 / 1;
+  display:grid;
+  place-items:center;
+  color:rgba(235,235,245,.62);
+  font-size:18px;
+}
+
+ .cart-content{
+   flex:1;
+   min-width:0;
+ }
+
  .cart-line-total{
    font-size:15px;
    font-weight:700;
@@ -1827,6 +1879,27 @@ textarea {
 
 .timeline-row + .timeline-row{
   margin-top:4px;
+}
+
+.timeline-card-with-thumb,
+.timeline-product-row{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+}
+
+.timeline-main{
+  flex:1;
+  min-width:0;
+}
+
+.timeline-product-row{
+  padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.timeline-product-row:last-child{
+  border-bottom:0;
 }
 
 .timeline-muted{
@@ -4383,6 +4456,33 @@ function renderProductSheet(){
   `;
 }
   
+function getCartItemImageUrl(item) {
+  const existingImage = String(item?.image || "").trim();
+  if (existingImage) return existingImage;
+
+  const product = Array.isArray(state.products)
+    ? state.products.find(p => String(p.productId || "") === String(item?.productId || ""))
+    : null;
+  return String(product?.image || "").trim();
+}
+
+function renderCartItemThumb(item) {
+  const imageUrl = getCartItemImageUrl(item);
+  const placeholder = `<div class="cart-thumb-placeholder" aria-hidden="true">รูป</div>`;
+  if (!imageUrl) {
+    return `<div class="cart-thumb">${placeholder}</div>`;
+  }
+  return `
+    <div class="cart-thumb">
+      <img
+        src="${escAttr(imageUrl)}"
+        alt="${escAttr(item?.name || "สินค้า")}"
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+      <div class="cart-thumb-placeholder" aria-hidden="true" style="display:none">รูป</div>
+    </div>
+  `;
+}
+
 function renderCart(){
   cartSheet.innerHTML=`
     <div class="sheet-topbar">
@@ -4406,8 +4506,9 @@ function renderCart(){
 
   state.cart.forEach((i,idx)=>{
   cartSheet.innerHTML+=`
-    <div class="cart-item">
-      <div>
+    <div class="cart-item cart-with-thumb">
+      ${renderCartItemThumb(i)}
+      <div class="cart-content">
         <div class="name">${esc(i.name)}</div>
         <div class="cart-meta">
           รหัส: ${esc(i.productId)}
@@ -4484,8 +4585,9 @@ function renderConfirmSheet(){
     total += sum;
 
     confirmSheet.innerHTML += `
-      <div class="cart-item">
-        <div>
+      <div class="cart-item cart-with-thumb">
+        ${renderCartItemThumb(i)}
+        <div class="cart-content">
           <div class="name">${esc(i.name)}</div>
           <div class="cart-meta">รหัส: ${esc(i.productId)}</div>
           <div class="cart-qty">จำนวน ${Number(i.qty) || 0}</div>
@@ -5954,7 +6056,8 @@ async function openStockTimeline(force = false) {
 
     orderMap[orderRef].items.push({
       productId: l.productId,
-      productName: l.productName || l.name || "",
+      productName: l.productName || l.name || matchedOrderItem?.name || "",
+      image: l.image || matchedOrderItem?.image || "",
       qty: Math.abs(Number(l.qty || 0)),
       before: l.before,
       after: l.after,
@@ -5993,6 +6096,7 @@ async function openStockTimeline(force = false) {
         type: l.type,
         productId: l.productId,
         productName: l.productName || l.name || "",
+        image: l.image || "",
         qty: l.qty,
         before: l.before,
         after: l.after,
@@ -6033,18 +6137,29 @@ async function openStockTimeline(force = false) {
                     </div>                    
 
                     ${t.items.map(i => `
-                      <div class="timeline-row">
-                        ${esc(i.productId)}
-                        ${i.productName ? ` — ${esc(i.productName)}` : ""}
-                        x ${Number(i.qty || 0)}
-                        ${
-                          Number.isFinite(Number(i.before)) &&
-                          Number.isFinite(Number(i.after))
-                            ? `<span class="timeline-muted">
-                                (${Number(i.before)} → ${Number(i.after)})
-                              </span>`
-                            : ""
-                        }
+                      <div class="timeline-product-row">
+                        ${renderCartItemThumb({
+                          productId: i.productId,
+                          name: i.productName || i.productId || "สินค้า",
+                          image: i.image || ""
+                        })}
+                        <div class="timeline-main">
+                          <div class="timeline-row">
+                            <strong>${esc(i.productId)}</strong>
+                            ${i.productName ? ` — ${esc(i.productName)}` : ""}
+                          </div>
+                          <div class="timeline-row">
+                            จำนวนที่เปลี่ยน: -${Number(i.qty || 0)}
+                            ${
+                              Number.isFinite(Number(i.before)) &&
+                              Number.isFinite(Number(i.after))
+                                ? `<span class="timeline-muted">
+                                    · สต็อก ${Number(i.before)} → ${Number(i.after)}
+                                  </span>`
+                                : ""
+                            }
+                          </div>
+                        </div>
                       </div>
                     `).join("")}
 
@@ -6107,25 +6222,42 @@ async function openStockTimeline(force = false) {
                 ADJUST: { text: "✏️ ปรับสต๊อก", class: "tag-adjust" }
               };
 
+              typeMap.OUT = { text: "ลดสต็อก", class: "tag-out" };
+
               const cfg = typeMap[t.type] || { text: t.type, class: "" };
 
               return `
                 <div class="card">
-                  <div class="timeline-tag ${escAttr(cfg.class)}">
-                    ${esc(cfg.text)}
-                  </div>
+                  <div class="timeline-card-with-thumb">
+                    ${renderCartItemThumb({
+                      productId: t.productId,
+                      name: t.productName || t.productId || "สินค้า",
+                      image: t.image || ""
+                    })}
+                    <div class="timeline-main">
+                      <div class="timeline-tag ${escAttr(cfg.class)}">
+                        ${esc(cfg.text)}
+                      </div>
 
-                  <div class="timeline-row">
-                    ${esc(t.productId)}
-                    ${t.productName ? ` — ${esc(t.productName)}` : ""}
-                    ${Number.isFinite(Number(t.qty)) ? ` x ${Math.abs(Number(t.qty))}` : ""}
-                    ${
-                      Number.isFinite(Number(t.before)) &&
-                      Number.isFinite(Number(t.after))
-                        ? ` (${Number(t.before)} → ${Number(t.after)})`
-                        : ""
-                    }
-                  </div>
+                      <div class="timeline-row">
+                        <strong>${esc(t.productId)}</strong>
+                        ${t.productName ? ` — ${esc(t.productName)}` : ""}
+                      </div>
+                      <div class="timeline-row">
+                        ${
+                          Number.isFinite(Number(t.qty))
+                            ? `จำนวนที่เปลี่ยน: ${Number(t.qty) > 0 ? "+" : ""}${Number(t.qty)}`
+                            : ""
+                        }
+                        ${
+                          Number.isFinite(Number(t.before)) &&
+                          Number.isFinite(Number(t.after))
+                            ? `<span class="timeline-muted">
+                                · สต็อก ${Number(t.before)} → ${Number(t.after)}
+                              </span>`
+                            : ""
+                        }
+                      </div>
 
                   ${
                     t.note
@@ -6155,10 +6287,12 @@ async function openStockTimeline(force = false) {
                       : ""
                   }
 
-                  <div style="font-size:12px;color:#888;margin-top:6px">
-                    ${t.time.toLocaleDateString("th-TH")}
-                    ${t.time.toLocaleTimeString("th-TH")}
-                    · โดย ${esc(t.by)}
+                      <div style="font-size:12px;color:#888;margin-top:6px">
+                        ${t.time.toLocaleDateString("th-TH")}
+                        ${t.time.toLocaleTimeString("th-TH")}
+                        · โดย ${esc(t.by)}
+                      </div>
+                    </div>
                   </div>
                 </div>
               `;
@@ -6245,8 +6379,9 @@ adminOrderSheet.innerHTML = `
       <div class="admin-detail-title">รายการสินค้า</div>
       <div class="admin-item-list">
     ${items.map(i => `
-      <div class="cart-item">
-   <div>
+      <div class="cart-item cart-with-thumb">
+   ${renderCartItemThumb(i)}
+   <div class="cart-content">
      <div class="name">${esc(i.name)}</div>
      <div class="cart-meta">SKU: ${esc(i.productId || "-")}</div>
      <div class="cart-qty">จำนวน ${Number(i.qty) || 0}</div>
@@ -10308,6 +10443,32 @@ function exportOrderPrint() {
   const total = Number(order.total || 0).toLocaleString();
   const safeOrderId = esc(order.orderId);
   const safePo = esc(po);
+  const printItemThumb = item => {
+    const imageUrl = getCartItemImageUrl(item);
+    const placeholder = `<span class="print-thumb-placeholder" aria-hidden="true">รูป</span>`;
+    if (!imageUrl) {
+      return `<div class="print-thumb">${placeholder}</div>`;
+    }
+    return `
+      <div class="print-thumb">
+        <img
+          src="${escAttr(imageUrl)}"
+          alt="${escAttr(item?.name || "สินค้า")}"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+        <span class="print-thumb-placeholder" aria-hidden="true" style="display:none">รูป</span>
+      </div>
+    `;
+  };
+  const printItemRows = items.map((i, index) => `
+    <tr>
+      <td>${index + 1}</td>
+      <td class="thumb-col">${printItemThumb(i)}</td>
+      <td class="item-name-cell">[${esc(i.productId)}] ${esc(i.name)}</td>
+      <td>${Number(i.qty) || 0}</td>
+      <td>฿${Number(i.price).toLocaleString()}</td>
+      <td>฿${(i.price * i.qty).toLocaleString()}</td>
+    </tr>
+  `).join("");
 
   const printWindow = window.open("", "_blank");
 
@@ -10365,6 +10526,46 @@ function exportOrderPrint() {
           font-weight: 600;
           background: #F9FAFB; /* very soft header tint */
           color: #1E3A8A; /* Navy Blue */
+        }
+
+        .thumb-col {
+          width: 52px;
+          text-align: center;
+        }
+
+        .print-thumb {
+          width: 44px;
+          height: 44px;
+          aspect-ratio: 1 / 1;
+          box-sizing: border-box;
+          overflow: hidden;
+          display: grid;
+          place-items: center;
+          border: 1px solid #E5E7EB;
+          border-radius: 8px;
+          background: #F9FAFB;
+        }
+
+        .print-thumb img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          object-position: center;
+          display: block;
+        }
+
+        .print-thumb-placeholder {
+          width: 100%;
+          height: 100%;
+          display: grid;
+          place-items: center;
+          font-size: 11px;
+          color: #9CA3AF;
+        }
+
+        .item-name-cell {
+          word-break: break-word;
+          line-height: 1.35;
         }
 
         .total {
@@ -10434,6 +10635,7 @@ function exportOrderPrint() {
         <thead>
           <tr>
             <th>#</th>
+            <th class="thumb-col">รูป</th>
             <th>รายการ</th>
             <th>จำนวน</th>
             <th>ราคา</th>
@@ -10441,15 +10643,7 @@ function exportOrderPrint() {
           </tr>
         </thead>
         <tbody>
-          ${items.map((i, index) => `
-            <tr>
-              <td>${index + 1}</td>
-              <td>[${esc(i.productId)}] ${esc(i.name)}</td>
-              <td>${Number(i.qty) || 0}</td>
-              <td>฿${Number(i.price).toLocaleString()}</td>
-              <td>฿${(i.price * i.qty).toLocaleString()}</td>
-            </tr>
-          `).join("")}
+          ${printItemRows}
         </tbody>
       </table>
 
