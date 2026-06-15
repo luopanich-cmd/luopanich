@@ -1795,6 +1795,45 @@ textarea:focus-visible {
   opacity: 1;
 }
 
+.sheet.stock-menu-return-side {
+  position: fixed;
+  inset: 0 0 auto auto;
+  left: auto;
+  width: min(65vw, 260px);
+  max-width: none;
+  height: 100dvh;
+  max-height: 100dvh;
+  border-radius: 0;
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 16px)
+    max(16px, env(safe-area-inset-right, 0px))
+    calc(env(safe-area-inset-bottom, 0px) + 24px)
+    16px;
+  background: rgba(28,28,30,.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-side);
+  box-sizing: border-box;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  transform: translate3d(100%, 0, 0);
+  transition:
+    transform var(--dur-sheet) var(--ease-out),
+    opacity var(--motion-duration-fast) var(--motion-ease-standard);
+  z-index: 102;
+}
+
+.sheet.stock-menu-return-side.show {
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+
+.stock-menu-return-side .side-menu-topbar{
+  top:calc(-16px - env(safe-area-inset-top, 0px));
+}
+
 .side-menu-topbar{
   position:sticky;
   top:calc(-16px - env(safe-area-inset-top, 0px));
@@ -6034,6 +6073,7 @@ function closeStockTimelineToAdminMenu() {
 function closeStockMenuSheetThen(action) {
   state.admin.ui.activeSheet = null;
   closeOverlay(adminStockSheet);
+  adminStockSheet.classList.remove("stock-menu-return-side");
 
   if (typeof action === "function") action();
 }
@@ -6044,13 +6084,13 @@ function renderAdminMenuInStockSheet() {
   const pendingCount = getPendingOrdersCount();
   const hasLastOrder = !!(state.lastOrder && state.lastOrder.orderId);
 
+  adminStockSheet.classList.add("stock-menu-return-side");
   adminStockSheet.innerHTML = `
-    <div class="stock-menu-return">
-    <div class="sheet-topbar">
-      <h3 id="adminStockSheetTitle">เมนูแอดมิน</h3>
+    <div class="side-menu-topbar">
+      <h3 id="adminStockSheetTitle">Main Menu</h3>
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closeStockMenuSheetThen()"
-        aria-label="ปิดเมนูแอดมิน">×</button>
+        aria-label="ปิดเมนูหลัก">×</button>
     </div>
 
     <div class="menu-group">
@@ -6119,7 +6159,6 @@ function renderAdminMenuInStockSheet() {
         🚪 Logout
       </button>
     </div>
-    </div>
   `;
 
   if (!adminStockSheet.classList.contains("show")) {
@@ -6135,6 +6174,7 @@ function closeStockTimelineSheet() {
 
   state.admin.ui.activeSheet = null;
   closeOverlay(adminStockSheet);
+  adminStockSheet.classList.remove("stock-menu-return-side");
 }
  
 function handleOpenDashboard() {
@@ -6197,6 +6237,7 @@ async function openStockTimeline(force = false, options = {}) {
 
   // 🔒 ใช้แล้วปิดทันที (กันเด้งซ้ำ)
   allowOpenStockTimeline = false;
+  adminStockSheet.classList.remove("stock-menu-return-side");
 
   const targetSheet = adminStockSheet;
   const returnToAdminMenu = options.returnToAdminMenu === true;
