@@ -719,6 +719,23 @@ button:disabled {
   overflow-wrap:anywhere;
 }
 
+.stock-menu-return .sheet-topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.stock-menu-return .sheet-topbar h3{
+  flex:1 1 auto;
+  text-align:left;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  overflow-wrap:normal;
+  word-break:normal;
+}
+
 .sheet-nav-btn{
   width:44px !important;
   min-width:44px;
@@ -5151,6 +5168,8 @@ function closeTopSheet(){
       // ✅ ใช้ Overlay Manager เท่านั้น
       if (sheet === adminOrderSheet) {
         closeAdminOrderSheet();
+      } else if (sheet === adminStockSheet) {
+        closeStockTimelineSheet();
       } else {
         closeOverlay(sheet);
       }
@@ -5990,6 +6009,133 @@ function backToAdminMainMenu() {
   closeOverlay(adminDashboardSheet);
   openMainMenu(document.querySelector(".menu-btn"));
 } 
+
+function ensureAdminUiContext() {
+  if (
+    !state.admin.loggedIn ||
+    !state.admin.token ||
+    isAdminSessionExpired()
+  ) {
+    exitAdmin();
+    return false;
+  }
+
+  state.mode = "admin";
+  state.search = "";
+  renderHeader();
+  renderProducts();
+  return true;
+}
+
+function closeStockTimelineToAdminMenu() {
+  renderAdminMenuInStockSheet();
+}
+
+function closeStockMenuSheetThen(action) {
+  state.admin.ui.activeSheet = null;
+  closeOverlay(adminStockSheet);
+
+  if (typeof action === "function") action();
+}
+
+function renderAdminMenuInStockSheet() {
+  if (!ensureAdminUiContext()) return;
+  state.admin.ui.activeSheet = "stockTimelineMenu";
+  const pendingCount = getPendingOrdersCount();
+  const hasLastOrder = !!(state.lastOrder && state.lastOrder.orderId);
+
+  adminStockSheet.innerHTML = `
+    <div class="stock-menu-return">
+    <div class="sheet-topbar">
+      <h3 id="adminStockSheetTitle">เมนูแอดมิน</h3>
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="closeStockMenuSheetThen()"
+        aria-label="ปิดเมนูแอดมิน">×</button>
+    </div>
+
+    <div class="menu-group">
+      <button class="btn btn-secondary"
+        onclick="closeStockMenuSheetThen(leaveAdminMode)">
+        👁 กลับสู่ Viewer
+      </button>
+
+      ${
+        hasLastOrder
+          ? `
+              <button class="btn btn-secondary"
+                onclick="closeStockMenuSheetThen(reopenLastOrderSheet)">
+                🧾 บิลล่าสุด
+              </button>
+            `
+          : ``
+      }
+
+      <button class="btn btn-primary"
+        onclick="closeStockMenuSheetThen(handleOpenDashboard)">
+        📊 Dashboard
+      </button>
+
+      <button class="btn btn-secondary"
+        onclick="closeStockMenuSheetThen(handleOpenPendingOrders)">
+        📦 Pending Orders ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
+      </button>
+
+      <button class="btn btn-secondary"
+        onclick="openStockTimelineInsideAdminMenu()">
+        📦 Stock Timeline
+      </button>
+
+      <button class="btn btn-secondary"
+        onclick="closeStockMenuSheetThen(openPendingDeliverySheet)">
+        📦 ค้างส่ง
+      </button>
+
+      <button class="btn btn-secondary"
+        onclick="closeStockMenuSheetThen(handleOpenAddProduct)">
+        ➕ เพิ่มสินค้าใหม่
+      </button>
+
+      <button class="btn btn-secondary"
+        onclick="closeStockMenuSheetThen(openBulkProductImportSheet)">
+        นำเข้าสินค้าหลายรายการ
+      </button>
+
+      <button class="btn btn-secondary"
+        onclick="closeStockMenuSheetThen(openBulkProductUpdateSheet)">
+        อัปเดตราคา/สถานะหลายรายการ
+      </button>
+
+      <button class="btn btn-secondary"
+        onclick="closeStockMenuSheetThen(openChangePasswordSheet)">
+        🔐 เปลี่ยนรหัสผ่าน
+      </button>
+    </div>
+
+    <hr>
+
+    <div class="menu-group danger">
+      <button class="btn btn-danger"
+        onclick="closeStockMenuSheetThen(handleAdminLogout)">
+        🚪 Logout
+      </button>
+    </div>
+    </div>
+  `;
+
+  if (!adminStockSheet.classList.contains("show")) {
+    openOverlay(adminStockSheet);
+  }
+}
+
+function closeStockTimelineSheet() {
+  if (state.admin.ui.activeSheet === "stockTimelineReturnToMenu") {
+    renderAdminMenuInStockSheet();
+    return;
+  }
+
+  state.admin.ui.activeSheet = null;
+  closeOverlay(adminStockSheet);
+}
  
 function handleOpenDashboard() {
   allowOpenOrders = true;
@@ -6012,12 +6158,27 @@ function handleOpenStockTimeline(){
   openStockTimeline();
 }
 
+function openStockTimelineInsideAdminMenu(){
+  allowOpenStockTimeline = true;
+  state.admin.ui.activeSheet = "stockTimelineReturnToMenu";
+
+  if (mainMenuSheet.classList.contains("show")) {
+    closeOverlay(mainMenuSheet);
+    document.querySelectorAll(".menu-btn[aria-expanded='true']")
+      .forEach(b => syncExpanded(b, false));
+  }
+
+  openStockTimeline(false, {
+    returnToAdminMenu: true
+  });
+}
+
 function handleOpenAddProduct(){
   allowOpenAddProduct = true;
   openAddProduct();
 }  
 
-async function openStockTimeline(force = false) {
+async function openStockTimeline(force = false, options = {}) {
   // ❌ ต้องมี intent จริง
   if (!force && !allowOpenStockTimeline) return;
 
@@ -6032,17 +6193,26 @@ async function openStockTimeline(force = false) {
     return;
   }
 
+  if (!ensureAdminUiContext()) return;
+
   // 🔒 ใช้แล้วปิดทันที (กันเด้งซ้ำ)
   allowOpenStockTimeline = false;
 
+  const targetSheet = adminStockSheet;
+  const returnToAdminMenu = options.returnToAdminMenu === true;
+  const backAction = returnToAdminMenu
+    ? "closeStockTimelineToAdminMenu()"
+    : "closeStockTimelineSheet()";
+  const stockTimelineTitleId = "adminStockSheetTitle";
+
   closeOverlay(adminDashboardSheet);
 
-  adminStockSheet.innerHTML = `
-    <h3 id="adminStockSheetTitle">📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
+  targetSheet.innerHTML = `
+    <h3 id="${stockTimelineTitleId}">📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
     <div class="loading">กำลังโหลด...</div>
   `;
 
-  openOverlay(adminStockSheet);
+  openOverlay(targetSheet);
 
   try {
     const logs = await fetchStockLogs();
@@ -6180,12 +6350,12 @@ async function openStockTimeline(force = false) {
     timeline.sort((a, b) => b.time.getTime() - a.time.getTime());
 
     /* ================= RENDER ================= */
-    adminStockSheet.innerHTML = `
-      <h3 id="adminStockSheetTitle">📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
+    targetSheet.innerHTML = `
+      <h3 id="${stockTimelineTitleId}">📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
 
       <button class="btn btn-outline"
         style="width:100%;margin-bottom:12px"
-        onclick="finishAdminAction({ refresh:false })">
+        onclick="${backAction}">
         ← กลับ
       </button>
 
@@ -6378,11 +6548,17 @@ async function openStockTimeline(force = false) {
   } catch (err) {
     console.error(err);
 
-    adminStockSheet.innerHTML = `
-      <h3 id="adminStockSheetTitle">📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
+    targetSheet.innerHTML = `
+      <h3 id="${stockTimelineTitleId}">📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
       <div style="text-align:center;color:#d93025;margin-top:32px">
         ไม่สามารถโหลดข้อมูลได้
       </div>
+
+      <button class="btn btn-outline"
+        style="width:100%;margin-top:16px"
+        onclick="${backAction}">
+        ← กลับ
+      </button>
     `;
   }
 }
@@ -8106,7 +8282,7 @@ function openMainMenu(triggerEl){
                 </button>
 
                 <button class="btn btn-secondary"
-                  onclick="closeMainMenu(); handleOpenStockTimeline();">
+                  onclick="openStockTimelineInsideAdminMenu();">
                   📦 Stock Timeline
                 </button>
 
@@ -8445,10 +8621,11 @@ function closeMainMenu(){
        return;
      }
 
-     if (activeOverlay && !state.ui.backdropLocked) {
-       if (activeOverlay === mainMenuSheet) return closeMainMenu();
-       return closeOverlay(activeOverlay);
-     }
+    if (activeOverlay && !state.ui.backdropLocked) {
+      if (activeOverlay === mainMenuSheet) return closeMainMenu();
+      if (activeOverlay === adminStockSheet) return closeStockTimelineSheet();
+      return closeOverlay(activeOverlay);
+    }
    }
 
    if (e.key === "Tab" && activeOverlay) {
