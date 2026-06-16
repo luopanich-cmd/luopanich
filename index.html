@@ -2815,6 +2815,37 @@ border: 1px solid var(--border-strong);
   max-width: 100%;
 }
 
+#floatingBar .cart-badge{
+  position:absolute;
+  top:-8px;
+  right:12px;
+  min-width:20px;
+  height:20px;
+  padding:0 6px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:#e53935;
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+  line-height:1;
+  box-shadow:0 8px 18px rgba(229,57,53,.32);
+  border:2px solid var(--surface);
+  pointer-events:none;
+}
+
+#floatingBar .cart-badge.cart-badge-pop{
+  animation:cart-badge-pop var(--motion-duration-normal) var(--motion-ease-emphasized);
+}
+
+@keyframes cart-badge-pop{
+  0%   { transform:scale(.72); }
+  55%  { transform:scale(1.22); }
+  100% { transform:scale(1); }
+}
+
 #floatingBar.bounce-in{
   animation: float-bounce .65s cubic-bezier(.34,1.56,.64,1);
 }
@@ -2904,6 +2935,10 @@ border: 1px solid var(--border-strong);
    }
 
    #floatingBar .total-animate{
+     animation: none !important;
+   }
+
+   #floatingBar .cart-badge.cart-badge-pop{
      animation: none !important;
    }
 
@@ -4476,6 +4511,30 @@ function handleKeyboardActivation(event, element) {
 
 
 // 🔴 CHANGED: ADD renderFloatingBar() (fix: cart added but bar never appears because function was missing)
+function getCartBadgeCount() {
+  return Array.isArray(state.cart) ? state.cart.length : 0;
+}
+
+function getCartBadgeLabel() {
+  const count = getCartBadgeCount();
+  if (count <= 0) return "";
+  return count > 9 ? "9+" : String(count);
+}
+
+function renderCartBadge() {
+  const label = getCartBadgeLabel();
+  return label
+    ? `<span id="cartBadge" class="cart-badge" aria-hidden="true">${esc(label)}</span>`
+    : "";
+}
+
+function triggerCartBadgePulse() {
+  if (isReducedMotion()) return;
+  const badge = document.getElementById("cartBadge");
+  if (!badge) return;
+  replayMotionClass(badge, "cart-badge-pop");
+}
+
 function renderFloatingBar(){
   const bar = document.getElementById("floatingBar");
   if (!bar) return;
@@ -4510,6 +4569,7 @@ function renderFloatingBar(){
     : "0 รายการ";
   
   bar.innerHTML = `
+    ${renderCartBadge()}
     <div class="bar-left" style="width:100%;">
       <div style="font-weight:700">ตะกร้า</div>
       <div class="bar-subtext">
@@ -4532,6 +4592,7 @@ function triggerCartAddedFeedback() {
   if (typeof renderFloatingBar === "function") renderFloatingBar();
   const bar = document.getElementById("floatingBar");
   replayMotionClass(bar, "cart-added-pulse");
+  triggerCartBadgePulse();
 }
   
 function openImageViewer(url){
@@ -5072,11 +5133,12 @@ function renderBadge(){
 
   // 🔴 CHANGED: allow floating bar to sync even if header cart button removed
   if (cartButton && cartBadge) {
-    const count = state.cart.length;
+    const count = getCartBadgeCount();
+    const label = getCartBadgeLabel();
 
     if (count > 0) {
       cartButton.style.display = "block";
-      cartBadge.textContent = count;
+      cartBadge.textContent = label;
     } else {
       cartButton.style.display = "none";
     }
