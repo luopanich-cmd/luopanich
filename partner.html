@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Luopanich Private Catalog</title>
+  <style>
+    :root{
+      --bg:#0f1115;
+      --surface:#191d24;
+      --surface-2:#222834;
+      --text:#f5f5f7;
+      --text-soft:#b8c0cc;
+      --muted:#8d96a6;
+      --border:rgba(255,255,255,.12);
+      --primary:#0a84ff;
+      --primary-strong:#0067d6;
+      --danger:#ff453a;
+      --success:#34c759;
+      --warning:#ffd60a;
+      --shadow:0 18px 50px rgba(0,0,0,.34);
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at 18% -10%, rgba(10,132,255,.20), transparent 34%),
+        linear-gradient(180deg, #151922 0%, var(--bg) 52%, #090b0f 100%);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+
+    button,input,textarea,select{font:inherit}
+
+    .page{
+      width:min(1120px,100%);
+      margin:0 auto;
+      padding:18px 14px 120px;
+    }
+
+    .hero{
+      position:sticky;
+      top:0;
+      z-index:5;
+      margin:-18px -14px 16px;
+      padding:18px 14px 14px;
+      background:rgba(15,17,21,.86);
+      border-bottom:1px solid var(--border);
+      backdrop-filter:blur(22px);
+    }
+
+    .hero-card{
+      width:min(1120px,100%);
+      margin:0 auto;
+      display:grid;
+      gap:10px;
+    }
+
+    .eyebrow{
+      color:var(--primary);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    h1{
+      margin:0;
+      font-size:24px;
+      line-height:1.15;
+    }
+
+    .partner-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      color:var(--text-soft);
+      font-size:13px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:6px 10px;
+      background:rgba(255,255,255,.06);
+    }
+
+    .toolbar{
+      display:grid;
+      gap:10px;
+      grid-template-columns:1fr;
+      margin:16px 0;
+    }
+
+    input,textarea,select{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px 13px;
+      background:rgba(255,255,255,.08);
+      color:var(--text);
+      outline:none;
+    }
+
+    textarea{min-height:96px;resize:vertical}
+
+    input:focus,textarea:focus,select:focus{
+      border-color:rgba(10,132,255,.7);
+      box-shadow:0 0 0 3px rgba(10,132,255,.22);
+    }
+
+    .grid{
+      display:grid;
+      gap:12px;
+    }
+
+    .product-card,.panel,.state-card{
+      border:1px solid var(--border);
+      border-radius:22px;
+      background:rgba(25,29,36,.86);
+      box-shadow:var(--shadow);
+    }
+
+    .product-card{
+      display:grid;
+      grid-template-columns:82px 1fr;
+      gap:12px;
+      padding:12px;
+    }
+
+    .thumb{
+      width:82px;
+      height:82px;
+      border-radius:18px;
+      background:var(--surface-2);
+      object-fit:contain;
+      border:1px solid var(--border);
+    }
+
+    .thumb-placeholder{
+      width:82px;
+      height:82px;
+      display:grid;
+      place-items:center;
+      color:var(--muted);
+      border-radius:18px;
+      background:var(--surface-2);
+      border:1px dashed var(--border);
+      font-size:13px;
+    }
+
+    .product-main{min-width:0}
+
+    .name{
+      margin:0 0 4px;
+      font-size:16px;
+      font-weight:800;
+      line-height:1.3;
+    }
+
+    .meta{
+      color:var(--text-soft);
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .price{
+      margin-top:8px;
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .details{
+      margin-top:8px;
+      color:var(--text-soft);
+      font-size:13px;
+      line-height:1.5;
+      white-space:pre-wrap;
+    }
+
+    .compare-images{
+      display:flex;
+      gap:8px;
+      margin-top:10px;
+      overflow-x:auto;
+    }
+
+    .compare-images img{
+      width:64px;
+      height:64px;
+      flex:0 0 auto;
+      object-fit:contain;
+      border-radius:14px;
+      background:var(--surface-2);
+      border:1px solid var(--border);
+    }
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      margin-top:8px;
+      padding:5px 9px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      color:var(--text-soft);
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .status.ready,.status.ready_plus{color:#7ee787;background:rgba(52,199,89,.14)}
+    .status.shipping{color:#64b5ff;background:rgba(10,132,255,.14)}
+    .status.warehouse{color:#a9c3ff;background:rgba(90,140,255,.16)}
+    .status.out{color:#ff8a82;background:rgba(255,69,58,.14)}
+
+    .actions{
+      margin-top:12px;
+      display:flex;
+      gap:8px;
+    }
+
+    .btn{
+      border:0;
+      border-radius:14px;
+      padding:12px 14px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .btn-primary{
+      background:linear-gradient(180deg,var(--primary),var(--primary-strong));
+      color:#fff;
+    }
+
+    .btn-secondary{
+      color:var(--text);
+      background:rgba(255,255,255,.10);
+      border:1px solid var(--border);
+    }
+
+    .btn-danger{
+      color:#fff;
+      background:var(--danger);
+    }
+
+    .btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .layout{
+      display:grid;
+      gap:14px;
+    }
+
+    .panel{
+      padding:14px;
+    }
+
+    .panel h2{
+      margin:0 0 12px;
+      font-size:18px;
+    }
+
+    .interest-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .interest-item{
+      display:grid;
+      gap:8px;
+      padding:10px;
+      border-radius:16px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--border);
+    }
+
+    .interest-head{
+      display:flex;
+      gap:8px;
+      justify-content:space-between;
+      align-items:flex-start;
+    }
+
+    .interest-controls{
+      display:grid;
+      grid-template-columns:92px 1fr;
+      gap:8px;
+    }
+
+    .summary-bar{
+      position:fixed;
+      left:12px;
+      right:12px;
+      bottom:12px;
+      z-index:10;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:20px;
+      background:rgba(25,29,36,.94);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(18px);
+    }
+
+    .state-card{
+      margin:36px auto;
+      max-width:520px;
+      padding:22px;
+      text-align:center;
+    }
+
+    .state-card h2{margin:0 0 8px}
+    .helper{color:var(--text-soft);line-height:1.55}
+    .hidden{display:none!important}
+
+    @media (min-width:760px){
+      .page{padding:24px 18px 48px}
+      .hero{margin:-24px -18px 22px;padding:24px 18px 18px}
+      h1{font-size:30px}
+      .toolbar{grid-template-columns:1fr 220px}
+      .layout{grid-template-columns:minmax(0,1fr) 360px;align-items:start}
+      .product-card{grid-template-columns:112px 1fr}
+      .thumb,.thumb-placeholder{width:112px;height:112px}
+      .panel{position:sticky;top:116px}
+      .summary-bar{display:none}
+    }
+  </style>
+</head>
+<body>
+  <main id="app" class="page">
+    <section class="state-card">
+      <h2>กำลังโหลดแคตตาล็อก</h2>
+      <div class="helper">กรุณารอสักครู่</div>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzx9WlWXUqZ9OM_R0tO9wJvw79RPWIn40iakCPNuPDLBmvcuHXkqp9EMPoRiuMRnaM2Wg/exec";
+
+    const state = {
+      partnerToken: new URLSearchParams(location.search).get("token") || "",
+      partner: null,
+      link: null,
+      products: [],
+      selectedItems: [],
+      search: "",
+      status: "all",
+      loading: true,
+      error: "",
+      success: null,
+      submitError: "",
+      submitting: false
+    };
+
+    const app = document.getElementById("app");
+
+    function esc(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function escAttr(value) {
+      return esc(value).replace(/`/g, "&#96;");
+    }
+
+    function jsString(value) {
+      return JSON.stringify(String(value ?? ""));
+    }
+
+    function money(value) {
+      return (Number(value) || 0).toLocaleString("th-TH");
+    }
+
+    function formatDate(value) {
+      if (!value) return "-";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "-";
+      return date.toLocaleString("th-TH", {
+        dateStyle: "medium",
+        timeStyle: "short"
+      });
+    }
+
+    async function fetchWithTimeout(url, options = {}, ms = 30000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), ms);
+      try {
+        const res = await fetch(url, { ...options, signal: controller.signal });
+        const text = await res.text();
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (err) {
+          throw new Error("Invalid server response");
+        }
+        if (!res.ok) {
+          throw new Error(json.error || `HTTP ${res.status}`);
+        }
+        return json;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    async function postAction(params) {
+      const body = new URLSearchParams(params);
+      const json = await fetchWithTimeout(API_URL, {
+        method: "POST",
+        body
+      });
+      if (!json || json.success !== true) {
+        throw new Error(json?.error || json?.message || "เกิดข้อผิดพลาด");
+      }
+      return json.data;
+    }
+
+    async function loadCatalog() {
+      if (!state.partnerToken) {
+        state.loading = false;
+        state.error = "ลิงก์นี้ไม่มี token สำหรับเปิดแคตตาล็อก";
+        render();
+        return;
+      }
+
+      try {
+        const data = await postAction({
+          action: "getPartnerCatalog",
+          partnerToken: state.partnerToken
+        });
+        state.partner = data.partner || {};
+        state.link = data.link || {};
+        state.products = Array.isArray(data.products) ? data.products : [];
+      } catch (err) {
+        state.error = err.message || "ไม่สามารถโหลดแคตตาล็อกได้";
+      } finally {
+        state.loading = false;
+        render();
+      }
+    }
+
+    function getStatusLabel(status) {
+      return {
+        ready: "พร้อมส่ง",
+        ready_plus: "พร้อมส่ง + เพิ่มได้",
+        shipping: "ระหว่างจัดส่ง",
+        warehouse: "โกดังไทย",
+        out: "หมด"
+      }[String(status || "").trim()] || "พร้อมส่ง";
+    }
+
+    function getFilteredProducts() {
+      const search = state.search.trim().toLowerCase();
+      return state.products.filter(product => {
+        const text = `${product.productId || ""} ${product.name || ""}`.toLowerCase();
+        const matchesSearch = !search || text.includes(search);
+        const matchesStatus = state.status === "all" || String(product.status || "") === state.status;
+        return matchesSearch && matchesStatus;
+      });
+    }
+
+    function addInterest(productId) {
+      const product = state.products.find(item => item.productId === productId);
+      if (!product) return;
+      const existing = state.selectedItems.find(item => item.productId === productId);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        state.selectedItems.push({
+          productId,
+          name: product.name,
+          price: Number(product.price) || 0,
+          qty: 1,
+          partnerNote: ""
+        });
+      }
+      render();
+    }
+
+    function removeInterest(productId) {
+      state.selectedItems = state.selectedItems.filter(item => item.productId !== productId);
+      render();
+    }
+
+    function updateInterest(productId, field, value) {
+      const item = state.selectedItems.find(entry => entry.productId === productId);
+      if (!item) return;
+      if (field === "qty") {
+        const qty = Number(value);
+        item.qty = Number.isInteger(qty) && qty > 0 ? qty : 1;
+      } else if (field === "partnerNote") {
+        item.partnerNote = String(value || "");
+      }
+      renderSummaryOnly();
+    }
+
+    function getEstimatedTotal() {
+      return state.selectedItems.reduce(
+        (sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 0),
+        0
+      );
+    }
+
+    function renderProduct(product) {
+      const compareImages = String(product.compareImages || "")
+        .split(",")
+        .map(value => value.trim())
+        .filter(Boolean)
+        .slice(0, 4);
+
+      return `
+        <article class="product-card">
+          ${
+            product.image
+              ? `<img class="thumb" src="${escAttr(product.image)}" alt="${escAttr(product.name)}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'thumb-placeholder',textContent:'รูป'}))">`
+              : `<div class="thumb-placeholder" aria-hidden="true">รูป</div>`
+          }
+          <div class="product-main">
+            <h2 class="name">${esc(product.name || "-")}</h2>
+            <div class="meta">SKU: ${esc(product.productId || "-")}</div>
+            <div class="price">฿${money(product.price)}</div>
+            <span class="status ${escAttr(product.status || "")}">${esc(getStatusLabel(product.status))}</span>
+            ${product.detailsText ? `<div class="details">${esc(product.detailsText)}</div>` : ""}
+            ${
+              compareImages.length
+                ? `<div class="compare-images">${compareImages.map(url => `<img src="${escAttr(url)}" alt="compare" onerror="this.remove()">`).join("")}</div>`
+                : ""
+            }
+            <div class="actions">
+              <button class="btn btn-primary" type="button" onclick="addInterest(${escAttr(jsString(product.productId))})">
+                เพิ่มในรายการสนใจ
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderInterestList() {
+      if (!state.selectedItems.length) {
+        return `<div class="helper">ยังไม่มีสินค้าในรายการสนใจ</div>`;
+      }
+
+      return `
+        <div class="interest-list">
+          ${state.selectedItems.map(item => `
+            <div class="interest-item">
+              <div class="interest-head">
+                <div>
+                  <strong>${esc(item.name || item.productId)}</strong>
+                  <div class="meta">SKU: ${esc(item.productId)} · ฿${money(item.price)}</div>
+                </div>
+                <button class="btn btn-danger" type="button" onclick="removeInterest(${escAttr(jsString(item.productId))})">ลบ</button>
+              </div>
+              <div class="interest-controls">
+                <input type="number" min="1" step="1" value="${Number(item.qty) || 1}" aria-label="จำนวน"
+                  onchange="updateInterest(${escAttr(jsString(item.productId))},'qty',this.value)">
+                <input value="${escAttr(item.partnerNote || "")}" placeholder="หมายเหตุสำหรับสินค้านี้"
+                  oninput="updateInterest(${escAttr(jsString(item.productId))},'partnerNote',this.value)">
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderSummaryOnly() {
+      const total = document.querySelectorAll("[data-estimated-total]");
+      total.forEach(el => {
+        el.textContent = `฿${money(getEstimatedTotal())}`;
+      });
+    }
+
+    async function submitRequest(event) {
+      event.preventDefault();
+      if (state.submitting || !state.selectedItems.length) return;
+      state.submitError = "";
+
+      const form = event.currentTarget;
+      const items = state.selectedItems.map(item => ({
+        productId: item.productId,
+        qty: Number(item.qty) || 1,
+        partnerNote: item.partnerNote || ""
+      }));
+
+      state.submitting = true;
+      render();
+
+      try {
+        const data = await postAction({
+          action: "submitPartnerRequest",
+          partnerToken: state.partnerToken,
+          items: JSON.stringify(items),
+          contactName: form.contactName.value.trim(),
+          contactPhone: form.contactPhone.value.trim(),
+          contactEmail: form.contactEmail.value.trim(),
+          message: form.message.value.trim()
+        });
+        state.success = data;
+        state.selectedItems = [];
+      } catch (err) {
+        state.submitError = err.message || "ส่งรายการไม่สำเร็จ";
+      } finally {
+        state.submitting = false;
+        render();
+      }
+    }
+
+    function renderStateCard(title, detail) {
+      app.innerHTML = `
+        <section class="state-card">
+          <h2>${esc(title)}</h2>
+          <div class="helper">${esc(detail || "")}</div>
+        </section>
+      `;
+    }
+
+    function render() {
+      if (state.loading) {
+        renderStateCard("กำลังโหลดแคตตาล็อก", "กรุณารอสักครู่");
+        return;
+      }
+
+      if (state.success) {
+        renderStateCard(
+          "ส่งรายการให้ร้านแล้ว",
+          `เลขที่คำขอ ${state.success.requestId || "-"} · ${state.success.itemCount || 0} รายการ`
+        );
+        return;
+      }
+
+      if (state.error) {
+        renderStateCard("ไม่สามารถเปิดแคตตาล็อกได้", state.error);
+        return;
+      }
+
+      const products = getFilteredProducts();
+      app.innerHTML = `
+        <header class="hero">
+          <div class="hero-card">
+            <div class="eyebrow">Private Catalog</div>
+            <h1>ร้านค้า Luopanich</h1>
+            <div class="partner-meta">
+              <span class="pill">พาร์ทเนอร์: ${esc(state.partner?.partnerName || "-")}</span>
+              <span class="pill">ใช้ได้ถึง: ${esc(formatDate(state.link?.expiresAt))}</span>
+            </div>
+          </div>
+        </header>
+
+        <section class="toolbar" aria-label="ค้นหาและกรองสินค้า">
+          <input value="${escAttr(state.search)}" placeholder="ค้นหาด้วย SKU หรือชื่อสินค้า"
+            oninput="state.search=this.value; render()">
+          <select onchange="state.status=this.value; render()">
+            <option value="all" ${state.status === "all" ? "selected" : ""}>ทุกสถานะ</option>
+            <option value="ready" ${state.status === "ready" ? "selected" : ""}>พร้อมส่ง</option>
+            <option value="ready_plus" ${state.status === "ready_plus" ? "selected" : ""}>พร้อมส่ง + เพิ่มได้</option>
+            <option value="shipping" ${state.status === "shipping" ? "selected" : ""}>ระหว่างจัดส่ง</option>
+            <option value="warehouse" ${state.status === "warehouse" ? "selected" : ""}>โกดังไทย</option>
+            <option value="out" ${state.status === "out" ? "selected" : ""}>หมด</option>
+          </select>
+        </section>
+
+        <div class="layout">
+          <section class="grid">
+            ${
+              products.length
+                ? products.map(renderProduct).join("")
+                : `<section class="state-card"><h2>ไม่มีสินค้าให้แสดง</h2><div class="helper">ลองเปลี่ยนคำค้นหาหรือตัวกรอง</div></section>`
+            }
+          </section>
+
+          <aside class="panel" id="interestPanel">
+            <h2>รายการสนใจ</h2>
+            ${renderInterestList()}
+            <div class="price" style="margin:14px 0">รวมโดยประมาณ: <span data-estimated-total>฿${money(getEstimatedTotal())}</span></div>
+            <form onsubmit="submitRequest(event)">
+              ${state.submitError ? `<div class="helper" style="color:var(--danger);margin-bottom:10px">${esc(state.submitError)}</div>` : ""}
+              <input name="contactName" placeholder="ชื่อผู้ติดต่อ" autocomplete="name">
+              <input name="contactPhone" placeholder="เบอร์โทร" autocomplete="tel">
+              <input name="contactEmail" placeholder="อีเมล" autocomplete="email">
+              <textarea name="message" placeholder="ข้อความเพิ่มเติม"></textarea>
+              <button class="btn btn-primary" style="width:100%;margin-top:10px" type="submit"
+                ${state.submitting || !state.selectedItems.length ? "disabled" : ""}>
+                ${state.submitting ? "กำลังส่ง..." : "ส่งรายการให้ร้าน"}
+              </button>
+            </form>
+          </aside>
+        </div>
+
+        <div class="summary-bar ${state.selectedItems.length ? "" : "hidden"}">
+          <div>
+            <strong>${state.selectedItems.length} รายการ</strong>
+            <div class="meta">รวม <span data-estimated-total>฿${money(getEstimatedTotal())}</span></div>
+          </div>
+          <a class="btn btn-primary" href="#interestPanel" style="text-decoration:none">ดูรายการ</a>
+        </div>
+      `;
+    }
+
+    loadCatalog();
+  </script>
+</body>
+</html>
