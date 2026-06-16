@@ -3513,7 +3513,9 @@ const state = {
       errors: [],
       backendErrors: [],
       summary: "",
-      importedCount: 0
+      importedCount: 0,
+      hasPreview: false,
+      previewValid: false
     },
     bulkProductUpdate: {
       skuText: "",
@@ -10181,12 +10183,7 @@ function ensureAdminSessionForBulkImport() {
 function openBulkProductImportSheet() {
   if (!ensureAdminSessionForBulkImport()) return;
 
-  const bulkState = state.admin.bulkProductImport;
-  bulkState.rawText = bulkState.rawText || "";
-  bulkState.backendErrors = [];
-  bulkState.summary = "";
-  bulkState.importedCount = 0;
-
+  clearBulkProductImportWorkingState();
   renderBulkProductImportSheet();
   openOverlay(adminBulkProductImportSheet);
 }
@@ -10237,9 +10234,7 @@ async function pasteBulkProductImportFromClipboard() {
     }
     const text = await navigator.clipboard.readText();
     state.admin.bulkProductImport.rawText = String(text || "");
-    state.admin.bulkProductImport.backendErrors = [];
-    state.admin.bulkProductImport.summary = "";
-    state.admin.bulkProductImport.importedCount = 0;
+    invalidateBulkProductImportPreview();
     renderBulkProductImportSheet();
     showToast("วางข้อมูลแล้ว", "success");
   } catch (err) {
@@ -10278,9 +10273,7 @@ function handleBulkProductFileUpload(event) {
   const reader = new FileReader();
   reader.onload = () => {
     state.admin.bulkProductImport.rawText = String(reader.result || "");
-    state.admin.bulkProductImport.backendErrors = [];
-    state.admin.bulkProductImport.summary = "";
-    state.admin.bulkProductImport.importedCount = 0;
+    invalidateBulkProductImportPreview();
     renderBulkProductImportSheet();
     showToast("อ่านไฟล์แล้ว กรุณาตรวจสอบข้อมูลก่อนนำเข้า", "success");
   };
@@ -10291,14 +10284,35 @@ function handleBulkProductFileUpload(event) {
 }
 
 function resetBulkProductImport() {
+  clearBulkProductImportWorkingState();
+  renderBulkProductImportSheet();
+}
+
+function invalidateBulkProductImportPreview() {
   const bulkState = state.admin.bulkProductImport;
-  bulkState.rawText = "";
   bulkState.items = [];
   bulkState.errors = [];
   bulkState.backendErrors = [];
   bulkState.summary = "";
   bulkState.importedCount = 0;
-  renderBulkProductImportSheet();
+  bulkState.hasPreview = false;
+  bulkState.previewValid = false;
+}
+
+function clearBulkProductImportWorkingState(options = {}) {
+  const bulkState = state.admin.bulkProductImport;
+  const keepSuccess = options.keepSuccess === true;
+  const preservedSummary = keepSuccess ? bulkState.summary : "";
+  const preservedImportedCount = keepSuccess ? bulkState.importedCount : 0;
+
+  bulkState.rawText = "";
+  bulkState.items = [];
+  bulkState.errors = [];
+  bulkState.backendErrors = [];
+  bulkState.summary = preservedSummary;
+  bulkState.importedCount = preservedImportedCount;
+  bulkState.hasPreview = false;
+  bulkState.previewValid = false;
 }
 
 async function viewBulkProductImportProducts() {
@@ -10308,8 +10322,13 @@ async function viewBulkProductImportProducts() {
 }
 
 function backToAdminMenuFromBulkImport() {
+  clearBulkProductImportWorkingState();
   closeBulkProductImportSheet();
-  openMainMenu();
+  syncOverlayBackdropState();
+  requestAnimationFrame(() => {
+    openMainMenu();
+    syncOverlayBackdropState();
+  });
 }
 
 function renderBulkProductTemplateTable() {
@@ -10403,7 +10422,10 @@ function renderBulkProductImportSuccessCard() {
 
 function renderBulkProductImportSheet() {
   const bulkState = state.admin.bulkProductImport;
-  const parsed = parseBulkProductImportText(bulkState.rawText || "");
+  const shouldParsePreview = bulkState.hasPreview || state.admin.isSubmitting;
+  const parsed = shouldParsePreview
+    ? parseBulkProductImportText(bulkState.rawText || "")
+    : { items: [], errors: [] };
   bulkState.items = parsed.items;
   bulkState.errors = parsed.errors;
 
@@ -10411,7 +10433,15 @@ function renderBulkProductImportSheet() {
     ? bulkState.backendErrors
     : [];
   const allErrors = parsed.errors.concat(backendErrors);
-  const canSubmit = parsed.items.length > 0 && allErrors.length === 0;
+  bulkState.previewValid = Boolean(
+    bulkState.hasPreview &&
+    parsed.items.length > 0 &&
+    allErrors.length === 0
+  );
+  const canSubmit = bulkState.hasPreview &&
+    bulkState.previewValid &&
+    parsed.items.length > 0 &&
+    allErrors.length === 0;
   const hasImportSuccess = Boolean(bulkState.summary);
 
   adminBulkProductImportSheet.innerHTML = `
@@ -10476,7 +10506,7 @@ function renderBulkProductImportSheet() {
           id="bulkProductImportText"
           class="input bulk-import-textarea"
           placeholder="${escAttr(BULK_PRODUCT_SAMPLE)}"
-          oninput="state.admin.bulkProductImport.rawText = this.value; state.admin.bulkProductImport.backendErrors = []; state.admin.bulkProductImport.summary = ''; state.admin.bulkProductImport.importedCount = 0;">${esc(bulkState.rawText || "")}</textarea>
+          oninput="state.admin.bulkProductImport.rawText = this.value; invalidateBulkProductImportPreview(); renderBulkProductImportSheet();">${esc(bulkState.rawText || "")}</textarea>
       </div>
     </details>
 
@@ -10505,6 +10535,8 @@ function previewBulkProductImport() {
   state.admin.bulkProductImport.backendErrors = [];
   state.admin.bulkProductImport.summary = "";
   state.admin.bulkProductImport.importedCount = 0;
+  state.admin.bulkProductImport.hasPreview = true;
+  state.admin.bulkProductImport.previewValid = false;
   renderBulkProductImportSheet();
 }
 
@@ -10787,10 +10819,14 @@ async function submitBulkProductImport(btn) {
   if (!ensureAdminSessionForBulkImport()) return;
   if (state.admin.isSubmitting) return;
 
-  previewBulkProductImport();
-
   const bulkState = state.admin.bulkProductImport;
-  if (!bulkState.items.length || bulkState.errors.length) {
+  if (
+    !bulkState.hasPreview ||
+    !bulkState.previewValid ||
+    !bulkState.items.length ||
+    bulkState.errors.length ||
+    bulkState.backendErrors.length
+  ) {
     showToast("กรุณาแก้ไขข้อผิดพลาดก่อนนำเข้าสินค้า", "warning");
     return;
   }
@@ -10817,6 +10853,7 @@ async function submitBulkProductImport(btn) {
       bulkState.importedCount = imported;
       bulkState.summary = `นำเข้าสินค้าสำเร็จ ${imported} รายการ`;
       showToast(bulkState.summary, "success");
+      clearBulkProductImportWorkingState({ keepSuccess: true });
       await refreshProducts();
       renderBulkProductImportSheet();
       return;
@@ -10839,8 +10876,10 @@ async function submitBulkProductImport(btn) {
     showToast("นำเข้าสินค้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง", "error");
   } finally {
     safeHideLoading();
+    state.ui.backdropLocked = false;
     state.admin.isSubmitting = false;
     renderBulkProductImportSheet();
+    requestAnimationFrame(syncOverlayBackdropState);
   }
 }
 
