@@ -3268,6 +3268,72 @@ textarea.input{
   font-size:14px;
 }
 
+.landed-cost-apply-list{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+.landed-cost-apply-card{
+  display:block;
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+  overflow:hidden;
+}
+
+.landed-cost-apply-head{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:10px;
+  align-items:start;
+}
+
+.landed-cost-apply-head input{
+  margin-top:3px;
+}
+
+.landed-cost-apply-body{
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+
+.landed-cost-apply-values{
+  display:grid;
+  gap:8px;
+  margin-top:10px;
+}
+
+.landed-cost-apply-value{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:4px;
+  padding:9px 10px;
+  border-radius:12px;
+  background:var(--bg-soft);
+  border:1px solid var(--border);
+  color:var(--text-soft);
+  font-size:12px;
+  line-height:1.35;
+  box-sizing:border-box;
+  min-width:0;
+}
+
+.landed-cost-apply-value strong{
+  color:var(--text);
+  font-size:14px;
+  overflow-wrap:anywhere;
+}
+
+.landed-cost-apply-diff{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.landed-cost-apply-legacy{
+  display:none;
+}
+
 .bulk-product-picker{
   margin:12px 0 14px;
   padding:12px;
@@ -3416,6 +3482,7 @@ textarea.input{
  <div id="adminAddProductSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminAddProductSheetTitle" tabindex="-1"></div>
  <div id="adminBulkProductImportSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBulkProductImportSheetTitle" tabindex="-1"></div>
  <div id="adminBulkProductUpdateSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBulkProductUpdateSheetTitle" tabindex="-1"></div>
+ <div id="adminLandedCostSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminLandedCostSheetTitle" tabindex="-1"></div>
  <div id="adminPartnerCatalogSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminPartnerCatalogSheetTitle" tabindex="-1"></div>
  <div id="adminPartnerRequestsSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminPartnerRequestsSheetTitle" tabindex="-1"></div>
 
@@ -3454,6 +3521,8 @@ const adminBulkProductImportSheet =
   document.getElementById("adminBulkProductImportSheet");
 const adminBulkProductUpdateSheet =
   document.getElementById("adminBulkProductUpdateSheet");
+const adminLandedCostSheet =
+  document.getElementById("adminLandedCostSheet");
 const adminPartnerCatalogSheet =
   document.getElementById("adminPartnerCatalogSheet");
 const adminPartnerRequestsSheet =
@@ -3474,6 +3543,7 @@ const ADMIN_SHEETS = Object.freeze({
   addProduct: adminAddProductSheet,
   bulkProductImport: adminBulkProductImportSheet,
   bulkProductUpdate: adminBulkProductUpdateSheet,
+  landedCost: adminLandedCostSheet,
   partnerCatalog: adminPartnerCatalogSheet,
   partnerRequests: adminPartnerRequestsSheet,
   bulkPending: bulkPendingDeliverySheet
@@ -3502,6 +3572,25 @@ Object.assign(window, {
   toggleBulkProductUpdateProduct,
   selectVisibleBulkProductUpdateProducts,
   clearBulkProductUpdateSelection,
+  openLandedCostSheet,
+  closeLandedCostSheet,
+  backToAdminMenuFromLandedCost,
+  addLandedCostRow,
+  removeLandedCostRow,
+  updateLandedCostField,
+  updateLandedCostRow,
+  toggleLandedCostPicker,
+  setLandedCostPickerSearch,
+  setLandedCostPickerStatus,
+  toggleLandedCostProduct,
+  selectVisibleLandedCostProducts,
+  clearLandedCostSelection,
+  addSelectedLandedCostProducts,
+  prepareLandedCostApplyPreview,
+  toggleLandedCostApplyRow,
+  applyLandedCostPreview,
+  calculateLandedCost,
+  resetLandedCostCalculator,
   openPartnerCatalogSheet,
   closePartnerCatalogSheet,
   setPartnerCatalogPickerSearch,
@@ -3627,6 +3716,35 @@ const state = {
       updatedCount: 0,
       hasPreview: false,
       previewValid: false
+    },
+    landedCost: {
+      batchName: "",
+      chinaDomesticShipping: "",
+      chinaToThailandShipping: "",
+      thailandShipping: "",
+      otherFees: "",
+      profitPercent: "",
+      roundingMode: "ceil",
+      rows: [
+        {
+          productId: "",
+          qty: "",
+          chinaUnitCost: ""
+        }
+      ],
+      pickerOpen: false,
+      pickerSearch: "",
+      pickerStatus: "all",
+      selectedSkus: [],
+      pickerMessage: "",
+      applyPreviewRows: [],
+      applySelectedIds: [],
+      applyMessage: "",
+      applyStatus: "",
+      applyError: "",
+      appliedCount: 0,
+      result: null,
+      errors: []
     },
     partnerCatalog: {
       view: "create",
@@ -5741,6 +5859,7 @@ function closeTopSheet(){
     document.getElementById("adminAddProductSheet"),
     document.getElementById("adminBulkProductImportSheet"),
     document.getElementById("adminBulkProductUpdateSheet"),
+    document.getElementById("adminLandedCostSheet"),
     document.getElementById("adminPartnerCatalogSheet"),
     document.getElementById("adminPartnerRequestsSheet"),
     document.getElementById("adminProductActionSheet"),
@@ -8940,6 +9059,11 @@ function openMainMenu(triggerEl){
                 </button>
 
                 <button class="btn btn-secondary"
+                  onclick="closeMainMenu(); openLandedCostSheet();">
+                  คำนวณต้นทุนนำเข้า
+                </button>
+
+                <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openPartnerCatalogSheet();">
                   ลิงก์คู่ค้า
                 </button>
@@ -11964,6 +12088,1091 @@ async function submitBulkProductUpdate(btn) {
     renderBulkProductUpdateSheet();
     requestAnimationFrame(syncOverlayBackdropState);
   }
+}
+
+function ensureAdminSessionForLandedCost() {
+  if (
+    state.mode !== "admin" ||
+    !state.admin.loggedIn ||
+    !state.admin.token ||
+    isAdminSessionExpired()
+  ) {
+    showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
+    exitAdmin();
+    return false;
+  }
+  return true;
+}
+
+function createEmptyLandedCostRow() {
+  return {
+    productId: "",
+    name: "",
+    currentPrice: null,
+    currentCostPrice: null,
+    image: "",
+    stock: null,
+    status: "",
+    active: true,
+    qty: "",
+    chinaUnitCost: ""
+  };
+}
+
+function getLandedCostProductName(productId) {
+  const cleanId = normalizeProductId(productId);
+  if (!cleanId) return "";
+  const products = Array.isArray(state.products) ? state.products : [];
+  const product = products.find(item => normalizeProductId(item.productId) === cleanId);
+  return product ? String(product.name || "").trim() : "";
+}
+
+function getLandedCostProductSnapshot(productId) {
+  const cleanId = normalizeProductId(productId);
+  if (!cleanId) return null;
+  const products = Array.isArray(state.products) ? state.products : [];
+  return products.find(item => normalizeProductId(item.productId) === cleanId) || null;
+}
+
+function getLandedCostRowProductName(row) {
+  const rowName = String(row?.name || "").trim();
+  if (rowName) return rowName;
+  return getLandedCostProductName(row?.productId);
+}
+
+function isEmptyLandedCostRow(row) {
+  return (
+    !normalizeProductId(row?.productId) &&
+    String(row?.qty ?? "").trim() === "" &&
+    String(row?.chinaUnitCost ?? "").trim() === ""
+  );
+}
+
+function createLandedCostRowFromProduct(product) {
+  const productId = normalizeProductId(product?.productId);
+  const costPrice =
+    product?.costPrice !== null &&
+    product?.costPrice !== undefined &&
+    product?.costPrice !== ""
+      ? Number(product.costPrice) || 0
+      : 0;
+
+  return {
+    productId,
+    name: String(product?.name || "").trim(),
+    currentPrice: Number(product?.price || 0),
+    currentCostPrice: costPrice,
+    image: product?.image || "",
+    stock: product?.stock !== null && product?.stock !== undefined ? Number(product.stock || 0) : null,
+    status: product?.status || "",
+    active: product?.active !== false,
+    qty: "1",
+    chinaUnitCost: String(costPrice)
+  };
+}
+
+function clearLandedCostApplyStatus(calcState = state.admin.landedCost) {
+  calcState.applyStatus = "";
+  calcState.applyError = "";
+  calcState.appliedCount = 0;
+}
+
+function parseNonNegativeNumber(value) {
+  const text = String(value ?? "").trim();
+  if (text === "") return { valid: true, value: 0 };
+  const number = Number(text);
+  return { valid: Number.isFinite(number) && number >= 0, value: number };
+}
+
+function roundLandedCostValue(value, mode) {
+  const safeValue = Number.isFinite(value) ? value : 0;
+  if (mode === "floor") return Math.floor(safeValue);
+  if (mode === "round") return Math.round(safeValue);
+  return Math.ceil(safeValue);
+}
+
+function updateLandedCostField(field, value) {
+  const calcState = state.admin.landedCost;
+  if (!Object.prototype.hasOwnProperty.call(calcState, field)) return;
+  calcState[field] = value;
+  calcState.result = null;
+  calcState.errors = [];
+  calcState.applyPreviewRows = [];
+  calcState.applySelectedIds = [];
+  calcState.applyMessage = "";
+  clearLandedCostApplyStatus(calcState);
+}
+
+function updateLandedCostRow(index, field, value) {
+  const rowIndex = Number(index);
+  const row = state.admin.landedCost.rows[rowIndex];
+  if (!row || !["productId", "qty", "chinaUnitCost"].includes(field)) return;
+  if (field === "productId") {
+    const productId = normalizeProductId(value);
+    const product = getLandedCostProductSnapshot(productId);
+    row.productId = productId;
+    row.name = product ? String(product.name || "").trim() : "";
+    row.currentPrice = product ? Number(product.price || 0) : null;
+    row.currentCostPrice = product ? Number(product.costPrice || 0) : null;
+    row.image = product?.image || "";
+    row.stock = product ? Number(product.stock || 0) : null;
+    row.status = product?.status || "";
+    row.active = product ? product.active !== false : true;
+  } else {
+    row[field] = value;
+  }
+  state.admin.landedCost.result = null;
+  state.admin.landedCost.errors = [];
+  state.admin.landedCost.applyPreviewRows = [];
+  state.admin.landedCost.applySelectedIds = [];
+  state.admin.landedCost.applyMessage = "";
+  clearLandedCostApplyStatus();
+}
+
+function addLandedCostRow() {
+  state.admin.landedCost.rows.push(createEmptyLandedCostRow());
+  state.admin.landedCost.result = null;
+  state.admin.landedCost.errors = [];
+  state.admin.landedCost.applyPreviewRows = [];
+  state.admin.landedCost.applySelectedIds = [];
+  state.admin.landedCost.applyMessage = "";
+  clearLandedCostApplyStatus();
+  renderLandedCostSheet();
+}
+
+function removeLandedCostRow(index) {
+  const rowIndex = Number(index);
+  if (!Number.isInteger(rowIndex)) return;
+  const rows = state.admin.landedCost.rows;
+  rows.splice(rowIndex, 1);
+  if (!rows.length) rows.push(createEmptyLandedCostRow());
+  state.admin.landedCost.result = null;
+  state.admin.landedCost.errors = [];
+  state.admin.landedCost.applyPreviewRows = [];
+  state.admin.landedCost.applySelectedIds = [];
+  state.admin.landedCost.applyMessage = "";
+  clearLandedCostApplyStatus();
+  renderLandedCostSheet();
+}
+
+function getLandedCostSelectedSkus() {
+  const selectedSkus = Array.isArray(state.admin.landedCost.selectedSkus)
+    ? state.admin.landedCost.selectedSkus
+    : [];
+  const seen = new Set();
+  return selectedSkus
+    .map(normalizeProductId)
+    .filter(productId => {
+      if (!productId || seen.has(productId)) return false;
+      seen.add(productId);
+      return true;
+    });
+}
+
+function getLandedCostExistingSkus() {
+  return new Set(
+    (Array.isArray(state.admin.landedCost.rows) ? state.admin.landedCost.rows : [])
+      .map(row => normalizeProductId(row.productId))
+      .filter(Boolean)
+  );
+}
+
+function getLandedCostPickerProducts() {
+  const calcState = state.admin.landedCost;
+  const searchText = String(calcState.pickerSearch || "").trim().toLowerCase();
+  const rawStatusFilter = String(calcState.pickerStatus || "all").trim().toLowerCase();
+  const statusFilter = rawStatusFilter === "all" ? "all" : normalizeProductStatus(rawStatusFilter);
+  const products = Array.isArray(state.products) ? state.products : [];
+
+  return products.filter(product => {
+    const productId = normalizeProductId(product.productId);
+    const name = String(product.name || "").toLowerCase();
+    const status = normalizeProductStatus(product.status);
+    const matchesSearch = !searchText ||
+      productId.toLowerCase().includes(searchText) ||
+      name.includes(searchText);
+    const matchesStatus = statusFilter === "all" || status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+}
+
+function toggleLandedCostPicker() {
+  state.admin.landedCost.pickerOpen = !state.admin.landedCost.pickerOpen;
+  state.admin.landedCost.pickerMessage = "";
+  renderLandedCostSheet();
+}
+
+function setLandedCostPickerSearch(value) {
+  state.admin.landedCost.pickerSearch = value || "";
+  state.admin.landedCost.pickerMessage = "";
+  renderLandedCostSheet();
+}
+
+function setLandedCostPickerStatus(value) {
+  state.admin.landedCost.pickerStatus = value || "all";
+  state.admin.landedCost.pickerMessage = "";
+  renderLandedCostSheet();
+}
+
+function toggleLandedCostProduct(productId, checked) {
+  const normalizedId = normalizeProductId(productId);
+  if (!normalizedId) return;
+
+  const selected = new Set(getLandedCostSelectedSkus());
+  if (checked) {
+    selected.add(normalizedId);
+  } else {
+    selected.delete(normalizedId);
+  }
+  state.admin.landedCost.selectedSkus = Array.from(selected);
+  state.admin.landedCost.pickerMessage = "";
+  renderLandedCostSheet();
+}
+
+function selectVisibleLandedCostProducts() {
+  const selected = new Set(getLandedCostSelectedSkus());
+  getLandedCostPickerProducts().forEach(product => {
+    const productId = normalizeProductId(product.productId);
+    if (productId) selected.add(productId);
+  });
+  state.admin.landedCost.selectedSkus = Array.from(selected);
+  state.admin.landedCost.pickerMessage = "";
+  renderLandedCostSheet();
+}
+
+function clearLandedCostSelection() {
+  state.admin.landedCost.selectedSkus = [];
+  state.admin.landedCost.pickerMessage = "";
+  renderLandedCostSheet();
+}
+
+function addSelectedLandedCostProducts() {
+  const calcState = state.admin.landedCost;
+  const selectedSkus = getLandedCostSelectedSkus();
+  const products = Array.isArray(state.products) ? state.products : [];
+  const productMap = new Map(
+    products.map(product => [normalizeProductId(product.productId), product])
+  );
+  const nextRows = Array.isArray(calcState.rows)
+    ? calcState.rows.filter(row => !isEmptyLandedCostRow(row))
+    : [];
+  const existingSkus = new Set(
+    nextRows
+      .map(row => normalizeProductId(row.productId))
+      .filter(Boolean)
+  );
+
+  let added = 0;
+  let skipped = 0;
+  selectedSkus.forEach(productId => {
+    if (!productId || existingSkus.has(productId)) {
+      skipped += 1;
+      return;
+    }
+
+    const product = productMap.get(productId);
+    if (!product) {
+      skipped += 1;
+      return;
+    }
+
+    nextRows.push(createLandedCostRowFromProduct(product));
+    existingSkus.add(productId);
+    added += 1;
+  });
+
+  calcState.rows = nextRows.length ? nextRows : [createEmptyLandedCostRow()];
+  calcState.selectedSkus = [];
+  calcState.result = null;
+  calcState.errors = [];
+  calcState.applyPreviewRows = [];
+  calcState.applySelectedIds = [];
+  calcState.applyMessage = "";
+  clearLandedCostApplyStatus(calcState);
+  calcState.pickerMessage = added
+    ? `เพิ่มสินค้าเข้ารอบคำนวณแล้ว ${added} รายการ${skipped ? ` · ข้ามรายการซ้ำ ${skipped} รายการ` : ""}`
+    : skipped
+      ? "สินค้านี้อยู่ในรายการแล้ว"
+      : "กรุณาเลือกสินค้าอย่างน้อย 1 รายการ";
+  renderLandedCostSheet();
+}
+
+function resetLandedCostCalculator() {
+  state.admin.landedCost = {
+    batchName: "",
+    chinaDomesticShipping: "",
+    chinaToThailandShipping: "",
+    thailandShipping: "",
+    otherFees: "",
+    profitPercent: "",
+    roundingMode: "ceil",
+    rows: [createEmptyLandedCostRow()],
+    pickerOpen: false,
+    pickerSearch: "",
+    pickerStatus: "all",
+    selectedSkus: [],
+    pickerMessage: "",
+    applyPreviewRows: [],
+    applySelectedIds: [],
+    applyMessage: "",
+    applyStatus: "",
+    applyError: "",
+    appliedCount: 0,
+    result: null,
+    errors: []
+  };
+  renderLandedCostSheet();
+}
+
+function validateLandedCostInput() {
+  const calcState = state.admin.landedCost;
+  const errors = [];
+  const feeFields = [
+    ["chinaDomesticShipping", "ค่าส่งในจีน"],
+    ["chinaToThailandShipping", "ค่าส่งจีนมาไทย"],
+    ["thailandShipping", "ค่าส่งในไทย"],
+    ["otherFees", "ค่าใช้จ่ายอื่น ๆ"]
+  ];
+  const fees = {};
+
+  feeFields.forEach(([field, label]) => {
+    const parsed = parseNonNegativeNumber(calcState[field]);
+    if (!parsed.valid) errors.push(`${label} ต้องเป็นตัวเลข 0 ขึ้นไป`);
+    fees[field] = parsed.value;
+  });
+
+  const profit = parseNonNegativeNumber(calcState.profitPercent);
+  if (!profit.valid) errors.push("% กำไรที่ต้องการต้องเป็นตัวเลข 0 ขึ้นไป");
+
+  const rows = calcState.rows.map((row, index) => {
+    const rowNumber = index + 1;
+    const productId = normalizeProductId(row.productId);
+    const productSnapshot = getLandedCostProductSnapshot(productId);
+    const qty = Number(row.qty);
+    const chinaUnitCost = Number(row.chinaUnitCost);
+
+    if (!Number.isInteger(qty) || qty <= 0) {
+      errors.push(`แถว ${rowNumber}: จำนวนต้องเป็นจำนวนเต็มมากกว่า 0`);
+    }
+    if (!Number.isFinite(chinaUnitCost) || chinaUnitCost < 0) {
+      errors.push(`แถว ${rowNumber}: ต้นทุนจีน/ชิ้นต้องเป็นตัวเลข 0 ขึ้นไป`);
+    }
+
+    return {
+      productId,
+      name: getLandedCostRowProductName(row) || String(productSnapshot?.name || "").trim(),
+      currentPrice: Number(row.currentPrice ?? productSnapshot?.price ?? 0),
+      currentCostPrice: Number(row.currentCostPrice ?? productSnapshot?.costPrice ?? 0),
+      image: row.image || productSnapshot?.image || "",
+      stock: row.stock ?? productSnapshot?.stock ?? null,
+      status: row.status || productSnapshot?.status || "",
+      active: row.active !== false && productSnapshot?.active !== false,
+      qty,
+      chinaUnitCost,
+      itemBaseCost: Number.isFinite(chinaUnitCost) && Number.isFinite(qty)
+        ? chinaUnitCost * qty
+        : 0
+    };
+  });
+
+  const usableRows = rows.filter(row =>
+    Number.isInteger(row.qty) &&
+    row.qty > 0 &&
+    Number.isFinite(row.chinaUnitCost) &&
+    row.chinaUnitCost >= 0
+  );
+  const batchBaseCost = usableRows.reduce((sum, row) => sum + row.itemBaseCost, 0);
+
+  if (!usableRows.length) errors.push("กรุณาเพิ่มสินค้าอย่างน้อย 1 แถว");
+  if (batchBaseCost <= 0) errors.push("มูลค่าสินค้ารวมต้องมากกว่า 0 ก่อนคำนวณ");
+
+  return { errors, fees, profitPercent: profit.value, rows: usableRows, batchBaseCost };
+}
+
+function calculateLandedCost() {
+  if (!ensureAdminSessionForLandedCost()) return;
+
+  const calcState = state.admin.landedCost;
+  const validation = validateLandedCostInput();
+  calcState.errors = validation.errors;
+  calcState.result = null;
+
+  if (validation.errors.length) {
+    renderLandedCostSheet();
+    return;
+  }
+
+  const sharedFees =
+    validation.fees.chinaDomesticShipping +
+    validation.fees.chinaToThailandShipping +
+    validation.fees.thailandShipping +
+    validation.fees.otherFees;
+  const roundingMode = calcState.roundingMode || "ceil";
+  const rows = validation.rows.map(row => {
+    const allocationRatio = row.itemBaseCost / validation.batchBaseCost;
+    const allocatedFee = sharedFees * allocationRatio;
+    const landedCostPerItem = (row.itemBaseCost + allocatedFee) / row.qty;
+    const suggestedCostPrice = roundLandedCostValue(landedCostPerItem, roundingMode);
+    const suggestedSellingPrice = roundLandedCostValue(
+      suggestedCostPrice * (1 + validation.profitPercent / 100),
+      roundingMode
+    );
+
+    return {
+      ...row,
+      allocatedFee,
+      landedCostPerItem,
+      suggestedCostPrice,
+      suggestedSellingPrice
+    };
+  });
+
+  calcState.result = {
+    batchName: String(calcState.batchName || "").trim(),
+    batchBaseCost: validation.batchBaseCost,
+    sharedFees,
+    totalLandedCost: validation.batchBaseCost + sharedFees,
+    profitPercent: validation.profitPercent,
+    roundingMode,
+    rows
+  };
+  calcState.applyPreviewRows = [];
+  calcState.applySelectedIds = [];
+  calcState.applyMessage = "";
+  clearLandedCostApplyStatus(calcState);
+  renderLandedCostSheet();
+}
+
+function getLandedCostProductMap() {
+  const products = Array.isArray(state.products) ? state.products : [];
+  return new Map(
+    products.map(product => [normalizeProductId(product.productId), product])
+  );
+}
+
+function prepareLandedCostApplyPreview() {
+  if (!ensureAdminSessionForLandedCost()) return;
+
+  const calcState = state.admin.landedCost;
+  const resultRows = Array.isArray(calcState.result?.rows)
+    ? calcState.result.rows
+    : [];
+
+  if (!resultRows.length) {
+    calcState.applyPreviewRows = [];
+    calcState.applySelectedIds = [];
+    calcState.applyMessage = "กรุณาคำนวณต้นทุนก่อนเตรียมรายการอัปเดต";
+    renderLandedCostSheet();
+    return;
+  }
+
+  const productMap = getLandedCostProductMap();
+  const previewRows = [];
+  const skippedRows = [];
+  resultRows.forEach(row => {
+    const productId = normalizeProductId(row.productId);
+    const product = productMap.get(productId) || row;
+    if (!productId || !product) {
+      skippedRows.push(productId || "(ไม่มี SKU)");
+      return;
+    }
+
+    const currentCostPrice = Number(product.costPrice ?? product.currentCostPrice ?? 0);
+    const currentPrice = Number(product.price ?? product.currentPrice ?? 0);
+    const suggestedCostPrice = Number(row.suggestedCostPrice || 0);
+    const suggestedPrice = Number(row.suggestedSellingPrice || 0);
+
+    previewRows.push({
+      productId,
+      name: row.name || product.name || "",
+      qty: Number(row.qty || 0),
+      currentCostPrice,
+      suggestedCostPrice,
+      costPriceDiff: suggestedCostPrice - currentCostPrice,
+      currentPrice,
+      suggestedPrice,
+      priceDiff: suggestedPrice - currentPrice,
+      landedCostPerItem: Number(row.landedCostPerItem || 0)
+    });
+  });
+
+  calcState.applyPreviewRows = previewRows;
+  calcState.applySelectedIds = previewRows.map(row => row.productId);
+  calcState.applyMessage = previewRows.length
+    ? `เตรียมรายการอัปเดตแล้ว ${previewRows.length} รายการ${skippedRows.length ? ` · ข้าม ${skippedRows.length} รายการที่ไม่พบสินค้าในระบบ` : ""}`
+    : "ไม่มีรายการที่พร้อมอัปเดต กรุณาตรวจสอบ SKU ในรอบคำนวณ";
+  clearLandedCostApplyStatus(calcState);
+  renderLandedCostSheet();
+}
+
+function toggleLandedCostApplyRow(productId, checked) {
+  const normalizedId = normalizeProductId(productId);
+  if (!normalizedId) return;
+
+  const selected = new Set(
+    Array.isArray(state.admin.landedCost.applySelectedIds)
+      ? state.admin.landedCost.applySelectedIds
+      : []
+  );
+  if (checked) {
+    selected.add(normalizedId);
+  } else {
+    selected.delete(normalizedId);
+  }
+  state.admin.landedCost.applySelectedIds = Array.from(selected);
+  clearLandedCostApplyStatus();
+  renderLandedCostSheet();
+}
+
+function getSelectedLandedCostApplyRows() {
+  const calcState = state.admin.landedCost;
+  const selected = new Set(
+    Array.isArray(calcState.applySelectedIds)
+      ? calcState.applySelectedIds.map(normalizeProductId).filter(Boolean)
+      : []
+  );
+  const rows = Array.isArray(calcState.applyPreviewRows)
+    ? calcState.applyPreviewRows
+    : [];
+  return rows.filter(row => selected.has(normalizeProductId(row.productId)));
+}
+
+function buildLandedCostApplyItems() {
+  const productMap = getLandedCostProductMap();
+  const errors = [];
+  const items = [];
+  const seen = new Set();
+
+  getSelectedLandedCostApplyRows().forEach(row => {
+    const productId = normalizeProductId(row.productId);
+    const suggestedCostPrice = Number(row.suggestedCostPrice);
+    const suggestedPrice = Number(row.suggestedPrice);
+
+    if (!productId) {
+      errors.push("พบรายการที่ไม่มี SKU / Product ID");
+      return;
+    }
+    if (seen.has(productId)) {
+      errors.push(`SKU ${productId} ซ้ำในรายการที่จะบันทึก`);
+      return;
+    }
+    if (!productMap.has(productId)) {
+      errors.push(`ไม่พบสินค้า ${productId} ในระบบ จึงไม่สามารถบันทึกได้`);
+      return;
+    }
+    if (!Number.isInteger(suggestedCostPrice) || suggestedCostPrice < 0) {
+      errors.push(`ต้นทุนใหม่ของ ${productId} ต้องเป็นจำนวนเต็ม 0 ขึ้นไป`);
+      return;
+    }
+    if (!Number.isInteger(suggestedPrice) || suggestedPrice < 0) {
+      errors.push(`ราคาขายใหม่ของ ${productId} ต้องเป็นจำนวนเต็ม 0 ขึ้นไป`);
+      return;
+    }
+
+    seen.add(productId);
+    items.push({
+      productId,
+      costPrice: suggestedCostPrice,
+      price: suggestedPrice
+    });
+  });
+
+  if (!items.length && !errors.length) {
+    errors.push("กรุณาเลือกรายการอย่างน้อย 1 รายการก่อนบันทึก");
+  }
+
+  return { items, errors };
+}
+
+async function applyLandedCostPreview() {
+  if (!ensureAdminSessionForLandedCost()) return;
+  if (state.admin.isSubmitting) return;
+
+  const calcState = state.admin.landedCost;
+  const { items, errors } = buildLandedCostApplyItems();
+  if (errors.length) {
+    calcState.applyError = errors.join(" · ");
+    calcState.applyStatus = "";
+    calcState.appliedCount = 0;
+    renderLandedCostSheet();
+    showToast(calcState.applyError, "warning");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `ยืนยันบันทึกราคาทุน/ราคาขายจริง ${items.length} รายการ?\n\nระบบจะอัปเดต costPrice และ price ใน Products จริง\nกรุณาตรวจสอบก่อนบันทึกจริง`
+  );
+  if (!confirmed) return;
+
+  state.admin.isSubmitting = true;
+  calcState.applyError = "";
+  calcState.applyStatus = "";
+  calcState.appliedCount = 0;
+  renderLandedCostSheet();
+
+  try {
+    showLoading("กำลังบันทึกราคาทุน/ราคาขาย...");
+    const form = new URLSearchParams();
+    form.append("action", "bulkUpdateProducts");
+    form.append("token", state.admin.token);
+    form.append("items", JSON.stringify(items));
+
+    const res = await fetchWithTimeout(API_URL, {
+      method: "POST",
+      body: form
+    }, 45000);
+    const json = await res.json();
+
+    if (json?.success === true) {
+      const updated = Number(json.updated || json.data?.updated || items.length);
+      calcState.applyStatus = `บันทึกสำเร็จ ${updated} รายการ`;
+      calcState.applyError = "";
+      calcState.appliedCount = updated;
+      showToast(calcState.applyStatus, "success");
+      await refreshProducts();
+      renderLandedCostSheet();
+      return;
+    }
+
+    const backendErrors = Array.isArray(json?.data?.errors)
+      ? json.data.errors.join(" · ")
+      : "";
+    calcState.applyError = backendErrors || json?.message || json?.error || "บันทึกราคาทุน/ราคาขายไม่สำเร็จ";
+    calcState.applyStatus = "";
+    calcState.appliedCount = 0;
+    renderLandedCostSheet();
+    if (isAuthError(json?.error)) {
+      showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+      exitAdmin({ silent: true });
+      return;
+    }
+    showToast(calcState.applyError, "error");
+  } catch (err) {
+    console.error(err);
+    calcState.applyError = "บันทึกราคาทุน/ราคาขายไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+    calcState.applyStatus = "";
+    calcState.appliedCount = 0;
+    renderLandedCostSheet();
+    showToast(calcState.applyError, "error");
+  } finally {
+    safeHideLoading();
+    state.ui.backdropLocked = false;
+    state.admin.isSubmitting = false;
+    renderLandedCostSheet();
+    requestAnimationFrame(syncOverlayBackdropState);
+  }
+}
+
+function formatLandedCostMoney(value, digits = 2) {
+  return `฿${Number(value || 0).toLocaleString("th-TH", {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits
+  })}`;
+}
+
+function renderLandedCostErrors() {
+  const errors = state.admin.landedCost.errors || [];
+  if (!errors.length) return "";
+  return `
+    <ul class="bulk-error-list" role="alert" style="margin-top:10px">
+      ${errors.map(error => `<li>${esc(error)}</li>`).join("")}
+    </ul>
+  `;
+}
+
+function renderLandedCostPicker() {
+  const calcState = state.admin.landedCost;
+  const selectedSkus = new Set(getLandedCostSelectedSkus());
+  const existingSkus = getLandedCostExistingSkus();
+  const products = getLandedCostPickerProducts();
+
+  if (!calcState.pickerOpen) {
+    return `
+      <button class="btn btn-outline" type="button" onclick="toggleLandedCostPicker()">
+        เลือกสินค้า
+      </button>
+    `;
+  }
+
+  return `
+    <div class="bulk-product-picker" style="margin-top:10px">
+      <div class="admin-detail-title">เลือกสินค้า</div>
+      <div class="helper-text">
+        เลือกสินค้าจากรายการที่โหลดอยู่ ระบบจะเติม SKU ให้อัตโนมัติ ตั้งจำนวนเริ่มต้นเป็น 1 และใช้ต้นทุนปัจจุบันเป็นค่าเริ่มต้น
+      </div>
+      <div class="bulk-product-picker-controls">
+        <input
+          type="search"
+          value="${escAttr(calcState.pickerSearch || "")}"
+          placeholder="ค้นหา SKU หรือชื่อสินค้า"
+          oninput="setLandedCostPickerSearch(this.value)">
+        <select onchange="setLandedCostPickerStatus(this.value)">
+          <option value="all" ${calcState.pickerStatus === "all" ? "selected" : ""}>ทุกสถานะ</option>
+          <option value="ready" ${calcState.pickerStatus === "ready" ? "selected" : ""}>พร้อมส่ง</option>
+          <option value="ready_plus" ${calcState.pickerStatus === "ready_plus" ? "selected" : ""}>พร้อมส่ง + เพิ่มได้</option>
+          <option value="shipping" ${calcState.pickerStatus === "shipping" ? "selected" : ""}>อยู่ระหว่างจัดส่ง</option>
+          <option value="warehouse" ${calcState.pickerStatus === "warehouse" ? "selected" : ""}>อยู่โกดังไทย</option>
+          <option value="out" ${calcState.pickerStatus === "out" ? "selected" : ""}>หมด</option>
+        </select>
+      </div>
+      <div class="bulk-product-picker-actions">
+        <button class="btn btn-outline" type="button" onclick="selectVisibleLandedCostProducts()">
+          เลือกทั้งหมดที่แสดง
+        </button>
+        <button class="btn btn-outline" type="button" onclick="clearLandedCostSelection()">
+          ล้างที่เลือก
+        </button>
+        <button class="btn btn-secondary" type="button" onclick="toggleLandedCostPicker()">
+          ซ่อนตัวเลือก
+        </button>
+      </div>
+      ${
+        calcState.pickerMessage
+          ? `<div class="helper-text" style="margin-top:8px">${esc(calcState.pickerMessage)}</div>`
+          : ""
+      }
+      <div class="bulk-product-picker-list">
+        ${
+          products.length
+            ? products.map(product => {
+                const productId = normalizeProductId(product.productId);
+                const selected = selectedSkus.has(productId);
+                const alreadyAdded = existingSkus.has(productId);
+                const isActive = product.active !== false;
+                return `
+                  <label class="bulk-product-picker-row ${selected ? "is-selected" : ""}">
+                    <input
+                      type="checkbox"
+                      ${selected ? "checked" : ""}
+                      ${alreadyAdded ? "disabled" : ""}
+                      onchange="toggleLandedCostProduct(${toInlineJsStringLiteral(productId)}, this.checked)">
+                    ${renderCartItemThumb({
+                      productId,
+                      name: product.name || productId || "สินค้า",
+                      image: product.image || ""
+                    })}
+                    <div class="bulk-product-picker-main">
+                      <div class="name">${esc(product.name || productId || "-")}</div>
+                      <div class="bulk-product-picker-meta">
+                        <span>SKU: ${esc(productId || "-")}</span>
+                        <span>ราคา: ${esc(formatBulkProductUpdateValue("price", product.price))}</span>
+                        <span>ต้นทุน: ${esc(formatBulkProductUpdateValue("costPrice", product.costPrice))}</span>
+                        <span>สต๊อก: ${Number(product.stock || 0).toLocaleString("th-TH")}</span>
+                      </div>
+                      <div class="bulk-product-picker-meta">
+                        ${renderBulkProductUpdateValueDisplay("status", product.status)}
+                        ${renderBulkProductUpdateValueDisplay("active", isActive)}
+                        ${alreadyAdded ? `<span class="status-badge compact status-neutral">อยู่ในรายการแล้ว</span>` : ""}
+                      </div>
+                    </div>
+                  </label>
+                `;
+              }).join("")
+            : `<div class="bulk-product-picker-empty">ไม่พบสินค้าตามเงื่อนไขที่ค้นหา</div>`
+        }
+      </div>
+      <div class="bulk-product-picker-actions" style="margin-top:10px">
+        <button class="btn btn-primary" type="button" onclick="addSelectedLandedCostProducts()">
+          เพิ่มเข้ารอบคำนวณ (${selectedSkus.size})
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderLandedCostRows() {
+  const rows = state.admin.landedCost.rows;
+  return rows.map((row, index) => {
+    const productId = normalizeProductId(row.productId);
+    const productSnapshot = getLandedCostProductSnapshot(productId);
+    const productName = getLandedCostRowProductName(row) || String(productSnapshot?.name || "").trim();
+    const productImage = row.image || productSnapshot?.image || "";
+    const currentCostPrice = row.currentCostPrice ?? productSnapshot?.costPrice;
+    const currentPrice = row.currentPrice ?? productSnapshot?.price;
+    const stock = row.stock ?? productSnapshot?.stock;
+    const status = row.status || productSnapshot?.status || "";
+    const hasProductIdentity = Boolean(productId || productName);
+    const identityItem = { productId, name: productName, image: productImage };
+    return `
+      <div class="bulk-preview-card">
+        ${
+          hasProductIdentity
+            ? `<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px">
+                ${renderCartItemThumb(identityItem)}
+                <div style="min-width:0;flex:1">
+                  <div class="name">${esc(productId || "-")}</div>
+                  ${productName ? `<div class="helper-text">${esc(productName)}</div>` : ""}
+                  <div class="bulk-preview-meta">
+                    ต้นทุน: ${Number(currentCostPrice || 0).toLocaleString("th-TH")} |
+                    ราคาขาย: ${Number(currentPrice || 0).toLocaleString("th-TH")} |
+                    สต๊อก: ${stock !== null && stock !== undefined ? Number(stock || 0).toLocaleString("th-TH") : "-"}
+                    ${status ? ` | ${esc(status)}` : ""}
+                  </div>
+                </div>
+              </div>`
+            : ""
+        }
+        <div class="form-group">
+          <label>SKU / Product ID</label>
+          <input value="${escAttr(row.productId || "")}" placeholder="เช่น BN007"
+            oninput="updateLandedCostRow(${index}, 'productId', this.value)">
+          ${productName ? `<div class="helper-text">สินค้า: ${esc(productName)}</div>` : ""}
+        </div>
+        <div class="form-group">
+          <label>จำนวน</label>
+          <input type="number" min="1" step="1" value="${escAttr(row.qty || "")}" placeholder="0"
+            oninput="updateLandedCostRow(${index}, 'qty', this.value)">
+        </div>
+        <div class="form-group">
+          <label>ต้นทุนจีน/ชิ้น</label>
+          <input type="number" min="0" step="0.01" value="${escAttr(row.chinaUnitCost || "")}" placeholder="0"
+            oninput="updateLandedCostRow(${index}, 'chinaUnitCost', this.value)">
+        </div>
+        <button class="btn btn-outline" type="button" onclick="removeLandedCostRow(${index})">
+          ลบแถว
+        </button>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderLandedCostResult() {
+  const result = state.admin.landedCost.result;
+  if (!result) {
+    return `<div class="empty-state">กรอกต้นทุนและกดคำนวณ เพื่อดูต้นทุนจริงต่อชิ้นและราคาขายแนะนำ</div>`;
+  }
+
+  return `
+    <div class="cart-summary">
+      <div class="summary-row"><span>ต้นทุนสินค้ารวม</span><strong>${formatLandedCostMoney(result.batchBaseCost)}</strong></div>
+      <div class="summary-row"><span>ค่าใช้จ่ายรวม</span><strong>${formatLandedCostMoney(result.sharedFees)}</strong></div>
+      <div class="summary-row"><span>ต้นทุนรวมหลังลงค่าใช้จ่าย</span><strong>${formatLandedCostMoney(result.totalLandedCost)}</strong></div>
+      <div class="summary-row"><span>% กำไรที่ต้องการ</span><strong>${Number(result.profitPercent || 0).toLocaleString("th-TH")}%</strong></div>
+    </div>
+
+    <div class="bulk-preview-list">
+      ${result.rows.map(row => `
+        <div class="bulk-preview-card">
+          <div class="name">${esc(row.productId || "-")}</div>
+          ${row.name ? `<div class="helper-text">${esc(row.name)}</div>` : ""}
+          <div class="bulk-preview-meta">
+            จำนวน: ${Number(row.qty || 0).toLocaleString("th-TH")}<br>
+            ต้นทุนสินค้า: ${formatLandedCostMoney(row.itemBaseCost)}<br>
+            ค่าใช้จ่ายที่เฉลี่ย: ${formatLandedCostMoney(row.allocatedFee)}<br>
+            ต้นทุนจริง/ชิ้น: ${formatLandedCostMoney(row.landedCostPerItem)}<br>
+            ต้นทุนใหม่ที่แนะนำ: <strong>${Number(row.suggestedCostPrice || 0).toLocaleString("th-TH")}</strong><br>
+            ราคาขายใหม่ที่แนะนำ: <strong>${Number(row.suggestedSellingPrice || 0).toLocaleString("th-TH")}</strong>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function formatLandedCostDiff(value) {
+  const number = Number(value || 0);
+  const prefix = number > 0 ? "+" : "";
+  return `${prefix}${number.toLocaleString("th-TH")}`;
+}
+
+function renderLandedCostApplyPreview() {
+  const calcState = state.admin.landedCost;
+  const rows = Array.isArray(calcState.applyPreviewRows)
+    ? calcState.applyPreviewRows
+    : [];
+  const selected = new Set(
+    Array.isArray(calcState.applySelectedIds)
+      ? calcState.applySelectedIds
+      : []
+  );
+
+  if (!rows.length) {
+    return calcState.applyMessage
+      ? `<div class="empty-state">${esc(calcState.applyMessage)}</div>`
+      : "";
+  }
+
+  const selectedRows = rows.filter(row => selected.has(row.productId));
+  const totalCurrentCost = selectedRows.reduce(
+    (sum, row) => sum + row.currentCostPrice * row.qty,
+    0
+  );
+  const totalNewCost = selectedRows.reduce(
+    (sum, row) => sum + row.suggestedCostPrice * row.qty,
+    0
+  );
+
+  return `
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">ตรวจสอบรายการก่อนบันทึก</div>
+      <div class="helper-text">
+        ขั้นตอนนี้ยังไม่อัปเดตสินค้า เป็นเพียงการตรวจสอบก่อนบันทึกจริง
+      </div>
+      ${
+        calcState.applyMessage
+          ? `<div class="helper-text" style="margin-top:8px">${esc(calcState.applyMessage)}</div>`
+          : ""
+      }
+      <div class="cart-summary">
+        <div class="summary-row">
+          <span>รายการที่เลือก</span>
+          <strong>${selectedRows.length.toLocaleString("th-TH")}</strong>
+        </div>
+        <div class="summary-row">
+          <span>ต้นทุนสต็อกเดิมโดยประมาณ</span>
+          <strong>${formatLandedCostMoney(totalCurrentCost)}</strong>
+        </div>
+        <div class="summary-row">
+          <span>ต้นทุนสต็อกใหม่โดยประมาณ</span>
+          <strong>${formatLandedCostMoney(totalNewCost)}</strong>
+        </div>
+      </div>
+      <div class="bulk-preview-list landed-cost-apply-list">
+        ${rows.map(row => {
+          const checked = selected.has(row.productId);
+          return `
+            <label class="bulk-preview-card landed-cost-apply-card ${checked ? "is-selected" : ""}">
+              <div class="landed-cost-apply-head">
+                <input
+                  type="checkbox"
+                  ${checked ? "checked" : ""}
+                  onchange="toggleLandedCostApplyRow(${toInlineJsStringLiteral(row.productId)}, this.checked)">
+                <div class="landed-cost-apply-body">
+                  <div class="name">${esc(row.productId || "-")}</div>
+                  ${row.name ? `<div class="helper-text">${esc(row.name)}</div>` : ""}
+                  <div class="landed-cost-apply-values">
+                    <div class="landed-cost-apply-value">
+                      <span>จำนวน: ${Number(row.qty || 0).toLocaleString("th-TH")}</span>
+                      <strong>ต้นทุนจริงต่อชิ้น: ${formatLandedCostMoney(row.landedCostPerItem)}</strong>
+                    </div>
+                    <div class="landed-cost-apply-value">
+                      <span>ต้นทุนเดิม: ${Number(row.currentCostPrice || 0).toLocaleString("th-TH")}</span>
+                      <strong>ต้นทุนใหม่ที่แนะนำ: ${Number(row.suggestedCostPrice || 0).toLocaleString("th-TH")}</strong>
+                      <span class="landed-cost-apply-diff">ส่วนต่าง: ${formatLandedCostDiff(row.costPriceDiff)}</span>
+                    </div>
+                    <div class="landed-cost-apply-value">
+                      <span>ราคาขายเดิม: ${Number(row.currentPrice || 0).toLocaleString("th-TH")}</span>
+                      <strong>ราคาขายใหม่ที่แนะนำ: ${Number(row.suggestedPrice || 0).toLocaleString("th-TH")}</strong>
+                      <span class="landed-cost-apply-diff">ส่วนต่าง: ${formatLandedCostDiff(row.priceDiff)}</span>
+                    </div>
+                  </div>
+                  <div class="bulk-preview-meta landed-cost-apply-legacy">
+                    จำนวนในรอบ: ${Number(row.qty || 0).toLocaleString("th-TH")}<br>
+                    ต้นทุนจริง/ชิ้น: ${formatLandedCostMoney(row.landedCostPerItem)}<br>
+                    costPrice เดิม: ${Number(row.currentCostPrice || 0).toLocaleString("th-TH")}
+                    → ใหม่: <strong>${Number(row.suggestedCostPrice || 0).toLocaleString("th-TH")}</strong>
+                    (${formatLandedCostDiff(row.costPriceDiff)})<br>
+                    price เดิม: ${Number(row.currentPrice || 0).toLocaleString("th-TH")}
+                    → ใหม่: <strong>${Number(row.suggestedPrice || 0).toLocaleString("th-TH")}</strong>
+                    (${formatLandedCostDiff(row.priceDiff)})
+                  </div>
+                </div>
+              </div>
+            </label>
+          `;
+        }).join("")}
+      </div>
+      ${
+        calcState.applyStatus
+          ? `<div class="success-box" style="margin-top:10px">${esc(calcState.applyStatus)}</div>`
+          : ""
+      }
+      ${
+        calcState.applyError
+          ? `<div class="bulk-error-list" role="alert" style="margin-top:10px">${esc(calcState.applyError)}</div>`
+          : ""
+      }
+      <div class="helper-text" style="margin-top:10px">
+        ยืนยันก่อนบันทึกจริง ระบบจะอัปเดตต้นทุนและราคาขายใน Products เฉพาะรายการที่เลือก
+      </div>
+      <button class="btn btn-primary" type="button"
+        onclick="applyLandedCostPreview()"
+        ${state.admin.isSubmitting || !selectedRows.length ? "disabled" : ""}
+        style="margin-top:10px">
+        ${state.admin.isSubmitting ? "กำลังบันทึก..." : "บันทึกราคาทุน/ราคาขาย"}
+      </button>
+    </div>
+  `;
+}
+
+function renderLandedCostSheet() {
+  const calcState = state.admin.landedCost;
+  adminLandedCostSheet.innerHTML = `
+    <div class="sheet-topbar">
+      <button class="btn btn-outline sheet-nav-btn" onclick="closeLandedCostSheet()" aria-label="ปิดหน้าต่างคำนวณต้นทุนนำเข้า">×</button>
+      <h3 id="adminLandedCostSheetTitle">คำนวณต้นทุนนำเข้า</h3>
+      <div aria-hidden="true"></div>
+    </div>
+
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">รอบนำเข้า</div>
+      <div class="helper-text">รอบนี้เป็นการคำนวณตัวอย่าง ยังไม่บันทึกเข้า Products</div>
+      <div class="form-group" style="margin-top:10px">
+        <label>ชื่อรอบ</label>
+        <input value="${escAttr(calcState.batchName || "")}" placeholder="รอบจีน 2026-06-17" oninput="updateLandedCostField('batchName', this.value)">
+      </div>
+      <div class="form-group"><label>ค่าส่งในจีน</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.chinaDomesticShipping || "")}" placeholder="0" oninput="updateLandedCostField('chinaDomesticShipping', this.value)"></div>
+      <div class="form-group"><label>ค่าส่งจีนมาไทย</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.chinaToThailandShipping || "")}" placeholder="0" oninput="updateLandedCostField('chinaToThailandShipping', this.value)"></div>
+      <div class="form-group"><label>ค่าส่งในไทย</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.thailandShipping || "")}" placeholder="0" oninput="updateLandedCostField('thailandShipping', this.value)"></div>
+      <div class="form-group"><label>ค่าใช้จ่ายอื่น ๆ</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.otherFees || "")}" placeholder="0" oninput="updateLandedCostField('otherFees', this.value)"></div>
+      <div class="form-group"><label>% กำไรที่ต้องการ</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.profitPercent || "")}" placeholder="เช่น 30" oninput="updateLandedCostField('profitPercent', this.value)"></div>
+      <div class="form-group">
+        <label>วิธีปัดเศษ</label>
+        <select onchange="updateLandedCostField('roundingMode', this.value)">
+          <option value="ceil" ${calcState.roundingMode === "ceil" ? "selected" : ""}>ปัดขึ้น (ceil)</option>
+          <option value="round" ${calcState.roundingMode === "round" ? "selected" : ""}>ปัดใกล้สุด (round)</option>
+          <option value="floor" ${calcState.roundingMode === "floor" ? "selected" : ""}>ปัดลง (floor)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">รายการสินค้า</div>
+      <div class="helper-text">เพิ่ม SKU, จำนวน และต้นทุนจีนต่อชิ้น ระบบจะเฉลี่ยค่าใช้จ่ายตามมูลค่าสินค้า</div>
+      ${renderLandedCostPicker()}
+      <div class="bulk-preview-list" style="margin-top:10px">${renderLandedCostRows()}</div>
+      <button class="btn btn-outline" type="button" onclick="addLandedCostRow()" style="margin-top:10px">เพิ่มแถวสินค้า</button>
+    </div>
+
+    ${renderLandedCostErrors()}
+
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">ผลคำนวณ</div>
+      ${renderLandedCostResult()}
+      ${
+        calcState.result
+          ? `<button class="btn btn-secondary" type="button" onclick="prepareLandedCostApplyPreview()" style="margin-top:12px">เตรียมรายการอัปเดต</button>`
+          : ""
+      }
+    </div>
+
+    ${renderLandedCostApplyPreview()}
+
+    <div class="sheet-action-footer">
+      <button class="btn btn-primary" type="button" onclick="calculateLandedCost()">คำนวณ</button>
+      <button class="btn btn-outline" type="button" onclick="resetLandedCostCalculator()">ล้างข้อมูล</button>
+      <button class="btn btn-outline" type="button" onclick="backToAdminMenuFromLandedCost()">กลับเมนูแอดมิน</button>
+    </div>
+  `;
+}
+
+function openLandedCostSheet() {
+  if (!ensureAdminSessionForLandedCost()) return;
+  renderLandedCostSheet();
+  openOverlay(adminLandedCostSheet);
+}
+
+function closeLandedCostSheet() {
+  closeOverlay(adminLandedCostSheet);
+}
+
+function backToAdminMenuFromLandedCost() {
+  closeLandedCostSheet();
+  syncOverlayBackdropState();
+  requestAnimationFrame(() => {
+    openMainMenu();
+    syncOverlayBackdropState();
+  });
 }
 
 function ensureAdminSessionForPartnerCatalog() {
