@@ -26,8 +26,10 @@
     body{
       margin:0;
       min-height:100vh;
+      overflow-x:hidden;
       background:
         radial-gradient(circle at 18% -10%, rgba(10,132,255,.20), transparent 34%),
+        radial-gradient(circle at 88% 6%, rgba(52,199,89,.12), transparent 28%),
         linear-gradient(180deg, #151922 0%, var(--bg) 52%, #090b0f 100%);
       color:var(--text);
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
@@ -39,6 +41,7 @@
       width:min(1120px,100%);
       margin:0 auto;
       padding:18px 14px 120px;
+      overflow-x:hidden;
     }
 
     .hero{
@@ -46,7 +49,7 @@
       top:0;
       z-index:5;
       margin:-18px -14px 16px;
-      padding:18px 14px 14px;
+      padding:18px 14px 16px;
       background:rgba(15,17,21,.86);
       border-bottom:1px solid var(--border);
       backdrop-filter:blur(22px);
@@ -56,7 +59,7 @@
       width:min(1120px,100%);
       margin:0 auto;
       display:grid;
-      gap:10px;
+      gap:12px;
     }
 
     .eyebrow{
@@ -69,8 +72,26 @@
 
     h1{
       margin:0;
-      font-size:24px;
+      font-size:25px;
       line-height:1.15;
+      letter-spacing:-.02em;
+    }
+
+    .hero-copy{
+      max-width:720px;
+      color:var(--text-soft);
+      font-size:14px;
+      line-height:1.55;
+    }
+
+    .notice{
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid rgba(255,214,10,.28);
+      background:rgba(255,214,10,.10);
+      color:#ffe48a;
+      font-size:13px;
+      line-height:1.45;
     }
 
     .partner-meta{
@@ -96,6 +117,10 @@
       gap:10px;
       grid-template-columns:1fr;
       margin:16px 0;
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:20px;
+      background:rgba(25,29,36,.58);
     }
 
     input,textarea,select{
@@ -106,6 +131,7 @@
       background:rgba(255,255,255,.08);
       color:var(--text);
       outline:none;
+      min-width:0;
     }
 
     textarea{min-height:96px;resize:vertical}
@@ -118,6 +144,7 @@
     .grid{
       display:grid;
       gap:12px;
+      min-width:0;
     }
 
     .product-card,.panel,.state-card{
@@ -129,14 +156,16 @@
 
     .product-card{
       display:grid;
-      grid-template-columns:82px 1fr;
+      grid-template-columns:96px minmax(0,1fr);
       gap:12px;
       padding:12px;
+      max-width:100%;
+      overflow:hidden;
     }
 
     .thumb{
-      width:82px;
-      height:82px;
+      width:96px;
+      height:96px;
       border-radius:18px;
       background:var(--surface-2);
       object-fit:contain;
@@ -144,8 +173,8 @@
     }
 
     .thumb-placeholder{
-      width:82px;
-      height:82px;
+      width:96px;
+      height:96px;
       display:grid;
       place-items:center;
       color:var(--muted);
@@ -155,40 +184,67 @@
       font-size:13px;
     }
 
-    .product-main{min-width:0}
+    .product-main{
+      min-width:0;
+      display:grid;
+      gap:7px;
+    }
 
     .name{
-      margin:0 0 4px;
+      margin:0;
       font-size:16px;
       font-weight:800;
       line-height:1.3;
+      overflow-wrap:anywhere;
     }
 
     .meta{
       color:var(--text-soft);
       font-size:13px;
       line-height:1.45;
+      overflow-wrap:anywhere;
+    }
+
+    .sku-line{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      align-items:center;
+    }
+
+    .sku-chip{
+      display:inline-flex;
+      max-width:100%;
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      border:1px solid var(--border);
+      color:var(--text-soft);
+      font-size:12px;
+      font-weight:800;
     }
 
     .price{
-      margin-top:8px;
       font-size:18px;
       font-weight:900;
+      color:#fff;
     }
 
     .details{
-      margin-top:8px;
       color:var(--text-soft);
       font-size:13px;
       line-height:1.5;
       white-space:pre-wrap;
+      overflow-wrap:anywhere;
     }
 
     .compare-images{
       display:flex;
       gap:8px;
-      margin-top:10px;
+      margin-top:4px;
       overflow-x:auto;
+      max-width:100%;
+      padding-bottom:2px;
     }
 
     .compare-images img{
@@ -204,7 +260,7 @@
     .status{
       display:inline-flex;
       align-items:center;
-      margin-top:8px;
+      margin-top:0;
       padding:5px 9px;
       border-radius:999px;
       border:1px solid var(--border);
@@ -219,7 +275,7 @@
     .status.out{color:#ff8a82;background:rgba(255,69,58,.14)}
 
     .actions{
-      margin-top:12px;
+      margin-top:4px;
       display:flex;
       gap:8px;
     }
@@ -230,6 +286,7 @@
       padding:12px 14px;
       font-weight:900;
       cursor:pointer;
+      min-height:44px;
     }
 
     .btn-primary{
@@ -256,10 +313,13 @@
     .layout{
       display:grid;
       gap:14px;
+      min-width:0;
     }
 
     .panel{
       padding:14px;
+      max-width:100%;
+      overflow:hidden;
     }
 
     .panel h2{
@@ -279,6 +339,8 @@
       border-radius:16px;
       background:rgba(255,255,255,.06);
       border:1px solid var(--border);
+      max-width:100%;
+      overflow:hidden;
     }
 
     .interest-head{
@@ -286,12 +348,67 @@
       gap:8px;
       justify-content:space-between;
       align-items:flex-start;
+      min-width:0;
     }
 
     .interest-controls{
       display:grid;
-      grid-template-columns:92px 1fr;
+      grid-template-columns:92px minmax(0,1fr);
       gap:8px;
+    }
+
+    .field-label{
+      display:grid;
+      gap:6px;
+      color:var(--text-soft);
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .form-stack{
+      display:grid;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .panel-note{
+      margin:10px 0;
+      padding:10px 12px;
+      border-radius:16px;
+      background:rgba(10,132,255,.10);
+      border:1px solid rgba(10,132,255,.24);
+      color:var(--text-soft);
+      font-size:13px;
+      line-height:1.45;
+    }
+
+    .interest-summary{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin:12px 0;
+    }
+
+    .summary-tile{
+      padding:10px;
+      border-radius:16px;
+      background:rgba(255,255,255,.07);
+      border:1px solid var(--border);
+      min-width:0;
+    }
+
+    .summary-tile span{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:3px;
+    }
+
+    .summary-tile strong{
+      display:block;
+      color:var(--text);
+      font-size:17px;
+      overflow-wrap:anywhere;
     }
 
     .summary-bar{
@@ -310,6 +427,11 @@
       background:rgba(25,29,36,.94);
       box-shadow:var(--shadow);
       backdrop-filter:blur(18px);
+    }
+
+    .summary-bar .btn{
+      flex:0 0 auto;
+      white-space:nowrap;
     }
 
     .state-card{
@@ -333,6 +455,16 @@
       .thumb,.thumb-placeholder{width:112px;height:112px}
       .panel{position:sticky;top:116px}
       .summary-bar{display:none}
+    }
+
+    @media (max-width:420px){
+      .product-card{grid-template-columns:86px minmax(0,1fr);gap:10px}
+      .thumb,.thumb-placeholder{width:86px;height:86px;border-radius:16px}
+      .name{font-size:15px}
+      .price{font-size:17px}
+      .interest-controls{grid-template-columns:1fr}
+      .interest-summary{grid-template-columns:1fr}
+      .summary-bar{left:8px;right:8px;bottom:8px}
     }
   </style>
 </head>
@@ -431,7 +563,7 @@
     async function loadCatalog() {
       if (!state.partnerToken) {
         state.loading = false;
-        state.error = "ลิงก์นี้ไม่มี token สำหรับเปิดแคตตาล็อก";
+        state.error = "ลิงก์นี้ไม่ถูกต้องหรือหมดอายุ กรุณาติดต่อร้านเพื่อขอลิงก์ใหม่";
         render();
         return;
       }
@@ -445,7 +577,7 @@
         state.link = data.link || {};
         state.products = Array.isArray(data.products) ? data.products : [];
       } catch (err) {
-        state.error = err.message || "ไม่สามารถโหลดแคตตาล็อกได้";
+        state.error = err.message || "ลิงก์นี้ไม่ถูกต้องหรือหมดอายุ กรุณาติดต่อร้านเพื่อขอลิงก์ใหม่";
       } finally {
         state.loading = false;
         render();
@@ -530,9 +662,11 @@
           }
           <div class="product-main">
             <h2 class="name">${esc(product.name || "-")}</h2>
-            <div class="meta">SKU: ${esc(product.productId || "-")}</div>
+            <div class="sku-line">
+              <span class="sku-chip">SKU: ${esc(product.productId || "-")}</span>
+              <span class="status ${escAttr(product.status || "")}">${esc(getStatusLabel(product.status))}</span>
+            </div>
             <div class="price">฿${money(product.price)}</div>
-            <span class="status ${escAttr(product.status || "")}">${esc(getStatusLabel(product.status))}</span>
             ${product.detailsText ? `<div class="details">${esc(product.detailsText)}</div>` : ""}
             ${
               compareImages.length
@@ -540,7 +674,7 @@
                 : ""
             }
             <div class="actions">
-              <button class="btn btn-primary" type="button" onclick="addInterest(${escAttr(jsString(product.productId))})">
+              <button class="btn btn-primary" type="button" style="width:100%" onclick="addInterest(${escAttr(jsString(product.productId))})">
                 เพิ่มในรายการสนใจ
               </button>
             </div>
@@ -551,7 +685,7 @@
 
     function renderInterestList() {
       if (!state.selectedItems.length) {
-        return `<div class="helper">ยังไม่มีสินค้าในรายการสนใจ</div>`;
+        return `<div class="panel-note">ยังไม่มีสินค้าในรายการที่สนใจ เลือกสินค้าจากแคตตาล็อกเพื่อส่งให้ร้านตรวจสอบ</div>`;
       }
 
       return `
@@ -566,10 +700,16 @@
                 <button class="btn btn-danger" type="button" onclick="removeInterest(${escAttr(jsString(item.productId))})">ลบ</button>
               </div>
               <div class="interest-controls">
-                <input type="number" min="1" step="1" value="${Number(item.qty) || 1}" aria-label="จำนวน"
-                  onchange="updateInterest(${escAttr(jsString(item.productId))},'qty',this.value)">
-                <input value="${escAttr(item.partnerNote || "")}" placeholder="หมายเหตุสำหรับสินค้านี้"
-                  oninput="updateInterest(${escAttr(jsString(item.productId))},'partnerNote',this.value)">
+                <label class="field-label">
+                  จำนวน
+                  <input type="number" min="1" step="1" value="${Number(item.qty) || 1}" aria-label="จำนวน"
+                    onchange="updateInterest(${escAttr(jsString(item.productId))},'qty',this.value)">
+                </label>
+                <label class="field-label">
+                  หมายเหตุ
+                  <input value="${escAttr(item.partnerNote || "")}" placeholder="หมายเหตุสำหรับสินค้านี้"
+                    oninput="updateInterest(${escAttr(jsString(item.productId))},'partnerNote',this.value)">
+                </label>
               </div>
             </div>
           `).join("")}
@@ -636,14 +776,14 @@
 
       if (state.success) {
         renderStateCard(
-          "ส่งรายการให้ร้านแล้ว",
-          `เลขที่คำขอ ${state.success.requestId || "-"} · ${state.success.itemCount || 0} รายการ`
+          "ส่งรายการให้ร้านเรียบร้อยแล้ว",
+          `ร้านจะตรวจสอบและติดต่อกลับเพื่อยืนยัน · เลขที่คำขอ ${state.success.requestId || "-"} · ${state.success.itemCount || 0} รายการ`
         );
         return;
       }
 
       if (state.error) {
-        renderStateCard("ไม่สามารถเปิดแคตตาล็อกได้", state.error);
+        renderStateCard("ลิงก์นี้ไม่ถูกต้องหรือหมดอายุ", state.error || "กรุณาติดต่อร้านเพื่อขอลิงก์ใหม่");
         return;
       }
 
@@ -651,8 +791,14 @@
       app.innerHTML = `
         <header class="hero">
           <div class="hero-card">
-            <div class="eyebrow">Private Catalog</div>
-            <h1>ร้านค้า Luopanich</h1>
+            <div class="eyebrow">Luopanich Private Catalog</div>
+            <h1>แคตตาล็อกส่วนตัวสำหรับคู่ค้า</h1>
+            <div class="hero-copy">
+              เลือกสินค้าที่สนใจ แล้วส่งรายการให้ร้านตรวจสอบ
+            </div>
+            <div class="notice">
+              รายการนี้ยังไม่ใช่คำสั่งซื้อจนกว่าร้านจะยืนยัน
+            </div>
             <div class="partner-meta">
               <span class="pill">พาร์ทเนอร์: ${esc(state.partner?.partnerName || "-")}</span>
               <span class="pill">ใช้ได้ถึง: ${esc(formatDate(state.link?.expiresAt))}</span>
@@ -661,7 +807,7 @@
         </header>
 
         <section class="toolbar" aria-label="ค้นหาและกรองสินค้า">
-          <input value="${escAttr(state.search)}" placeholder="ค้นหาด้วย SKU หรือชื่อสินค้า"
+          <input value="${escAttr(state.search)}" placeholder="ค้นหาสินค้าด้วยชื่อหรือรหัสสินค้า"
             oninput="state.search=this.value; render()">
           <select onchange="state.status=this.value; render()">
             <option value="all" ${state.status === "all" ? "selected" : ""}>ทุกสถานะ</option>
@@ -683,15 +829,42 @@
           </section>
 
           <aside class="panel" id="interestPanel">
-            <h2>รายการสนใจ</h2>
+            <h2>รายการที่สนใจ</h2>
+            <div class="panel-note">
+              รายการนี้เป็นการแจ้งความสนใจเท่านั้น ร้านจะตรวจสอบและติดต่อกลับเพื่อยืนยันก่อน
+            </div>
             ${renderInterestList()}
-            <div class="price" style="margin:14px 0">รวมโดยประมาณ: <span data-estimated-total>฿${money(getEstimatedTotal())}</span></div>
+            <div class="interest-summary">
+              <div class="summary-tile">
+                <span>จำนวนรายการ</span>
+                <strong>${state.selectedItems.length} รายการ</strong>
+              </div>
+              <div class="summary-tile">
+                <span>ยอดรวมโดยประมาณ</span>
+                <strong data-estimated-total>฿${money(getEstimatedTotal())}</strong>
+              </div>
+            </div>
             <form onsubmit="submitRequest(event)">
               ${state.submitError ? `<div class="helper" style="color:var(--danger);margin-bottom:10px">${esc(state.submitError)}</div>` : ""}
-              <input name="contactName" placeholder="ชื่อผู้ติดต่อ" autocomplete="name">
-              <input name="contactPhone" placeholder="เบอร์โทร" autocomplete="tel">
-              <input name="contactEmail" placeholder="อีเมล" autocomplete="email">
-              <textarea name="message" placeholder="ข้อความเพิ่มเติม"></textarea>
+              <div class="helper">ร้านจะใช้ข้อมูลนี้เพื่อติดต่อกลับและยืนยันรายการ</div>
+              <div class="form-stack">
+                <label class="field-label">
+                  ชื่อผู้ติดต่อ
+                  <input name="contactName" placeholder="ชื่อผู้ติดต่อ" autocomplete="name">
+                </label>
+                <label class="field-label">
+                  เบอร์โทร
+                  <input name="contactPhone" placeholder="เบอร์โทร" autocomplete="tel">
+                </label>
+                <label class="field-label">
+                  อีเมล
+                  <input name="contactEmail" placeholder="อีเมล" autocomplete="email">
+                </label>
+                <label class="field-label">
+                  ข้อความเพิ่มเติม
+                  <textarea name="message" placeholder="ข้อความเพิ่มเติม"></textarea>
+                </label>
+              </div>
               <button class="btn btn-primary" style="width:100%;margin-top:10px" type="submit"
                 ${state.submitting || !state.selectedItems.length ? "disabled" : ""}>
                 ${state.submitting ? "กำลังส่ง..." : "ส่งรายการให้ร้าน"}
