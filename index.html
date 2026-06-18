@@ -1839,10 +1839,11 @@ textarea:focus-visible {
 }
 
 .viewer-copy-actions{
-  margin-top:12px;
-  border:1px solid var(--line);
-  border-radius:16px;
-  background:var(--panel-2);
+  margin-top:14px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:20px;
+  background:rgba(255,255,255,.045);
+  box-shadow:0 10px 28px rgba(0,0,0,.20);
   overflow:hidden;
 }
 
@@ -1852,7 +1853,7 @@ textarea:focus-visible {
   border:0;
   background:transparent;
   color:var(--text);
-  padding:12px 14px;
+  padding:13px 15px;
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -1871,18 +1872,111 @@ textarea:focus-visible {
 }
 
 .viewer-copy-panel{
-  display:grid;
-  gap:8px;
-  padding:0 12px 12px;
+  margin:0 8px 10px;
+  padding:10px 12px 14px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:22px 22px 18px 18px;
+  background:
+    linear-gradient(180deg, rgba(32,39,54,.96), rgba(17,22,32,.96));
+  box-shadow:0 -10px 30px rgba(0,0,0,.28);
 }
 
 .viewer-copy-panel[hidden]{
   display:none;
 }
 
-.viewer-copy-panel .btn{
+.viewer-copy-handle{
+  width:42px;
+  height:4px;
+  margin:0 auto 12px;
+  border-radius:999px;
+  background:rgba(255,255,255,.28);
+}
+
+.viewer-copy-panel-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+.viewer-copy-title{
+  color:var(--text);
+  font-size:16px;
+  font-weight:900;
+  line-height:1.25;
+}
+
+.viewer-copy-subtitle{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.35;
+}
+
+.viewer-copy-close{
+  width:34px;
+  height:34px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  color:var(--text);
+  font-size:20px;
+  line-height:1;
+  cursor:pointer;
+}
+
+.viewer-copy-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+
+.viewer-copy-tile{
   width:100%;
+  min-height:86px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:18px;
+  background:rgba(255,255,255,.07);
+  color:var(--text);
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  font-weight:850;
   text-align:left;
+  cursor:pointer;
+}
+
+.viewer-copy-tile:active{
+  transform:scale(.985);
+}
+
+.viewer-copy-icon{
+  width:34px;
+  height:34px;
+  display:inline-grid;
+  place-items:center;
+  border-radius:13px;
+  background:rgba(10,132,255,.18);
+  color:#7cc7ff;
+  border:1px solid rgba(124,199,255,.20);
+  font-size:13px;
+  font-weight:950;
+}
+
+.viewer-copy-label{
+  font-size:13px;
+  line-height:1.25;
+}
+
+@media (max-width:360px){
+  .viewer-copy-grid{
+    grid-template-columns:1fr;
+  }
 }
 
 .product-card:active {
@@ -5433,13 +5527,18 @@ async function copyViewerProductInfo(type, event) {
   }
 }
 
+function renderViewerCopyTile(type, label, icon) {
+  return `
+    <button class="viewer-copy-tile" type="button" onclick="copyViewerProductInfo('${type}', event)">
+      <span class="viewer-copy-icon" aria-hidden="true">${esc(icon)}</span>
+      <span class="viewer-copy-label">${esc(label)}</span>
+    </button>
+  `;
+}
+
 function renderViewerCopyInfoSection() {
   const costPriceButton = canCopyViewerCostPrice()
-    ? `
-      <button class="btn btn-outline" type="button" onclick="copyViewerProductInfo('costPrice', event)">
-        คัดลอกราคาทุน
-      </button>
-    `
+    ? renderViewerCopyTile("costPrice", "คัดลอกราคาทุน", "฿")
     : "";
 
   return `
@@ -5449,19 +5548,21 @@ function renderViewerCopyInfoSection() {
         <span class="viewer-copy-toggle-icon" aria-hidden="true">⌄</span>
       </button>
       <div class="viewer-copy-panel" hidden>
-        <button class="btn btn-outline" type="button" onclick="copyViewerProductInfo('name', event)">
-          คัดลอกชื่อสินค้า
-        </button>
-        <button class="btn btn-outline" type="button" onclick="copyViewerProductInfo('productId', event)">
-          คัดลอกรหัสสินค้า
-        </button>
-        <button class="btn btn-outline" type="button" onclick="copyViewerProductInfo('stock', event)">
-          คัดลอกจำนวน
-        </button>
-        <button class="btn btn-outline" type="button" onclick="copyViewerProductInfo('image', event)">
-          คัดลอกรูปภาพ
-        </button>
-        ${costPriceButton}
+        <div class="viewer-copy-handle" aria-hidden="true"></div>
+        <div class="viewer-copy-panel-head">
+          <div>
+            <div class="viewer-copy-title">คัดลอกข้อมูลสินค้า</div>
+            <div class="viewer-copy-subtitle">เลือกข้อมูลที่ต้องการคัดลอก</div>
+          </div>
+          <button class="viewer-copy-close" type="button" aria-label="ปิดเมนูคัดลอก" onclick="toggleViewerCopyInfoSection(event)">×</button>
+        </div>
+        <div class="viewer-copy-grid">
+          ${renderViewerCopyTile("name", "คัดลอกชื่อสินค้า", "ชื่อ")}
+          ${renderViewerCopyTile("productId", "คัดลอกรหัสสินค้า", "SKU")}
+          ${costPriceButton}
+          ${renderViewerCopyTile("stock", "คัดลอกจำนวน", "#")}
+          ${renderViewerCopyTile("image", "คัดลอกรูปภาพ", "รูป")}
+        </div>
       </div>
     </section>
   `;
