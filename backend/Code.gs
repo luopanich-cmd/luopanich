@@ -104,6 +104,13 @@ const ORDER_OPTIONAL_METADATA_HEADERS = Object.freeze([
   "partnerId",
   "partnerNameSnapshot"
 ]);
+const PRODUCT_OPTIONAL_VARIANT_HEADERS = Object.freeze([
+  "parentProductId",
+  "variantType",
+  "variantValue",
+  "displayName",
+  "variantSortOrder"
+]);
 
 function ensurePartnerCatalogSheets() {
   const lock = LockService.getScriptLock();
@@ -218,6 +225,117 @@ function ensureOrdersExtendedHeaders_(ss) {
     appended: missingHeaders,
     headers: headers.concat(missingHeaders)
   };
+}
+
+function ensureProductsVariantHeaders_(ss) {
+  if (!ss) {
+    throw new Error("Spreadsheet is required");
+  }
+
+  const sheet = ss.getSheetByName("Products");
+  if (!sheet) {
+    throw new Error("Products sheet not found");
+  }
+
+  if (sheet.getLastRow() === 0) {
+    throw new Error("Products sheet has no header row");
+  }
+
+  const lastColumn = sheet.getLastColumn();
+  const headers = sheet
+    .getRange(1, 1, 1, lastColumn)
+    .getValues()[0]
+    .map(header => String(header || "").trim());
+  const missingHeaders = PRODUCT_OPTIONAL_VARIANT_HEADERS.filter(
+    header => headers.indexOf(header) === -1
+  );
+
+  if (missingHeaders.length) {
+    sheet
+      .getRange(1, lastColumn + 1, 1, missingHeaders.length)
+      .setValues([missingHeaders]);
+  }
+
+  return {
+    appended: missingHeaders,
+    headers: headers.concat(missingHeaders)
+  };
+}
+
+function getProductVariantColumnMap_(headers) {
+  const sourceHeaders = Array.isArray(headers) ? headers : [];
+  const col = {};
+  PRODUCT_OPTIONAL_VARIANT_HEADERS.forEach(header => {
+    col[header] = sourceHeaders.indexOf(header);
+  });
+  return col;
+}
+
+function getProductVariantMetadata_(row, col) {
+  const columnMap = col || {};
+  const sortValue = getProductVariantValue_(row, columnMap.variantSortOrder);
+  const sortNumber = Number(sortValue);
+
+  return {
+    parentProductId: getProductVariantValue_(row, columnMap.parentProductId),
+    variantType: getProductVariantValue_(row, columnMap.variantType),
+    variantValue: getProductVariantValue_(row, columnMap.variantValue),
+    displayName: getProductVariantValue_(row, columnMap.displayName),
+    variantSortOrder:
+      sortValue !== "" && Number.isFinite(sortNumber)
+        ? sortNumber
+        : sortValue
+  };
+}
+
+function getProductVariantValue_(row, index) {
+  if (!row || index === undefined || index < 0) {
+    return "";
+  }
+  const value = row[index];
+  if (value === undefined || value === null) {
+    return "";
+  }
+  return String(value).trim();
+}
+
+function parseProductVariantMetadata_(params) {
+  const source = params || {};
+  const rawSortOrder = String(source.variantSortOrder ?? "").trim();
+  let variantSortOrder = "";
+
+  if (rawSortOrder !== "") {
+    const sortOrder = Number(rawSortOrder);
+    if (!Number.isInteger(sortOrder)) {
+      throw new Error("Variant sort order must be an integer");
+    }
+    variantSortOrder = sortOrder;
+  }
+
+  return {
+    parentProductId: String(source.parentProductId || "").trim(),
+    variantType: String(source.variantType || "").trim(),
+    variantValue: String(source.variantValue || "").trim(),
+    displayName: String(source.displayName || "").trim(),
+    variantSortOrder
+  };
+}
+
+function writeProductVariantMetadata_(sheet, rowNumber, metadata, headers) {
+  if (!sheet || !rowNumber || !metadata) return;
+
+  const sourceHeaders = Array.isArray(headers) && headers.length
+    ? headers
+    : ensureProductsVariantHeaders_(getSS()).headers;
+
+  PRODUCT_OPTIONAL_VARIANT_HEADERS.forEach(header => {
+    const columnIndex = sourceHeaders.indexOf(header);
+    if (columnIndex === -1) return;
+    const value = metadata[header] === undefined || metadata[header] === null
+      ? ""
+      : metadata[header];
+    sheet.getRange(rowNumber, columnIndex + 1).setValue(value);
+  });
 }
 
 function findOrderByPartnerRequestId_(orderSheet, orderCol, requestId) {
@@ -388,7 +506,7 @@ function getPartnerCatalog(partnerToken) {
   const products = context.selectedProductIds
     .map(productId => context.productMap.get(productId))
     .filter(row => row && isProductActive_(row))
-    .map(row => toSafePartnerProduct_(row));
+    .map(row => toSafePartnerProduct_(row, context.productVariantCol));
 
   return {
     success: true,
@@ -1283,6 +1401,10 @@ function getPartnerCatalogContext_(ss, rawToken) {
     throw new Error("Partner not found or disabled");
   }
 
+  const productVariantCol = getProductVariantColumnMap_(
+    ensureProductsVariantHeaders_(ss).headers
+  );
+
   return {
     link,
     partner,
@@ -1290,7 +1412,8 @@ function getPartnerCatalogContext_(ss, rawToken) {
       catalogData,
       link.linkId
     ),
-    productMap: getProductRowMap_(productSheet)
+    productMap: getProductRowMap_(productSheet),
+    productVariantCol
   };
 }
 
@@ -1529,7 +1652,7 @@ function getProductRowMap_(productSheet) {
   return productMap;
 }
 
-function toSafePartnerProduct_(row) {
+function toSafePartnerProduct_(row, variantCol) {
   const stock = Number(row[3]) || 0;
   const status = stock <= 0
     ? "out"
@@ -1545,7 +1668,8 @@ function toSafePartnerProduct_(row) {
         : "",
     status,
     detailsText: String(row[10] || "").trim(),
-    compareImages: String(row[11] || "").trim()
+    compareImages: String(row[11] || "").trim(),
+    ...getProductVariantMetadata_(row, variantCol)
   };
 }
 
@@ -1982,6 +2106,10 @@ function doGet(e) {
 function getProducts() {
   // 🔒 FIX: Web App ต้องอ้างอิง Spreadsheet แบบชัดเจน
   const SPREADSHEET_ID = "1xeNVv2yLADoxuZQwYBEZNvlZnt9CKvJ40RLTwNOrQfU";
+  const variantHeaderInfo = ensureProductsVariantHeaders_(getSS());
+  if (variantHeaderInfo.appended.length) {
+    CacheService.getScriptCache().remove(PUBLIC_PRODUCTS_CACHE_KEY);
+  }
   const rows = getCachedPublicProductRows();
 
   // ❌ ไม่มีข้อมูลจริง (มีแต่ header)
@@ -1989,7 +2117,8 @@ function getProducts() {
     return [];
   }
 
-  rows.shift(); // ลบ header
+  const headers = rows.shift().map(h => String(h || "").trim()); // ลบ header
+  const variantCol = getProductVariantColumnMap_(headers);
 
   return rows
     .map(r => {
@@ -2026,14 +2155,18 @@ function getProducts() {
         active,
         status,
         detailsText: String(r[10] || "").trim(),     // column K
-        compareImages: String(r[11] || "").trim()    // column L
+        compareImages: String(r[11] || "").trim(),   // column L
+        ...getProductVariantMetadata_(r, variantCol)
       };
     })
     .filter(Boolean); // ✅ ตัด null (แถวพัง / ว่าง)
 }
 
 function getAdminProducts() {
-  const sheet = getSS().getSheetByName("Products");
+  const ss = getSS();
+  ensureProductsVariantHeaders_(ss);
+
+  const sheet = ss.getSheetByName("Products");
   if (!sheet) {
     return [];
   }
@@ -2057,7 +2190,12 @@ function getAdminProducts() {
     note: headers.indexOf("note"),
     detailsText: headers.indexOf("detailsText"),
     compareImages: headers.indexOf("compareImages"),
-    costPrice: headers.indexOf("costPrice")
+    costPrice: headers.indexOf("costPrice"),
+    parentProductId: headers.indexOf("parentProductId"),
+    variantType: headers.indexOf("variantType"),
+    variantValue: headers.indexOf("variantValue"),
+    displayName: headers.indexOf("displayName"),
+    variantSortOrder: headers.indexOf("variantSortOrder")
   };
 
   return rows
@@ -2099,7 +2237,8 @@ function getAdminProducts() {
           rawCostPrice !== null &&
           rawCostPrice !== undefined
             ? Number(rawCostPrice)
-            : null
+            : null,
+        ...getProductVariantMetadata_(r, col)
       };
     })
     .filter(Boolean);
@@ -3573,6 +3712,7 @@ function updateProduct(e, auth) {
     const note   = String(e.parameter.note || "").trim();
     const detailsText   = String(e.parameter.detailsText || "").trim();
     const compareImages = String(e.parameter.compareImages || "").trim();
+    const variantMetadata = parseProductVariantMetadata_(e.parameter);
 
 
     /* ================= VALIDATE ================= */
@@ -3597,6 +3737,7 @@ function updateProduct(e, auth) {
       if (!sh) {
         throw new Error("Sheet Products not found");
       }
+      const productHeaders = ensureProductsVariantHeaders_(ss).headers;
 
       const data = sh.getDataRange().getValues();
 
@@ -3648,6 +3789,12 @@ function updateProduct(e, auth) {
             sh.getRange(i + 1, 11).setValue(detailsText);   // K: detailsText
             sh.getRange(i + 1, 12).setValue(compareImages); // L: compareImages
             sh.getRange(i + 1, 13).setValue(costPrice);     // M: costPrice
+            writeProductVariantMetadata_(
+              sh,
+              i + 1,
+              variantMetadata,
+              productHeaders
+            );
 
             if (stockChanged) {
               logSheet.appendRow([
@@ -4438,6 +4585,7 @@ function addProduct(e, auth) {
   const image  = String(e.parameter.image || "").trim();
   let   status = String(e.parameter.status || "ready").trim();
   const note   = String(e.parameter.note || "").trim();
+  const variantMetadata = parseProductVariantMetadata_(e.parameter);
 
   /* ================= VALIDATE ================= */
   if (!id || !name ||
@@ -4466,6 +4614,7 @@ function addProduct(e, auth) {
 
     const sh = ss.getSheetByName("Products");
     if (!sh) throw new Error("Products sheet not found");
+    const productHeaders = ensureProductsVariantHeaders_(ss).headers;
 
     // 🆕 LOG SHEET
     const logSheet = ss.getSheetByName("stock_logs");
@@ -4498,6 +4647,13 @@ function addProduct(e, auth) {
     ]);
 
     try {
+      writeProductVariantMetadata_(
+        sh,
+        createdRowNumber,
+        variantMetadata,
+        productHeaders
+      );
+
       /* ================= LOG CREATE ================= */
       logSheet.appendRow([
         "LOG-" + Date.now(), // logId
@@ -4572,6 +4728,7 @@ function bulkAddProducts(e, auth) {
     if (!productSheet) {
       throw new Error("Products sheet not found");
     }
+    const productHeaders = ensureProductsVariantHeaders_(ss).headers;
 
     const logSheet = ss.getSheetByName("stock_logs");
     if (!logSheet) {
@@ -4619,6 +4776,12 @@ function bulkAddProducts(e, auth) {
           product.compareImages,
           product.costPrice
         ]);
+        writeProductVariantMetadata_(
+          productSheet,
+          productSheet.getLastRow(),
+          product.variantMetadata,
+          productHeaders
+        );
         createdProductIds.push(product.productId);
       });
 
@@ -4697,10 +4860,13 @@ function bulkUpdateProducts(e, auth) {
       throw new Error("Products sheet not found");
     }
 
+    const variantHeaderResult = ensureProductsVariantHeaders_(ss);
+    const productHeaders = variantHeaderResult.headers;
     const productRows = productSheet.getDataRange().getValues();
     const validation = validateBulkUpdateProductItems(
       parsedItems.items,
-      productRows
+      productRows,
+      productHeaders
     );
 
     if (validation.errors.length) {
@@ -4726,6 +4892,18 @@ function bulkUpdateProducts(e, auth) {
         }
         if (update.hasOwnProperty("costPrice")) {
           nextRow[12] = update.costPrice;
+        }
+        if (update.variantMetadata) {
+          const variantColumns = getProductVariantColumnMap_(productHeaders);
+          PRODUCT_OPTIONAL_VARIANT_HEADERS.forEach(header => {
+            if (!Object.prototype.hasOwnProperty.call(update.variantMetadata, header)) return;
+            const columnIndex = variantColumns[header];
+            if (columnIndex === undefined || columnIndex < 0) return;
+            nextRow[columnIndex] = update.variantMetadata[header] === undefined ||
+              update.variantMetadata[header] === null
+                ? ""
+                : update.variantMetadata[header];
+          });
         }
 
         productSheet
@@ -4798,14 +4976,29 @@ function parseBulkUpdateProductItems(rawItems) {
   };
 }
 
-function validateBulkUpdateProductItems(items, productRows) {
+function validateBulkUpdateProductItems(items, productRows, productHeaders) {
   const errors = [];
   const updates = [];
   const batchSkus = new Set();
-  const allowedFields = ["productId", "price", "costPrice", "status", "active"];
-  const updateFields = ["price", "costPrice", "status", "active"];
+  const allowedFields = [
+    "productId",
+    "price",
+    "costPrice",
+    "status",
+    "active"
+  ].concat(PRODUCT_OPTIONAL_VARIANT_HEADERS);
+  const updateFields = [
+    "price",
+    "costPrice",
+    "status",
+    "active"
+  ].concat(PRODUCT_OPTIONAL_VARIANT_HEADERS);
   const allowedStatuses = ["ready", "ready_plus", "shipping", "warehouse", "out"];
   const productMap = new Map();
+  const variantHeaders = Array.isArray(productHeaders) && productHeaders.length
+    ? productHeaders
+    : [];
+  const variantColumns = getProductVariantColumnMap_(variantHeaders);
 
   productRows.slice(1).forEach((row, index) => {
     const productId = String(row[0] || "").trim().toUpperCase();
@@ -4907,6 +5100,34 @@ function validateBulkUpdateProductItems(items, productRows) {
         errors.push(bulkProductError(rowNumber, productId, "active", "Active must be true/false or 1/0"));
       } else {
         update.active = activeResult.value;
+      }
+    }
+
+    const hasVariantMetadata = PRODUCT_OPTIONAL_VARIANT_HEADERS.some(field =>
+      Object.prototype.hasOwnProperty.call(item, field)
+    );
+    if (hasVariantMetadata) {
+      try {
+        const variantMetadata = parseProductVariantMetadata_(item);
+        const selectedVariantMetadata = {};
+        PRODUCT_OPTIONAL_VARIANT_HEADERS.forEach(field => {
+          if (Object.prototype.hasOwnProperty.call(item, field)) {
+            if (variantColumns[field] === undefined || variantColumns[field] < 0) {
+              errors.push(bulkProductError(rowNumber, productId, field, "Variant metadata column is missing"));
+            }
+            selectedVariantMetadata[field] = variantMetadata[field];
+          }
+        });
+        update.variantMetadata = selectedVariantMetadata;
+      } catch (err) {
+        errors.push(
+          bulkProductError(
+            rowNumber,
+            productId,
+            "variantSortOrder",
+            err && err.message ? err.message : "Variant sort order must be an integer"
+          )
+        );
       }
     }
 
@@ -5041,9 +5262,24 @@ function validateBulkProductItems(items, existingSkus) {
     const note = String(item && item.note || "").trim();
     const detailsText = String(item && item.detailsText || "").trim();
     const compareImages = String(item && item.compareImages || "").trim();
+    let variantMetadata;
     const activeResult = parseBulkProductActive(item ? item.active : undefined);
     const allowedStatuses = ["ready", "ready_plus", "shipping", "warehouse", "out"];
     let status = rawStatus;
+
+    try {
+      variantMetadata = parseProductVariantMetadata_(item || {});
+    } catch (err) {
+      variantMetadata = parseProductVariantMetadata_({});
+      errors.push(
+        bulkProductError(
+          rowNumber,
+          productId,
+          "variantSortOrder",
+          err && err.message ? err.message : "Variant sort order must be an integer"
+        )
+      );
+    }
 
     if (!productId) {
       errors.push(bulkProductError(rowNumber, productId, "productId", "SKU is required"));
@@ -5114,7 +5350,8 @@ function validateBulkProductItems(items, existingSkus) {
       status,
       note,
       detailsText,
-      compareImages
+      compareImages,
+      variantMetadata
     });
   });
 

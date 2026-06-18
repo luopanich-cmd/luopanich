@@ -1784,6 +1784,57 @@ textarea:focus-visible {
   color: var(--text-soft);
 }
 
+.variant-size-options{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+
+.variant-size-chip{
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:var(--panel-2);
+  color:var(--text);
+  padding:7px 10px;
+  font-size:12px;
+  line-height:1.25;
+  cursor:pointer;
+  max-width:100%;
+}
+
+.variant-size-chip.selected{
+  border-color:var(--accent);
+  background:rgba(255,255,255,.14);
+  box-shadow:0 0 0 2px rgba(125,92,255,.18);
+}
+
+.variant-size-chip:disabled,
+.variant-size-chip.disabled{
+  cursor:not-allowed;
+  opacity:.48;
+}
+
+.variant-group-summary,
+.variant-selected-summary{
+  margin-top:10px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+}
+
+.variant-selected-summary{
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--panel-2);
+}
+
+.variant-add-btn{
+  margin-top:10px;
+  width:100%;
+}
+
 .product-card:active {
   transform: scale(var(--tap-scale-card));
   box-shadow: var(--shadow-card-pressed);
@@ -3480,6 +3531,8 @@ textarea.input{
  <div id="adminProductEditSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminProductEditSheetTitle" tabindex="-1"></div>
  <div id="adminStockActionSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminStockActionSheetTitle" tabindex="-1"></div>
  <div id="adminAddProductSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminAddProductSheetTitle" tabindex="-1"></div>
+ <div id="adminMultiSizeProductSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminMultiSizeProductSheetTitle" tabindex="-1"></div>
+ <div id="adminVariantScanSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminVariantScanSheetTitle" tabindex="-1"></div>
  <div id="adminBulkProductImportSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBulkProductImportSheetTitle" tabindex="-1"></div>
  <div id="adminBulkProductUpdateSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBulkProductUpdateSheetTitle" tabindex="-1"></div>
  <div id="adminLandedCostSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminLandedCostSheetTitle" tabindex="-1"></div>
@@ -3517,6 +3570,10 @@ const adminProductActionSheet = document.getElementById("adminProductActionSheet
 const adminProductEditSheet = document.getElementById("adminProductEditSheet");
 const adminStockActionSheet = document.getElementById("adminStockActionSheet");
 const adminAddProductSheet = document.getElementById("adminAddProductSheet");
+const adminMultiSizeProductSheet =
+  document.getElementById("adminMultiSizeProductSheet");
+const adminVariantScanSheet =
+  document.getElementById("adminVariantScanSheet");
 const adminBulkProductImportSheet =
   document.getElementById("adminBulkProductImportSheet");
 const adminBulkProductUpdateSheet =
@@ -3541,6 +3598,8 @@ const ADMIN_SHEETS = Object.freeze({
   productEdit: adminProductEditSheet,
   stockAction: adminStockActionSheet,
   addProduct: adminAddProductSheet,
+  multiSizeProduct: adminMultiSizeProductSheet,
+  variantScan: adminVariantScanSheet,
   bulkProductImport: adminBulkProductImportSheet,
   bulkProductUpdate: adminBulkProductUpdateSheet,
   landedCost: adminLandedCostSheet,
@@ -3572,6 +3631,24 @@ Object.assign(window, {
   toggleBulkProductUpdateProduct,
   selectVisibleBulkProductUpdateProducts,
   clearBulkProductUpdateSelection,
+  openMultiSizeProductSheet,
+  closeMultiSizeProductSheet,
+  backToAdminMenuFromMultiSizeProduct,
+  startNewMultiSizeProductBatch,
+  addMultiSizeProductRow,
+  removeMultiSizeProductRow,
+  updateMultiSizeProductField,
+  updateMultiSizeProductRowField,
+  handleMultiSizeImagePreview,
+  previewMultiSizeProducts,
+  submitMultiSizeProducts,
+  openVariantScanSheet,
+  closeVariantScanSheet,
+  backToAdminMenuFromVariantScan,
+  toggleVariantScanGroup,
+  selectAllVariantScanGroups,
+  clearVariantScanGroups,
+  applySelectedVariantScanGroups,
   openLandedCostSheet,
   closeLandedCostSheet,
   backToAdminMenuFromLandedCost,
@@ -3663,6 +3740,7 @@ const state = {
   viewerFilter: {
     status: "all"
   },
+  viewerVariantSelections: {},
 
   search: "",
   viewerSearchOpen: false,
@@ -3716,6 +3794,30 @@ const state = {
       updatedCount: 0,
       hasPreview: false,
       previewValid: false
+    },
+    multiSizeProduct: {
+      parentProductId: "",
+      displayName: "",
+      nameTemplate: "",
+      price: "",
+      costPrice: "",
+      image: "",
+      imageFile: null,
+      status: "ready",
+      active: true,
+      note: "",
+      detailsText: "",
+      rows: [],
+      hasPreview: false,
+      errors: [],
+      summary: "",
+      createdCount: 0
+    },
+    variantScan: {
+      selectedGroups: [],
+      message: "",
+      error: "",
+      appliedGroups: []
     },
     landedCost: {
       batchName: "",
@@ -4932,6 +5034,214 @@ function closeProductInfoSheet(){
     closeOverlay(sheet);
   }
 }  
+
+function getResolvedProductStatus(product) {
+  const stockNum = Number(product?.stock);
+  return stockNum <= 0
+    ? "out"
+    : String(product?.status || "ready").trim().toLowerCase();
+}
+
+function isViewerVariantProduct(product) {
+  return !!(
+    product &&
+    String(product.parentProductId || "").trim() &&
+    String(product.displayName || "").trim() &&
+    String(product.variantType || "").trim().toLowerCase() === "size" &&
+    String(product.variantValue || "").trim()
+  );
+}
+
+function getVariantGroupKey(product) {
+  return [
+    String(product?.parentProductId || "").trim(),
+    String(product?.displayName || "").trim(),
+    String(product?.variantType || "").trim().toLowerCase()
+  ].join("::");
+}
+
+function sortVariantsByOrder(variants) {
+  return [...(variants || [])].sort((a, b) => {
+    const aOrder = Number(a.variantSortOrder);
+    const bOrder = Number(b.variantSortOrder);
+    const safeA = Number.isFinite(aOrder) ? aOrder : 9999;
+    const safeB = Number.isFinite(bOrder) ? bOrder : 9999;
+    if (safeA !== safeB) return safeA - safeB;
+    return String(a.variantValue || "").localeCompare(String(b.variantValue || ""));
+  });
+}
+
+function buildViewerProductGroups(products) {
+  const groups = new Map();
+  const output = [];
+
+  (Array.isArray(products) ? products : []).forEach(product => {
+    if (!product || product.active === false) return;
+    const resolvedStatus = getResolvedProductStatus(product);
+    const safeProduct = { ...product, resolvedStatus };
+
+    if (!isViewerVariantProduct(safeProduct)) {
+      output.push(safeProduct);
+      return;
+    }
+
+    const groupKey = getVariantGroupKey(safeProduct);
+    if (!groups.has(groupKey)) {
+      const group = {
+        isVariantGroup: true,
+        groupKey,
+        parentProductId: String(safeProduct.parentProductId || "").trim(),
+        displayName: String(safeProduct.displayName || safeProduct.name || "").trim(),
+        variantType: "size",
+        variants: [],
+        image: "",
+        resolvedStatus: "ready"
+      };
+      groups.set(groupKey, group);
+      output.push(group);
+    }
+
+    groups.get(groupKey).variants.push(safeProduct);
+  });
+
+  groups.forEach(group => {
+    group.variants = sortVariantsByOrder(group.variants);
+    group.image = String(group.variants.find(item => item.image)?.image || "").trim();
+    group.resolvedStatus = getVariantGroupResolvedStatus(group);
+  });
+
+  return output;
+}
+
+function getVariantGroupResolvedStatus(group) {
+  const variants = group?.variants || [];
+  if (!variants.length) return "out";
+  const available = variants.find(variant => getResolvedProductStatus(variant) !== "out" && Number(variant.stock) > 0);
+  return available ? getResolvedProductStatus(available) : "out";
+}
+
+function getVariantGroupPriceLabel(group) {
+  const prices = (group?.variants || [])
+    .map(variant => Number(variant.price))
+    .filter(price => Number.isFinite(price));
+  if (!prices.length) return "฿0";
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  return min === max
+    ? `฿${min.toLocaleString()}`
+    : `฿${min.toLocaleString()} - ฿${max.toLocaleString()}`;
+}
+
+function getVariantGroupTotalStock(group) {
+  return (group?.variants || []).reduce((sum, variant) => sum + (Number(variant.stock) || 0), 0);
+}
+
+function getSelectedVariantFromGroup(group) {
+  if (!group?.isVariantGroup) return null;
+  const selectedId = state.viewerVariantSelections[group.groupKey];
+  return group.variants.find(variant => String(variant.productId) === String(selectedId)) || null;
+}
+
+function getViewerItemSearchText(item) {
+  if (item?.isVariantGroup) {
+    return [
+      item.displayName,
+      item.parentProductId,
+      ...(item.variants || []).flatMap(variant => [
+        variant.productId,
+        variant.name,
+        variant.variantValue,
+        variant.displayName,
+        variant.parentProductId
+      ])
+    ].join(" ").toLowerCase();
+  }
+  return [
+    item?.name,
+    item?.productId,
+    item?.displayName,
+    item?.parentProductId,
+    item?.variantValue
+  ].join(" ").toLowerCase();
+}
+
+function matchesViewerFilters(item) {
+  const search = String(state.search || "").trim().toLowerCase();
+  if (search && !getViewerItemSearchText(item).includes(search)) return false;
+
+  const statusFilter = state.viewerFilter?.status || "all";
+  if (statusFilter === "all") return true;
+
+  if (item?.isVariantGroup) {
+    return (item.variants || []).some(variant => getResolvedProductStatus(variant) === statusFilter);
+  }
+  return item.resolvedStatus === statusFilter;
+}
+
+function selectViewerVariant(groupKey, productId, event) {
+  if (event) event.stopPropagation();
+  state.viewerVariantSelections[groupKey] = productId;
+  if (
+    productSheet?.classList.contains("show") &&
+    state.selectedProduct?.isVariantGroup &&
+    state.selectedProduct.groupKey === groupKey
+  ) {
+    renderProductSheet();
+    return;
+  }
+  renderProducts();
+}
+
+function addVariantGroupToCart(groupKey, event) {
+  if (event) event.stopPropagation();
+  const group = buildViewerProductGroups(state.products)
+    .find(item => item.isVariantGroup && item.groupKey === groupKey);
+  const selected = getSelectedVariantFromGroup(group);
+  if (!selected) {
+    showToast("กรุณาเลือกไซส์ก่อน", "warning");
+    return;
+  }
+  state.selectedProduct = selected;
+  openQtySheet();
+}
+
+function openQtyForSelectedVariantFromDetail() {
+  const group = state.selectedProduct;
+  if (!group?.isVariantGroup) {
+    openQtySheet();
+    return;
+  }
+  const selected = getSelectedVariantFromGroup(group);
+  if (!selected) {
+    showToast("กรุณาเลือกไซส์ก่อน", "warning");
+    return;
+  }
+  state.selectedProduct = selected;
+  openQtySheet();
+}
+
+function renderVariantSizeOptions(group) {
+  const selected = getSelectedVariantFromGroup(group);
+  return `
+    <div class="variant-size-options">
+      ${(group?.variants || []).map(variant => {
+        const status = getResolvedProductStatus(variant);
+        const disabled = status === "out" || Number(variant.stock) <= 0;
+        const selectedClass = selected && String(selected.productId) === String(variant.productId) ? "selected" : "";
+        return `
+          <button
+            type="button"
+            class="variant-size-chip ${selectedClass}"
+            ${disabled ? "disabled" : ""}
+            onclick="selectViewerVariant(${toInlineJsStringLiteral(group.groupKey)}, ${toInlineJsStringLiteral(variant.productId)}, event)">
+            ${esc(variant.variantValue || variant.productId)}
+            <span>เหลือ ${Number(variant.stock) || 0}</span>
+          </button>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
   
 function renderProducts(){
   const app = document.getElementById("app");
@@ -4962,47 +5272,34 @@ function renderProducts(){
 
   const filteredProducts = [];
 
-  state.products.forEach(p => {
-    const stockNum = Number(p.stock);
+  if (state.mode === "viewer") {
+    buildViewerProductGroups(state.products)
+      .filter(matchesViewerFilters)
+      .forEach(item => filteredProducts.push(item));
+  } else {
+    state.products.forEach(p => {
+      const resolvedStatus = getResolvedProductStatus(p);
 
-  // 🔍 STATUS RESOLVE (ต้องมาก่อน filter ทุกครั้ง)
-    const resolvedStatus =
-      stockNum <= 0
-        ? "out"
-        : String(p.status || "ready").trim().toLowerCase();  
+      // 🔍 SEARCH FILTER (ชื่อ + รหัส)
+      if (state.search) {
+        const text = (p.name + p.productId).toLowerCase();
+        if (!text.includes(String(state.search).toLowerCase())) return;
+      }
 
-    // ❌ ไม่แสดงสินค้าที่ปิดขาย (viewer เท่านั้น)
-    if (state.mode === "viewer" && !p.active) return;
+      // 🔴 CHANGED: admin filter (ต้องอยู่หลัง resolvedStatus เสมอ)
+      if (
+        state.admin.filters &&
+        state.admin.filters.status !== "all"
+      ) {
+        if (resolvedStatus !== state.admin.filters.status) return;
+      }
 
-    // 🔍 SEARCH FILTER (ชื่อ + รหัส)
-    if (state.search) {
-      const text = (p.name + p.productId).toLowerCase();
-      if (!text.includes(String(state.search).toLowerCase())) return;
-    }
-
-// 🔍 STATUS FILTER (Viewer/Admin use resolved status)
-if (
-  state.mode === "viewer" &&
-  state.viewerFilter &&
-  state.viewerFilter.status !== "all"
-) {
-  if (resolvedStatus !== state.viewerFilter.status) return;
-}
-
-// 🔴 CHANGED: admin filter (ต้องอยู่หลัง resolvedStatus เสมอ)
-    if (
-      state.mode === "admin" &&
-      state.admin.filters &&
-      state.admin.filters.status !== "all"
-    ) {
-      if (resolvedStatus !== state.admin.filters.status) return;
-    } 
-
-    filteredProducts.push({
-      ...p,
-      resolvedStatus
+      filteredProducts.push({
+        ...p,
+        resolvedStatus
+      });
     });
-  });
+  }
 
   const pageSize = Number(state.pagination?.pageSize) || 100;
   const totalItems = filteredProducts.length;
@@ -5026,7 +5323,7 @@ if (
       out:       "หมด"
     };
  
-    const statusKey = p.resolvedStatus;
+    const statusKey = p.isVariantGroup ? getVariantGroupResolvedStatus(p) : p.resolvedStatus;
     const allowedStatusClasses = new Set([
       "ready",
       "ready_plus",
@@ -5054,7 +5351,35 @@ if (
     };
     card.onkeydown = event => handleKeyboardActivation(event, card);
 
-    card.innerHTML = `
+    if (p.isVariantGroup) {
+      const selectedVariant = getSelectedVariantFromGroup(p);
+      card.innerHTML = `
+        <img class="thumb"
+          src="${p.image ? escAttr(p.image) : "about:blank"}"
+          alt="${escAttr(p.displayName)}"
+          onerror="this.style.display='none'">
+
+        <div class="info">
+          <div class="name">${escapeHTML(p.displayName)}</div>
+          <div class="sku">กลุ่ม: ${escapeHTML(p.parentProductId)}</div>
+          <div class="price">ราคา: ${escapeHTML(getVariantGroupPriceLabel(p))}</div>
+          <div class="variant-group-summary">
+            เลือกไซส์ · สต็อกรวม ${getVariantGroupTotalStock(p)} ชิ้น
+          </div>
+          ${renderVariantSizeOptions(p)}
+          ${
+            selectedVariant
+              ? `<div class="variant-selected-summary">เลือก: ${escapeHTML(selectedVariant.variantValue || "-")} · SKU ${escapeHTML(selectedVariant.productId || "-")} · เหลือ ${Number(selectedVariant.stock) || 0}</div>`
+              : `<div class="variant-selected-summary">กรุณาเลือกไซส์ก่อน</div>`
+          }
+          <button class="btn btn-primary variant-add-btn" type="button"
+            onclick="addVariantGroupToCart(${toInlineJsStringLiteral(p.groupKey)}, event)">
+            เพิ่มลงตะกร้า
+          </button>
+        </div>
+      `;
+    } else {
+      card.innerHTML = `
       <img class="thumb"
         src="${p.image ? escAttr(p.image) : "about:blank"}"
         alt="${escAttr(p.name)}"
@@ -5063,6 +5388,7 @@ if (
       <div class="info">
         <div class="name">${escapeHTML(p.name)}</div>
         <div class="sku">รหัส: ${escapeHTML(p.productId)}</div>
+        ${renderAdminProductVariantMeta(p)}
         <div class="price">ราคา: ฿${Number(p.price).toLocaleString()}</div>
 
         <div class="meta">
@@ -5073,6 +5399,7 @@ if (
         </div>
       </div>
     `;
+    }
 
     app.appendChild(card);
     found = true;
@@ -5180,6 +5507,67 @@ Object.assign(window, {
 function renderProductSheet(){
   const p = state.selectedProduct;
   if (!productSheet || !p) return;
+
+  if (p.isVariantGroup) {
+    const selectedVariant = getSelectedVariantFromGroup(p);
+    const detailProduct = selectedVariant || p.variants?.[0] || {};
+
+    productSheet.innerHTML = `
+      <button
+        class="sheet-close sheet-close-btn"
+        onclick="closeProduct()"
+        aria-label="Close"
+      >
+        ×
+      </button>
+
+      <h3 id="productSheetTitle" class="product-title">${esc(p.displayName)}</h3>
+
+      <div class="product-sku">
+        กลุ่มสินค้า: ${esc(p.parentProductId)}
+      </div>
+
+      <img
+        src="${escAttr(p.image || detailProduct.image || '')}"
+        alt="${escAttr(p.displayName)}"
+        class="product-image product-info-zoom"
+        onclick="openImageViewer(${toInlineJsStringLiteral(p.image || detailProduct.image || "")})"
+      >
+
+      <div class="price">${esc(getVariantGroupPriceLabel(p))}</div>
+      <div class="stock">สต็อกรวม ${getVariantGroupTotalStock(p)} ชิ้น</div>
+
+      <div class="variant-selected-summary">
+        เลือกไซส์:
+        ${selectedVariant
+          ? `${esc(selectedVariant.variantValue || "-")} · SKU ${esc(selectedVariant.productId || "-")} · เหลือ ${Number(selectedVariant.stock) || 0}`
+          : "กรุณาเลือกไซส์ก่อน"}
+      </div>
+      ${renderVariantSizeOptions(p)}
+
+      ${
+        detailProduct.detailsText || detailProduct.compareImages
+          ? `
+            <button
+              class="btn btn-outline product-detail-btn"
+              onclick="openProductInfoSheet(${selectedVariant ? "getSelectedVariantFromGroup(state.selectedProduct)" : "state.selectedProduct.variants[0]"})">
+              รายละเอียดสินค้า
+            </button>
+          `
+          : ""
+      }
+
+      <div class="product-action-zone">
+        <button
+          class="btn btn-primary"
+          onclick="openQtyForSelectedVariantFromDetail()"
+        >
+          เพิ่มลงตะกร้า
+        </button>
+      </div>
+    `;
+    return;
+  }
 
   productSheet.innerHTML = `
     <!-- ❌ CLOSE BUTTON (TOP-RIGHT) -->
@@ -5857,6 +6245,8 @@ function closeTopSheet(){
     document.getElementById("bulkPendingDeliverySheet"),
     document.getElementById("pendingDeliverySheet"),
     document.getElementById("adminAddProductSheet"),
+    document.getElementById("adminMultiSizeProductSheet"),
+    document.getElementById("adminVariantScanSheet"),
     document.getElementById("adminBulkProductImportSheet"),
     document.getElementById("adminBulkProductUpdateSheet"),
     document.getElementById("adminLandedCostSheet"),
@@ -6810,6 +7200,16 @@ function renderAdminMenuInStockSheet() {
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(handleOpenAddProduct)">
         ➕ เพิ่มสินค้าใหม่
+      </button>
+
+      <button class="btn btn-secondary"
+        onclick="closeStockMenuSheetThen(openMultiSizeProductSheet)">
+        เพิ่มสินค้าแบบหลายไซส์
+      </button>
+
+      <button class="btn btn-secondary"
+        onclick="closeStockMenuSheetThen(openVariantScanSheet)">
+        สแกนสินค้าเก่าเป็นกลุ่มไซส์
       </button>
 
       <button class="btn btn-secondary"
@@ -9047,6 +9447,16 @@ function openMainMenu(triggerEl){
                   onclick="closeMainMenu(); handleOpenAddProduct();">
                   ➕ เพิ่มสินค้าใหม่
                 </button>
+
+                <button class="btn btn-secondary"
+                  onclick="closeMainMenu(); openMultiSizeProductSheet();">
+                  เพิ่มสินค้าแบบหลายไซส์
+                </button>
+
+                <button class="btn btn-secondary"
+                  onclick="closeMainMenu(); openVariantScanSheet();">
+                  สแกนสินค้าเก่าเป็นกลุ่มไซส์
+                </button>
                 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openBulkProductImportSheet();">
@@ -9152,6 +9562,13 @@ function openAddProduct(force = false){
   const safeDraftCostPrice = escAttr(draft.costPrice || "");
   const safeDraftStock = escAttr(draft.stock || "");
   const safeNote = esc(draft.note || "");
+  const draftVariant = {
+    parentProductId: draft.parentProductId || "",
+    variantType: draft.variantType || "",
+    variantValue: draft.variantValue || "",
+    displayName: draft.displayName || "",
+    variantSortOrder: draft.variantSortOrder || ""
+  };
  
   adminAddProductSheet.innerHTML = `
     <div class="sheet-topbar">
@@ -9223,6 +9640,8 @@ function openAddProduct(force = false){
       </select>
     </div>
     </div>
+
+${renderProductVariantFields("add", draftVariant)}
 
 <!-- 📝 NEW: NOTE FIELD -->
 <div class="admin-detail-section">
@@ -9338,6 +9757,10 @@ function closeAddProduct(){
    if (document.getElementById("addNote")) {
      document.getElementById("addNote").value = "";
    }
+   PRODUCT_VARIANT_FIELDS.forEach(field => {
+     const input = document.getElementById(`add${field}`);
+     if (input) input.value = "";
+   });
    if (document.getElementById("addContinueMode")) {
      document.getElementById("addContinueMode").checked = false;
    }
@@ -9347,7 +9770,12 @@ function closeAddProduct(){
      costPrice: "",
      stock: "",
      status: "ready",
-     note: ""
+     note: "",
+     parentProductId: "",
+     variantType: "",
+     variantValue: "",
+     displayName: "",
+     variantSortOrder: ""
    };
  } 
 
@@ -9630,6 +10058,13 @@ function openProductEdit(p){
   const safeEditStock = escAttr(latestProduct.stock ?? "");
   const safeEditNote = esc(latestProduct.note || "");
   const safeEditDetailsText = esc(latestProduct.detailsText || "");
+  const editVariant = {
+    parentProductId: latestProduct.parentProductId || "",
+    variantType: latestProduct.variantType || "",
+    variantValue: latestProduct.variantValue || "",
+    displayName: latestProduct.displayName || "",
+    variantSortOrder: latestProduct.variantSortOrder || ""
+  };
   const editStockQty = Number(latestProduct.stock) || 0;
   const editStatusKey = normalizeProductStatus(
     latestProduct.status || (editStockQty <= 0 ? "out" : "ready")
@@ -9728,6 +10163,8 @@ function openProductEdit(p){
         </option>
       </select>
     </div>
+
+    ${renderProductVariantFields("edit", editVariant)}
 
     <!-- 📝 NEW: NOTE FIELD -->
     <div class="form-group">
@@ -10098,6 +10535,7 @@ async function submitProductEdit(){
   );
   const oldProductId = normalizeProductId(p.productId);
   const note   = document.getElementById("editNote")?.value.trim() || "";
+  const variantMetadata = getProductVariantFormValues("edit");
   const detailsText =
   document.getElementById("editDetailsText")?.value.trim() || "";
 
@@ -10130,6 +10568,18 @@ async function submitProductEdit(){
   }
 
   // 🔒 SKU Duplicate Check (วางตรงนี้เท่านั้น)
+  try {
+    validateProductVariantFormValues(variantMetadata);
+  } catch (err) {
+    showToast(err.message || "ข้อมูลตัวเลือกสินค้าไม่ถูกต้อง", "error");
+    state.admin.isSubmitting = false;
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalText;
+    }
+    return;
+  }
+
  const duplicate = state.products.find(x =>
    normalizeProductId(x.productId) === newProductId &&
    normalizeProductId(x.productId) !== oldProductId
@@ -10176,6 +10626,7 @@ async function submitProductEdit(){
     form.append("status", status);
     form.append("image", imageUrl);
     form.append("note", note);
+    appendProductVariantFieldsToForm(form, variantMetadata);
     form.append("detailsText", detailsText);
     form.append("compareImages", compareImages);
 
@@ -10294,10 +10745,99 @@ function normalizeProductId(value = "") {
  }
 
 const ALLOWED_PRODUCT_STATUS = ["ready", "ready_plus", "shipping", "warehouse", "out"];
+const PRODUCT_VARIANT_FIELDS = [
+  "parentProductId",
+  "variantType",
+  "variantValue",
+  "displayName",
+  "variantSortOrder"
+];
 
 function normalizeProductStatus(value = "") {
   const normalized = String(value || "").trim().toLowerCase();
   return ALLOWED_PRODUCT_STATUS.includes(normalized) ? normalized : "ready";
+}
+
+function getProductVariantFormValues(prefix) {
+  const values = {};
+  PRODUCT_VARIANT_FIELDS.forEach(field => {
+    const input = document.getElementById(`${prefix}${field}`);
+    values[field] = input ? input.value.trim() : "";
+  });
+  return values;
+}
+
+function validateProductVariantFormValues(values) {
+  const sortValue = String(values?.variantSortOrder || "").trim();
+  if (sortValue !== "" && !Number.isInteger(Number(sortValue))) {
+    throw new Error("ลำดับไซส์ต้องเป็นตัวเลขจำนวนเต็ม");
+  }
+}
+
+function appendProductVariantFieldsToForm(form, values) {
+  PRODUCT_VARIANT_FIELDS.forEach(field => {
+    form.append(field, values?.[field] || "");
+  });
+}
+
+function renderProductVariantFields(prefix, values = {}) {
+  const id = field => `${prefix}${field}`;
+  return `
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">ข้อมูลกลุ่มสินค้า / ไซส์ของ SKU นี้</div>
+      <div class="helper-text">
+        หมายเหตุ: 1 รหัสสินค้า = 1 ไซส์ หากมี S/M/L/XL ให้สร้างสินค้าแยก 4 รหัส แต่ใช้รหัสสินค้าแม่เดียวกัน
+      </div>
+      <div class="form-group">
+        <label for="${id("parentProductId")}">รหัสสินค้าแม่ / รหัสกลุ่ม</label>
+        <input id="${id("parentProductId")}" value="${escAttr(values.parentProductId || "")}" placeholder="เช่น BY506">
+        <div class="helper-text">ใช้รหัสเดียวกันสำหรับสินค้าชุดเดียวกัน เช่น BY506</div>
+      </div>
+      <div class="form-group">
+        <label for="${id("variantType")}">ประเภทตัวเลือก</label>
+        <input id="${id("variantType")}" value="${escAttr(values.variantType || "")}" placeholder="เช่น size">
+        <div class="helper-text">เช่น size หรือ color</div>
+      </div>
+      <div class="form-group">
+        <label for="${id("variantValue")}">ไซส์/ตัวเลือกของ SKU นี้</label>
+        <input id="${id("variantValue")}" value="${escAttr(values.variantValue || "")}" placeholder="เช่น S / อก 44">
+        <div class="helper-text">ใส่เฉพาะไซส์ของรหัสนี้ เช่น S / อก 44 หรือ M / อก 46 ห้ามใส่ S,M,L,XL รวมกันในช่องเดียว</div>
+      </div>
+      <div class="form-group">
+        <label for="${id("displayName")}">ชื่อแสดงรวมของสินค้าแม่</label>
+        <input id="${id("displayName")}" value="${escAttr(values.displayName || "")}" placeholder="เช่น เสื้อ Human Made Bangkok Animal Graphic T-shirt สี Black">
+        <div class="helper-text">ใช้ชื่อเดียวกันทุกไซส์ เพื่อให้อนาคตรวมเป็นการ์ดเดียวได้</div>
+      </div>
+      <div class="form-group">
+        <label for="${id("variantSortOrder")}">ลำดับไซส์ของ SKU นี้</label>
+        <input id="${id("variantSortOrder")}" type="number" step="1" value="${escAttr(values.variantSortOrder || "")}" placeholder="เช่น 1">
+        <div class="helper-text">ใส่ตัวเลขของไซส์นี้เท่านั้น เช่น S=1, M=2, L=3, XL=4</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAdminProductVariantMeta(product) {
+  if (state.mode !== "admin" || !product) return "";
+
+  const parentProductId = String(product.parentProductId || "").trim();
+  const variantType = String(product.variantType || "").trim();
+  const variantValue = String(product.variantValue || "").trim();
+  const displayName = String(product.displayName || "").trim();
+  const variantSortOrder = String(product.variantSortOrder || "").trim();
+
+  if (!parentProductId && !variantType && !variantValue && !displayName && !variantSortOrder) {
+    return "";
+  }
+
+  return `
+    <div class="sku">
+      ${parentProductId ? `กลุ่ม: ${escapeHtml(parentProductId)}` : ""}
+      ${variantType || variantValue ? `${parentProductId ? " · " : ""}${escapeHtml(variantType || "ตัวเลือก")}: ${escapeHtml(variantValue || "-")}` : ""}
+      ${variantSortOrder ? ` · ลำดับ: ${escapeHtml(variantSortOrder)}` : ""}
+      ${displayName ? `<br>ชื่อรวม: ${escapeHtml(displayName)}` : ""}
+    </div>
+  `;
 }
 
 function validateProductImageFile(file) {
@@ -10348,6 +10888,7 @@ async function submitAddProduct(btn){
    document.getElementById("addStatus").value
  );
  const note      = document.getElementById("addNote")?.value.trim() || "";
+ const variantMetadata = getProductVariantFormValues("add");
  const continueMode =
    document.getElementById("addContinueMode")?.checked === true;   
  const active    = true; // 🔒 เพิ่มสินค้าใหม่ = ยังขายอยู่เสมอ
@@ -10371,6 +10912,8 @@ async function submitAddProduct(btn){
     if (price < 0 || costPrice < 0 || stock < 0) {
       throw new Error("ราคา ราคาต้นทุน และจำนวน ต้องมากกว่าหรือเท่ากับ 0");
     }
+
+    validateProductVariantFormValues(variantMetadata);
 
     const dup = state.products.find(
       p => normalizeProductId(p.productId) === productId
@@ -10409,9 +10952,10 @@ async function submitAddProduct(btn){
     form.append("costPrice", costPrice);
     form.append("stock", stock);
   form.append("active", active);
-  form.append("status", status);
+    form.append("status", status);
     form.append("image", imageUrl);
     form.append("note", note);
+    appendProductVariantFieldsToForm(form, variantMetadata);
 
     const res = await postFormAction(form);
 
@@ -10429,7 +10973,8 @@ async function submitAddProduct(btn){
    costPrice,
    stock,
    status,
-   note
+   note,
+   ...variantMetadata
  };
  await refreshProducts();
 
@@ -10444,6 +10989,10 @@ async function submitAddProduct(btn){
    document.getElementById("addStock").value = state.smartAddDraft.stock ?? "";
    document.getElementById("addStatus").value = state.smartAddDraft.status ?? "ready";
    document.getElementById("addNote").value = state.smartAddDraft.note ?? "";
+   PRODUCT_VARIANT_FIELDS.forEach(field => {
+     const input = document.getElementById(`add${field}`);
+     if (input) input.value = state.smartAddDraft[field] ?? "";
+   });
 
    const img = document.getElementById("addImagePreview");
    if (img) {
@@ -10477,6 +11026,923 @@ async function submitAddProduct(btn){
   }
 }
 
+function createDefaultMultiSizeRows() {
+  return [
+    { variantValue: "S / อก 44", stock: "", variantSortOrder: "1", nameOverride: "" },
+    { variantValue: "M / อก 46", stock: "", variantSortOrder: "2", nameOverride: "" },
+    { variantValue: "L / อก 48", stock: "", variantSortOrder: "3", nameOverride: "" },
+    { variantValue: "XL / อก 50", stock: "", variantSortOrder: "4", nameOverride: "" }
+  ];
+}
+
+function resetMultiSizeProductState() {
+  state.admin.multiSizeProduct = {
+    parentProductId: "",
+    displayName: "",
+    nameTemplate: "",
+    price: "",
+    costPrice: "",
+    image: "",
+    imageFile: null,
+    status: "ready",
+    active: true,
+    note: "",
+    detailsText: "",
+    rows: createDefaultMultiSizeRows(),
+    hasPreview: false,
+    errors: [],
+    summary: "",
+    createdCount: 0
+  };
+}
+
+function ensureAdminSessionForMultiSizeProduct() {
+  if (
+    state.mode !== "admin" ||
+    !state.admin.loggedIn ||
+    !state.admin.token ||
+    isAdminSessionExpired()
+  ) {
+    showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+    exitAdmin();
+    return false;
+  }
+  return true;
+}
+
+function openMultiSizeProductSheet() {
+  if (!ensureAdminSessionForMultiSizeProduct()) return;
+  resetMultiSizeProductState();
+  renderMultiSizeProductSheet();
+  openOverlay(adminMultiSizeProductSheet);
+}
+
+function closeMultiSizeProductSheet() {
+  if (state.admin.multiSizeProduct?.createdCount > 0) {
+    resetMultiSizeProductState();
+  }
+  closeOverlay(adminMultiSizeProductSheet);
+  state.ui.backdropLocked = false;
+  requestAnimationFrame(syncOverlayBackdropState);
+}
+
+function backToAdminMenuFromMultiSizeProduct() {
+  closeOverlay(adminMultiSizeProductSheet);
+  resetMultiSizeProductState();
+  state.ui.backdropLocked = false;
+  syncOverlayBackdropState();
+  requestAnimationFrame(() => openMainMenu());
+}
+
+function startNewMultiSizeProductBatch() {
+  resetMultiSizeProductState();
+  renderMultiSizeProductSheet();
+  state.ui.backdropLocked = false;
+  requestAnimationFrame(syncOverlayBackdropState);
+}
+
+function updateMultiSizeProductField(field, value) {
+  if (!state.admin.multiSizeProduct) resetMultiSizeProductState();
+  state.admin.multiSizeProduct[field] =
+    field === "active" ? value === true : value || "";
+  state.admin.multiSizeProduct.hasPreview = false;
+  state.admin.multiSizeProduct.errors = [];
+  state.admin.multiSizeProduct.summary = "";
+  state.admin.multiSizeProduct.createdCount = 0;
+}
+
+function handleMultiSizeImagePreview(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+
+  try {
+    validateProductImageFile(file);
+  } catch (err) {
+    input.value = "";
+    state.admin.multiSizeProduct.imageFile = null;
+    const img = document.getElementById("multiSizeImagePreview");
+    if (img) {
+      img.removeAttribute("src");
+      img.style.display = "none";
+    }
+    showToast(err.message || "ไฟล์รูปไม่ถูกต้อง", "error");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = document.getElementById("multiSizeImagePreview");
+    if (img) {
+      img.src = reader.result;
+      img.style.display = "block";
+    }
+    state.admin.multiSizeProduct.imageFile = file;
+    state.admin.multiSizeProduct.hasPreview = false;
+    state.admin.multiSizeProduct.errors = [];
+    state.admin.multiSizeProduct.summary = "";
+    state.admin.multiSizeProduct.createdCount = 0;
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateMultiSizeProductRowField(index, field, value) {
+  const rows = state.admin.multiSizeProduct.rows || [];
+  if (!rows[index]) return;
+  rows[index][field] = value || "";
+  state.admin.multiSizeProduct.hasPreview = false;
+  state.admin.multiSizeProduct.errors = [];
+  state.admin.multiSizeProduct.summary = "";
+  state.admin.multiSizeProduct.createdCount = 0;
+}
+
+function addMultiSizeProductRow() {
+  if (!Array.isArray(state.admin.multiSizeProduct.rows)) {
+    state.admin.multiSizeProduct.rows = [];
+  }
+  state.admin.multiSizeProduct.rows.push({
+    variantValue: "",
+    stock: "",
+    variantSortOrder: String(state.admin.multiSizeProduct.rows.length + 1),
+    nameOverride: ""
+  });
+  state.admin.multiSizeProduct.hasPreview = false;
+  renderMultiSizeProductSheet();
+}
+
+function removeMultiSizeProductRow(index) {
+  const rows = state.admin.multiSizeProduct.rows || [];
+  if (rows.length <= 1) {
+    showToast("ต้องมีไซส์อย่างน้อย 1 แถว", "warning");
+    return;
+  }
+  rows.splice(index, 1);
+  state.admin.multiSizeProduct.hasPreview = false;
+  state.admin.multiSizeProduct.errors = [];
+  renderMultiSizeProductSheet();
+}
+
+function getMultiSizeSkuSuffix(variantValue) {
+  const firstPart = String(variantValue || "")
+    .split("/")
+    .shift()
+    .trim();
+  return firstPart
+    .replace(/\s+/g, "")
+    .replace(/[^A-Za-z0-9ก-๙_-]/g, "")
+    .toUpperCase();
+}
+
+function getMultiSizeGeneratedSku(parentProductId, variantValue) {
+  return normalizeProductId(
+    String(parentProductId || "") + getMultiSizeSkuSuffix(variantValue)
+  );
+}
+
+function getMultiSizePreviewItems() {
+  const multiState = state.admin.multiSizeProduct;
+  const parentProductId = normalizeProductId(multiState.parentProductId);
+  const displayName = String(multiState.displayName || "").trim();
+  const nameTemplate = String(multiState.nameTemplate || "").trim();
+  const baseName = nameTemplate || displayName;
+
+  return (multiState.rows || [])
+    .map((row, index) => {
+      const variantValue = String(row.variantValue || "").trim();
+      const productId = getMultiSizeGeneratedSku(parentProductId, variantValue);
+      const nameOverride = String(row.nameOverride || "").trim();
+      return {
+        rowNumber: index + 1,
+        productId,
+        name: nameOverride || (variantValue ? `${baseName} ${variantValue}` : baseName),
+        price: String(multiState.price || "").trim(),
+        costPrice: String(multiState.costPrice || "").trim(),
+        stock: String(row.stock || "").trim(),
+        status: String(multiState.status || "ready").trim(),
+        image: String(multiState.image || "").trim(),
+        active: String(multiState.active !== false),
+        note: String(multiState.note || "").trim(),
+        detailsText: String(multiState.detailsText || "").trim(),
+        compareImages: "",
+        parentProductId,
+        variantType: "size",
+        variantValue,
+        displayName,
+        variantSortOrder: String(row.variantSortOrder || "").trim()
+      };
+    });
+}
+
+function validateMultiSizePreviewItems(items) {
+  const errors = [];
+  const multiState = state.admin.multiSizeProduct;
+  const parentProductId = normalizeProductId(multiState.parentProductId);
+  const displayName = String(multiState.displayName || "").trim();
+  const price = Number(multiState.price);
+  const costPrice = Number(multiState.costPrice);
+  const existingSkus = new Set(
+    (Array.isArray(state.products) ? state.products : [])
+      .map(product => normalizeProductId(product.productId))
+      .filter(Boolean)
+  );
+  const batchSkus = new Set();
+
+  if (!parentProductId) errors.push("กรุณากรอกรหัสสินค้าแม่ / รหัสกลุ่ม");
+  if (!displayName) errors.push("กรุณากรอกชื่อแสดงรวมของสินค้าแม่");
+  if (!Number.isInteger(price) || price < 0) errors.push("ราคาขายต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป");
+  if (!Number.isInteger(costPrice) || costPrice < 0) errors.push("ราคาต้นทุนต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป");
+  if (!items.length) errors.push("กรุณาเพิ่มไซส์อย่างน้อย 1 แถว");
+
+  items.forEach(item => {
+    const rowLabel = `แถว ${item.rowNumber}`;
+    const stock = Number(item.stock);
+    const sortOrder = Number(item.variantSortOrder);
+
+    if (!item.variantValue) errors.push(`${rowLabel}: กรุณากรอกไซส์/ตัวเลือก`);
+    if (!item.productId || item.productId === parentProductId) errors.push(`${rowLabel}: ไม่สามารถสร้าง SKU ได้`);
+    if (item.stock === "" || !Number.isInteger(stock) || stock < 0) errors.push(`${rowLabel}: สต็อกต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป`);
+    if (item.variantSortOrder === "" || !Number.isInteger(sortOrder)) errors.push(`${rowLabel}: ลำดับไซส์ต้องเป็นตัวเลขจำนวนเต็ม`);
+    if (existingSkus.has(item.productId)) errors.push(`${rowLabel}: SKU ${item.productId} มีอยู่แล้ว`);
+    if (batchSkus.has(item.productId)) errors.push(`${rowLabel}: SKU ${item.productId} ซ้ำในชุดนี้`);
+    if (!item.name) errors.push(`${rowLabel}: กรุณากรอกชื่อสินค้า`);
+    batchSkus.add(item.productId);
+  });
+
+  return errors;
+}
+
+function previewMultiSizeProducts() {
+  const items = getMultiSizePreviewItems();
+  const errors = validateMultiSizePreviewItems(items);
+  state.admin.multiSizeProduct.hasPreview = true;
+  state.admin.multiSizeProduct.errors = errors;
+  state.admin.multiSizeProduct.summary = "";
+  renderMultiSizeProductSheet();
+}
+
+function renderMultiSizeProductPreview(items, errors) {
+  if (!state.admin.multiSizeProduct.hasPreview) {
+    return `<div class="empty-state">กรอกข้อมูลแล้วกด “ตรวจสอบรายการ” เพื่อดู SKU ที่จะสร้าง</div>`;
+  }
+
+  return `
+    ${errors.length ? `<ul class="bulk-error-list">${errors.map(error => `<li>${esc(error)}</li>`).join("")}</ul>` : ""}
+    <div class="bulk-preview-list">
+      ${items.map(item => `
+        <div class="bulk-preview-card ${errors.length ? "" : "status-approved"}">
+          <div class="name">${esc(item.productId || "-")}</div>
+          <div class="bulk-preview-meta">
+            ${esc(item.name || "-")}<br>
+            กลุ่ม: ${esc(item.parentProductId || "-")} · ${esc(item.variantType)}: ${esc(item.variantValue || "-")} · ลำดับ: ${esc(item.variantSortOrder || "-")}<br>
+            ราคา: ฿${esc(item.price || "0")} · ต้นทุน: ฿${esc(item.costPrice || "0")} · สต็อก: ${esc(item.stock || "0")}
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderMultiSizeProductSheet() {
+  const multiState = state.admin.multiSizeProduct;
+  const items = getMultiSizePreviewItems();
+  const errors = Array.isArray(multiState.errors) ? multiState.errors : [];
+  const isSaved = Number(multiState.createdCount || 0) > 0;
+  const canSubmit = !isSaved && multiState.hasPreview && items.length > 0 && errors.length === 0 && !state.admin.isSubmitting;
+
+  adminMultiSizeProductSheet.innerHTML = `
+    <div class="sheet-topbar">
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="closeMultiSizeProductSheet()"
+        aria-label="ปิดหน้าเพิ่มสินค้าแบบหลายไซส์">×</button>
+      <h3 id="adminMultiSizeProductSheetTitle">เพิ่มสินค้าแบบหลายไซส์</h3>
+      <div aria-hidden="true"></div>
+    </div>
+
+    <div class="helper-text" style="margin-bottom:10px">
+      ระบบจะสร้างสินค้าแยก 1 SKU ต่อ 1 ไซส์ โดยใช้รหัสสินค้าแม่เดียวกัน สต็อกยังแยกตาม SKU เหมือนเดิม
+    </div>
+
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">ข้อมูลสินค้าแม่</div>
+      <div class="form-group">
+        <label>รหัสสินค้าแม่ / รหัสกลุ่ม</label>
+        <input value="${escAttr(multiState.parentProductId || "")}" placeholder="เช่น BY506"
+          oninput="updateMultiSizeProductField('parentProductId', this.value)">
+      </div>
+      <div class="form-group">
+        <label>ชื่อแสดงรวมของสินค้าแม่</label>
+        <input value="${escAttr(multiState.displayName || "")}" placeholder="เช่น เสื้อ Human Made Bangkok Animal Graphic T-shirt สี Black"
+          oninput="updateMultiSizeProductField('displayName', this.value)">
+      </div>
+      <div class="form-group">
+        <label>เทมเพลตชื่อสินค้าแต่ละ SKU</label>
+        <input value="${escAttr(multiState.nameTemplate || "")}" placeholder="เว้นว่างเพื่อใช้ชื่อรวม + ไซส์"
+          oninput="updateMultiSizeProductField('nameTemplate', this.value)">
+      </div>
+      <div class="form-group">
+        <label>ราคาขาย</label>
+        <input type="number" value="${escAttr(multiState.price || "")}" placeholder="450"
+          oninput="updateMultiSizeProductField('price', this.value)">
+      </div>
+      <div class="form-group">
+        <label>ราคาต้นทุน</label>
+        <input type="number" value="${escAttr(multiState.costPrice || "")}" placeholder="250"
+          oninput="updateMultiSizeProductField('costPrice', this.value)">
+      </div>
+      <div class="form-group">
+        <label>รูปสินค้า URL</label>
+        <img id="multiSizeImagePreview"
+          src="${escAttr(multiState.image || "")}"
+          style="width:120px;border-radius:12px;display:${multiState.image ? "block" : "none"};margin-bottom:6px">
+        <input
+          id="multiSizeImageFile"
+          type="file"
+          accept="image/*"
+          onchange="handleMultiSizeImagePreview(this)">
+        <div class="helper-text">อัปโหลดรูปเพื่อใช้กับทุก SKU หรือใส่ URL เองด้านล่าง</div>
+        <input value="${escAttr(multiState.image || "")}" placeholder="https://example.com/image.jpg"
+          oninput="updateMultiSizeProductField('image', this.value)">
+      </div>
+      <div class="form-group">
+        <label>สถานะสินค้า</label>
+        <select onchange="updateMultiSizeProductField('status', this.value)">
+          <option value="ready" ${multiState.status === "ready" ? "selected" : ""}>พร้อมส่ง</option>
+          <option value="ready_plus" ${multiState.status === "ready_plus" ? "selected" : ""}>พร้อมส่ง สามารถบวกเพิ่มได้</option>
+          <option value="shipping" ${multiState.status === "shipping" ? "selected" : ""}>ระหว่างจัดส่ง</option>
+          <option value="warehouse" ${multiState.status === "warehouse" ? "selected" : ""}>โกดังไทย</option>
+          <option value="out" ${multiState.status === "out" ? "selected" : ""}>หมด</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="continue-row">
+          <input type="checkbox" ${multiState.active !== false ? "checked" : ""}
+            onchange="updateMultiSizeProductField('active', this.checked)">
+          <span class="continue-text">เปิดใช้งานสินค้าเหล่านี้หลังสร้าง</span>
+        </label>
+      </div>
+      <div class="form-group">
+        <label>หมายเหตุ</label>
+        <textarea rows="3" oninput="updateMultiSizeProductField('note', this.value)">${esc(multiState.note || "")}</textarea>
+      </div>
+      <div class="form-group">
+        <label>รายละเอียดสินค้า</label>
+        <textarea rows="3" oninput="updateMultiSizeProductField('detailsText', this.value)">${esc(multiState.detailsText || "")}</textarea>
+      </div>
+    </div>
+
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">ไซส์ / SKU ที่จะสร้าง</div>
+      <div class="helper-text">SKU จะสร้างจาก รหัสสินค้าแม่ + โค้ดไซส์ เช่น BY506 + S = BY506S</div>
+      <div class="bulk-preview-list">
+        ${(multiState.rows || []).map((row, index) => {
+          const sku = getMultiSizeGeneratedSku(multiState.parentProductId, row.variantValue);
+          return `
+            <div class="bulk-preview-card">
+              <div class="admin-product-summary-meta" style="margin-bottom:8px">
+                <span>SKU: ${esc(sku || "-")}</span>
+              </div>
+              <div class="form-group">
+                <label>ไซส์/ตัวเลือก</label>
+                <input value="${escAttr(row.variantValue || "")}" placeholder="เช่น S / อก 44"
+                  oninput="updateMultiSizeProductRowField(${index}, 'variantValue', this.value)">
+              </div>
+              <div class="form-group">
+                <label>สต็อก</label>
+                <input type="number" value="${escAttr(row.stock || "")}" placeholder="65"
+                  oninput="updateMultiSizeProductRowField(${index}, 'stock', this.value)">
+              </div>
+              <div class="form-group">
+                <label>ลำดับไซส์</label>
+                <input type="number" step="1" value="${escAttr(row.variantSortOrder || "")}" placeholder="${index + 1}"
+                  oninput="updateMultiSizeProductRowField(${index}, 'variantSortOrder', this.value)">
+              </div>
+              <div class="form-group">
+                <label>ชื่อสินค้าเฉพาะ SKU นี้ (ถ้ามี)</label>
+                <input value="${escAttr(row.nameOverride || "")}" placeholder="เว้นว่างเพื่อใช้ชื่อรวม + ไซส์"
+                  oninput="updateMultiSizeProductRowField(${index}, 'nameOverride', this.value)">
+              </div>
+              <button class="btn btn-outline" type="button" onclick="removeMultiSizeProductRow(${index})">
+                ลบแถวนี้
+              </button>
+            </div>
+          `;
+        }).join("")}
+      </div>
+      <button class="btn btn-outline" type="button" onclick="addMultiSizeProductRow()">
+        เพิ่มแถวไซส์
+      </button>
+    </div>
+
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">ตรวจสอบก่อนบันทึก</div>
+      ${multiState.summary ? `<div class="bulk-import-success-card">${esc(multiState.summary)}</div>` : ""}
+      ${renderMultiSizeProductPreview(items, errors)}
+    </div>
+
+    ${isSaved ? `
+      <div class="sheet-action-footer">
+        <button class="btn btn-primary" type="button" onclick="backToAdminMenuFromMultiSizeProduct()">
+          กลับเมนูแอดมิน
+        </button>
+        <button class="btn btn-outline" type="button" onclick="startNewMultiSizeProductBatch()">
+          เพิ่มสินค้าแบบหลายไซส์ชุดใหม่
+        </button>
+      </div>
+    ` : `
+      <button class="btn btn-outline" type="button" onclick="previewMultiSizeProducts()">
+        ตรวจสอบรายการ
+      </button>
+
+      <div class="sheet-action-footer">
+        <button class="btn btn-primary" ${canSubmit ? "" : "disabled"}
+          onclick="submitMultiSizeProducts(this)">
+          ${state.admin.isSubmitting ? "กำลังสร้างสินค้า..." : "บันทึกสินค้าแบบหลายไซส์"}
+        </button>
+        <button class="btn btn-outline" onclick="closeMultiSizeProductSheet()">
+          ยกเลิก
+        </button>
+      </div>
+    `}
+  `;
+}
+
+async function submitMultiSizeProducts(btn) {
+  if (!ensureAdminSessionForMultiSizeProduct()) return;
+  if (state.admin.isSubmitting) return;
+  if (!state.admin.multiSizeProduct.hasPreview) {
+    state.admin.multiSizeProduct.errors = [
+      "กรุณากดตรวจสอบรายการก่อนบันทึก"
+    ];
+    renderMultiSizeProductSheet();
+    showToast("กรุณาตรวจสอบรายการก่อนบันทึก", "warning");
+    return;
+  }
+
+  const items = getMultiSizePreviewItems();
+  const errors = validateMultiSizePreviewItems(items);
+  state.admin.multiSizeProduct.hasPreview = true;
+  state.admin.multiSizeProduct.errors = errors;
+
+  if (errors.length) {
+    renderMultiSizeProductSheet();
+    showToast("กรุณาแก้ไขข้อมูลก่อนบันทึกสินค้า", "warning");
+    return;
+  }
+
+  state.admin.isSubmitting = true;
+  renderMultiSizeProductSheet();
+
+  try {
+    if (state.admin.multiSizeProduct.imageFile) {
+      validateProductImageFile(state.admin.multiSizeProduct.imageFile);
+      showLoading("กำลังอัปโหลดรูปสินค้า...");
+      const uploadedImageUrl = await uploadProductImage(state.admin.multiSizeProduct.imageFile);
+      if (!uploadedImageUrl) {
+        throw new Error("อัปโหลดรูปไม่สำเร็จ");
+      }
+      state.admin.multiSizeProduct.image = uploadedImageUrl;
+      state.admin.multiSizeProduct.imageFile = null;
+      items.forEach(item => {
+        item.image = uploadedImageUrl;
+      });
+    }
+
+    showLoading("กำลังสร้างสินค้าแบบหลายไซส์...");
+    const form = new URLSearchParams();
+    form.append("action", "bulkAddProducts");
+    form.append("token", state.admin.token);
+    form.append("items", JSON.stringify(items));
+
+    const json = await postFormAction(form);
+    if (!json || json.success === false) {
+      const backendErrors = Array.isArray(json?.data?.errors) ? json.data.errors : [];
+      state.admin.multiSizeProduct.errors = backendErrors.length
+        ? backendErrors.map(error => `${error.productId || error.row || "-"}: ${getBulkImportErrorMessage(error)}`)
+        : [json?.error || json?.message || "สร้างสินค้าแบบหลายไซส์ไม่สำเร็จ"];
+      renderMultiSizeProductSheet();
+      showToast("สร้างสินค้าแบบหลายไซส์ไม่สำเร็จ", "error");
+      return;
+    }
+
+    const created = Number(json.imported || json.created || items.length || 0);
+    state.admin.multiSizeProduct.summary = `สร้างสินค้าแบบหลายไซส์สำเร็จ ${created} รายการ`;
+    state.admin.multiSizeProduct.createdCount = created;
+    await refreshProducts();
+    renderMultiSizeProductSheet();
+    showToast("สร้างสินค้าแบบหลายไซส์สำเร็จ", "success");
+  } catch (err) {
+    console.error(err);
+    state.admin.multiSizeProduct.errors = [
+      err.message || "สร้างสินค้าแบบหลายไซส์ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"
+    ];
+    renderMultiSizeProductSheet();
+    showToast("สร้างสินค้าแบบหลายไซส์ไม่สำเร็จ", "error");
+  } finally {
+    safeHideLoading();
+    state.ui.backdropLocked = false;
+    state.admin.isSubmitting = false;
+    renderMultiSizeProductSheet();
+    requestAnimationFrame(syncOverlayBackdropState);
+  }
+}
+
+const SIZE_VARIANT_DETECTION = Object.freeze({
+  S: { value: "S / อก 44", order: 1 },
+  M: { value: "M / อก 46", order: 2 },
+  L: { value: "L / อก 48", order: 3 },
+  XL: { value: "XL / อก 50", order: 4 },
+  XXL: { value: "XXL", order: 5 }
+});
+
+function openVariantScanSheet() {
+  if (!ensureAdminSessionForMultiSizeProduct()) return;
+  renderVariantScanSheet();
+  openOverlay(adminVariantScanSheet);
+}
+
+function closeVariantScanSheet() {
+  closeOverlay(adminVariantScanSheet);
+}
+
+function backToAdminMenuFromVariantScan() {
+  closeOverlay(adminVariantScanSheet);
+  requestAnimationFrame(() => openMainMenu());
+}
+
+function parseLegacySizeVariant(product) {
+  const productId = normalizeProductId(product?.productId);
+  const name = String(product?.name || "").trim();
+  const sizeFromName = name.match(/^\s*\(?\s*Size\s+(XXL|XL|L|M|S)(?:\s*\/\s*อก\s*([0-9]+))?\s*\)?\s*/i);
+  const sizeFromSku = productId.match(/^(.*?)(XXL|XL|L|M|S)$/i);
+  const sizeCode = String(sizeFromName?.[1] || sizeFromSku?.[2] || "").toUpperCase();
+  const sizeMeta = SIZE_VARIANT_DETECTION[sizeCode];
+
+  if (!productId || !sizeMeta || !sizeFromSku) return null;
+
+  const parentProductId = normalizeProductId(sizeFromSku[1]);
+  if (!parentProductId) return null;
+
+  const chest = sizeFromName?.[2] || "";
+  const variantValue = chest
+    ? `${sizeCode} / อก ${chest}`
+    : sizeMeta.value;
+  const displayName = name
+    .replace(/^\s*\(?\s*Size\s+(XXL|XL|L|M|S)(?:\s*\/\s*อก\s*[0-9]+)?\s*\)?\s*/i, "")
+    .trim() || name;
+
+  return {
+    product,
+    parentProductId,
+    variantType: "size",
+    variantValue,
+    variantSortOrder: sizeMeta.order,
+    displayName,
+    sizeCode
+  };
+}
+
+function getVariantScanResults() {
+  const grouped = new Map();
+  const singles = [];
+
+  (Array.isArray(state.products) ? state.products : []).forEach(product => {
+    if (isViewerVariantProduct(product)) return;
+    const suggestion = parseLegacySizeVariant(product);
+    if (!suggestion) return;
+
+    if (!grouped.has(suggestion.parentProductId)) {
+      grouped.set(suggestion.parentProductId, []);
+    }
+    grouped.get(suggestion.parentProductId).push(suggestion);
+  });
+
+  const groups = [];
+  grouped.forEach((items, parentProductId) => {
+    const sorted = items.sort((a, b) => a.variantSortOrder - b.variantSortOrder);
+    if (sorted.length < 2) {
+      singles.push(...sorted);
+      return;
+    }
+
+    const displayNames = [...new Set(sorted.map(item => item.displayName).filter(Boolean))];
+    const sizeCounts = sorted.reduce((map, item) => {
+      map[item.sizeCode] = (map[item.sizeCode] || 0) + 1;
+      return map;
+    }, {});
+    const warnings = [];
+    if (displayNames.length > 1) {
+      warnings.push("ชื่อสินค้าในกลุ่มไม่เหมือนกันทั้งหมด ควรตรวจสอบก่อนบันทึกจริง");
+    }
+    Object.entries(sizeCounts).forEach(([sizeCode, count]) => {
+      if (count > 1) warnings.push(`พบไซส์ ${sizeCode} ซ้ำในกลุ่มนี้`);
+    });
+
+    groups.push({
+      parentProductId,
+      displayName: displayNames[0] || sorted[0]?.displayName || "",
+      items: sorted,
+      warnings
+    });
+  });
+
+  return {
+    groups: groups.sort((a, b) => a.parentProductId.localeCompare(b.parentProductId)),
+    singles: singles.sort((a, b) => a.parentProductId.localeCompare(b.parentProductId))
+  };
+}
+
+function ensureVariantScanState() {
+  if (!state.admin.variantScan) {
+    state.admin.variantScan = {
+      selectedGroups: [],
+      message: "",
+      error: "",
+      appliedGroups: []
+    };
+  }
+  if (!Array.isArray(state.admin.variantScan.selectedGroups)) {
+    state.admin.variantScan.selectedGroups = [];
+  }
+  if (!Array.isArray(state.admin.variantScan.appliedGroups)) {
+    state.admin.variantScan.appliedGroups = [];
+  }
+  return state.admin.variantScan;
+}
+
+function getSelectedVariantScanGroups(results = getVariantScanResults()) {
+  const scanState = ensureVariantScanState();
+  const selected = new Set(scanState.selectedGroups || []);
+  return (results.groups || []).filter(group => selected.has(group.parentProductId));
+}
+
+function getVariantScanApplyItems(groups) {
+  const seen = new Set();
+  const errors = [];
+  const items = [];
+
+  (groups || []).forEach(group => {
+    if (!group || !group.parentProductId || !group.displayName || !Array.isArray(group.items) || group.items.length < 2) {
+      errors.push(`กลุ่ม ${group?.parentProductId || "-"} ไม่พร้อมบันทึก`);
+      return;
+    }
+
+    group.items.forEach(item => {
+      const productId = normalizeProductId(item.product?.productId);
+      const sortOrder = Number(item.variantSortOrder);
+      if (!productId) errors.push(`กลุ่ม ${group.parentProductId}: ไม่พบ SKU`);
+      if (seen.has(productId)) errors.push(`SKU ${productId} ซ้ำในรายการบันทึก`);
+      if (!item.parentProductId) errors.push(`${productId}: ไม่พบ parentProductId`);
+      if (!item.variantValue) errors.push(`${productId}: ไม่พบไซส์/ตัวเลือก`);
+      if (!Number.isInteger(sortOrder)) errors.push(`${productId}: ลำดับไซส์ต้องเป็นตัวเลขจำนวนเต็ม`);
+      if (!group.displayName) errors.push(`${productId}: ไม่พบชื่อแสดงรวม`);
+      if (productId) seen.add(productId);
+
+      items.push({
+        productId,
+        parentProductId: item.parentProductId,
+        variantType: "size",
+        variantValue: item.variantValue,
+        displayName: group.displayName,
+        variantSortOrder: sortOrder
+      });
+    });
+  });
+
+  return { items, errors };
+}
+
+function toggleVariantScanGroup(parentProductId, checked) {
+  const scanState = ensureVariantScanState();
+  const selected = new Set(scanState.selectedGroups);
+  const cleanId = normalizeProductId(parentProductId);
+  if (checked) {
+    selected.add(cleanId);
+  } else {
+    selected.delete(cleanId);
+  }
+  scanState.selectedGroups = Array.from(selected);
+  scanState.message = "";
+  scanState.error = "";
+  renderVariantScanSheet();
+}
+
+function selectAllVariantScanGroups() {
+  const scanState = ensureVariantScanState();
+  const results = getVariantScanResults();
+  scanState.selectedGroups = results.groups.map(group => group.parentProductId);
+  scanState.message = "";
+  scanState.error = "";
+  renderVariantScanSheet();
+}
+
+function clearVariantScanGroups() {
+  const scanState = ensureVariantScanState();
+  scanState.selectedGroups = [];
+  scanState.message = "";
+  scanState.error = "";
+  renderVariantScanSheet();
+}
+
+async function applySelectedVariantScanGroups(btn) {
+  if (!ensureAdminSessionForMultiSizeProduct()) return;
+  if (state.admin.isSubmitting) return;
+
+  const scanState = ensureVariantScanState();
+  const results = getVariantScanResults();
+  const selectedGroups = getSelectedVariantScanGroups(results);
+  const { items, errors } = getVariantScanApplyItems(selectedGroups);
+
+  if (!selectedGroups.length) {
+    scanState.error = "กรุณาเลือกกลุ่มที่ต้องการบันทึก";
+    renderVariantScanSheet();
+    showToast(scanState.error, "warning");
+    return;
+  }
+
+  if (errors.length) {
+    scanState.error = errors.join(" / ");
+    renderVariantScanSheet();
+    showToast("ข้อมูลบางรายการยังไม่พร้อมบันทึก", "warning");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `ยืนยันบันทึกข้อมูลกลุ่มไซส์ ${selectedGroups.length} กลุ่ม (${items.length} SKU)?\n\nการบันทึกนี้จะแก้ข้อมูล Products จริง แต่จะไม่เปลี่ยน stock/ราคา/order`
+  );
+  if (!confirmed) return;
+
+  state.admin.isSubmitting = true;
+  scanState.error = "";
+  scanState.message = "";
+  renderVariantScanSheet();
+
+  try {
+    showLoading("กำลังบันทึกข้อมูลกลุ่มไซส์...");
+    const form = new URLSearchParams();
+    form.append("action", "bulkUpdateProducts");
+    form.append("token", state.admin.token);
+    form.append("items", JSON.stringify(items));
+
+    const res = await fetchWithTimeout(API_URL, {
+      method: "POST",
+      body: form
+    }, 45000);
+    const json = await res.json();
+
+    if (json?.success === true) {
+      const updated = Number(json.updated || json.data?.updated || items.length || 0);
+      scanState.message = `บันทึกข้อมูลกลุ่มไซส์สำเร็จ ${updated} SKU`;
+      scanState.appliedGroups = selectedGroups.map(group => group.parentProductId);
+      scanState.selectedGroups = [];
+      showToast(scanState.message, "success");
+      await refreshProducts();
+      renderVariantScanSheet();
+      return;
+    }
+
+    scanState.error = json?.error || json?.message || "บันทึกข้อมูลกลุ่มไซส์ไม่สำเร็จ";
+    renderVariantScanSheet();
+    showToast(scanState.error, "error");
+  } catch (err) {
+    console.error(err);
+    scanState.error = err.message || "บันทึกข้อมูลกลุ่มไซส์ไม่สำเร็จ";
+    renderVariantScanSheet();
+    showToast(scanState.error, "error");
+  } finally {
+    safeHideLoading();
+    state.ui.backdropLocked = false;
+    state.admin.isSubmitting = false;
+    renderVariantScanSheet();
+    requestAnimationFrame(syncOverlayBackdropState);
+  }
+}
+
+function renderVariantScanGroup(group) {
+  const scanState = ensureVariantScanState();
+  const selected = scanState.selectedGroups.includes(group.parentProductId);
+  const applied = scanState.appliedGroups.includes(group.parentProductId);
+  return `
+    <div class="bulk-preview-card">
+      <label class="continue-row" style="margin-bottom:10px">
+        <input type="checkbox" ${selected ? "checked" : ""}
+          onchange="toggleVariantScanGroup(${toInlineJsStringLiteral(group.parentProductId)}, this.checked)">
+        <span class="continue-text">
+          <strong>กลุ่ม ${esc(group.parentProductId)}</strong>
+          ${applied ? " · บันทึกแล้ว" : ""}
+        </span>
+      </label>
+      <div class="bulk-preview-meta">
+        ชื่อแสดงรวมที่แนะนำ: ${esc(group.displayName || "-")}<br>
+        จำนวนตัวเลือก: ${group.items.length}
+      </div>
+      ${
+        group.warnings.length
+          ? `<ul class="bulk-error-list">${group.warnings.map(warning => `<li>${esc(warning)}</li>`).join("")}</ul>`
+          : ""
+      }
+      <div class="bulk-preview-list" style="margin-top:10px">
+        ${group.items.map(item => `
+          <div class="bulk-preview-card status-approved">
+            <div class="name">${esc(item.product.productId || "-")} → ${esc(item.variantValue)}</div>
+            <div class="bulk-preview-meta">
+              ชื่อเดิม: ${esc(item.product.name || "-")}<br>
+              parentProductId: ${esc(item.parentProductId)} · variantType: size · ลำดับ: ${esc(item.variantSortOrder)}<br>
+              สต็อก: ${Number(item.product.stock) || 0} · ราคา: ฿${Number(item.product.price || 0).toLocaleString()} · สถานะ: ${esc(getResolvedProductStatus(item.product))}
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderVariantScanSingles(items) {
+  if (!items.length) return "";
+  return `
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">รายการที่ยังไม่พร้อมจัดกลุ่ม</div>
+      <div class="helper-text">พบไซส์เดียวในรหัสสินค้าแม่เดียวกัน จึงยังไม่แนะนำเป็นกลุ่ม</div>
+      <div class="bulk-preview-list">
+        ${items.map(item => `
+          <div class="bulk-preview-card">
+            <div class="name">${esc(item.product.productId || "-")} → ${esc(item.variantValue)}</div>
+            <div class="bulk-preview-meta">
+              parentProductId ที่เดาได้: ${esc(item.parentProductId)}<br>
+              ชื่อเดิม: ${esc(item.product.name || "-")}
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderVariantScanSheet() {
+  const scanState = ensureVariantScanState();
+  const results = getVariantScanResults();
+  const selectedGroups = getSelectedVariantScanGroups(results);
+  const selectedSkuCount = selectedGroups.reduce((sum, group) => sum + group.items.length, 0);
+  adminVariantScanSheet.innerHTML = `
+    <div class="sheet-topbar">
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="closeVariantScanSheet()"
+        aria-label="ปิดหน้าสแกนสินค้าเก่า">×</button>
+      <h3 id="adminVariantScanSheetTitle">สแกนสินค้าเก่าเป็นกลุ่มไซส์</h3>
+      <div aria-hidden="true"></div>
+    </div>
+
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">ตรวจสอบก่อนบันทึกจริง</div>
+      <div class="helper-text">
+        ขั้นตอนนี้เป็นการตรวจสอบเท่านั้น ยังไม่แก้ข้อมูลสินค้า<br>
+        ระบบจะเดาจาก SKU เช่น BY506S / BY506M / BY506L / BY506XL และชื่อที่ขึ้นต้นด้วย Size/อก
+      </div>
+      <div class="helper-text" style="margin-top:10px">
+        การบันทึกนี้จะแก้ข้อมูล Products จริง แต่จะไม่เปลี่ยน stock/ราคา/order
+      </div>
+      <div class="admin-product-summary-meta" style="margin-top:10px">
+        <span>เลือกแล้ว ${selectedGroups.length} กลุ่ม</span>
+        <span>${selectedSkuCount} SKU</span>
+      </div>
+      ${scanState.message ? `<div class="bulk-import-success-card" style="margin-top:10px">${esc(scanState.message)}</div>` : ""}
+      ${scanState.error ? `<ul class="bulk-error-list" style="margin-top:10px"><li>${esc(scanState.error)}</li></ul>` : ""}
+      <div class="sheet-action-footer" style="margin-top:12px">
+        <button class="btn btn-outline" type="button" onclick="selectAllVariantScanGroups()"
+          ${results.groups.length ? "" : "disabled"}>
+          เลือกทั้งหมด
+        </button>
+        <button class="btn btn-outline" type="button" onclick="clearVariantScanGroups()"
+          ${selectedGroups.length ? "" : "disabled"}>
+          ล้างที่เลือก
+        </button>
+      </div>
+    </div>
+
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">กลุ่มที่ตรวจพบ</div>
+      ${
+        results.groups.length
+          ? `<div class="bulk-preview-list">${results.groups.map(renderVariantScanGroup).join("")}</div>`
+          : `<div class="empty-state">ยังไม่พบกลุ่มสินค้าที่มีอย่างน้อย 2 ไซส์</div>`
+      }
+    </div>
+
+    ${renderVariantScanSingles(results.singles)}
+
+    <div class="sheet-action-footer">
+      <button class="btn btn-primary" type="button" onclick="applySelectedVariantScanGroups(this)"
+        ${selectedGroups.length && !state.admin.isSubmitting ? "" : "disabled"}>
+        ${state.admin.isSubmitting ? "กำลังบันทึก..." : "บันทึกข้อมูลกลุ่มไซส์ที่เลือก"}
+      </button>
+      <button class="btn btn-outline" type="button" onclick="backToAdminMenuFromVariantScan()">
+        กลับเมนูแอดมิน
+      </button>
+      <button class="btn btn-outline" type="button" onclick="renderVariantScanSheet()">
+        สแกนใหม่
+      </button>
+    </div>
+  `;
+}
+
 const BULK_PRODUCT_COLUMNS = [
   "productId",
   "name",
@@ -10488,13 +11954,18 @@ const BULK_PRODUCT_COLUMNS = [
   "active",
   "note",
   "detailsText",
-  "compareImages"
+  "compareImages",
+  "parentProductId",
+  "variantType",
+  "variantValue",
+  "displayName",
+  "variantSortOrder"
 ];
 
 const BULK_PRODUCT_SAMPLE =
   BULK_PRODUCT_COLUMNS.join("\t") +
-  "\nSKU001\tสินค้าตัวอย่าง 1\t100\t70\t10\tready\thttps://example.com/image.jpg\ttrue\tหมายเหตุ\tรายละเอียด\thttps://example.com/compare.jpg" +
-  "\nSKU002\tสินค้าตัวอย่าง 2\t250\t180\t0\tout\t\ttrue\t\t\t";
+  "\nSKU001\tสินค้าตัวอย่าง 1\t100\t70\t10\tready\thttps://example.com/image.jpg\ttrue\tหมายเหตุ\tรายละเอียด\thttps://example.com/compare.jpg\tBY506\tsize\tS\tเสื้อ Human Made Bangkok Animal Graphic สีดำ\t1" +
+  "\nSKU002\tสินค้าตัวอย่าง 2\t250\t180\t0\tout\t\ttrue\t\t\t\tBY506\tsize\tM\tเสื้อ Human Made Bangkok Animal Graphic สีดำ\t2";
 
 function ensureAdminSessionForBulkImport() {
   if (
@@ -10946,7 +12417,17 @@ function normalizeBulkHeader(value) {
     note: "note",
     detailstext: "detailsText",
     details: "detailsText",
-    compareimages: "compareImages"
+    compareimages: "compareImages",
+    parentproductid: "parentProductId",
+    parent: "parentProductId",
+    groupid: "parentProductId",
+    varianttype: "variantType",
+    variantvalue: "variantValue",
+    size: "variantValue",
+    displayname: "displayName",
+    groupname: "displayName",
+    variantsortorder: "variantSortOrder",
+    sortorder: "variantSortOrder"
   };
   return map[key] || "";
 }
@@ -10968,7 +12449,12 @@ function normalizeBulkProductImportRow(row) {
     active: String(row.active || "").trim(),
     note: String(row.note || "").trim(),
     detailsText: String(row.detailsText || "").trim(),
-    compareImages: String(row.compareImages || "").trim()
+    compareImages: String(row.compareImages || "").trim(),
+    parentProductId: String(row.parentProductId || "").trim(),
+    variantType: String(row.variantType || "").trim(),
+    variantValue: String(row.variantValue || "").trim(),
+    displayName: String(row.displayName || "").trim(),
+    variantSortOrder: String(row.variantSortOrder || "").trim()
   };
 }
 
@@ -11014,6 +12500,12 @@ function validateBulkProductImportRow(item, rowNumber, seenSkus, errors) {
     !["true", "false", "1", "0"].includes(item.active.toLowerCase())
   ) {
     errors.push(bulkImportError(rowNumber, productId, "active", "active ต้องเป็น true/false/1/0 หรือเว้นว่าง"));
+  }
+  if (
+    item.variantSortOrder !== "" &&
+    !Number.isInteger(Number(item.variantSortOrder))
+  ) {
+    errors.push(bulkImportError(rowNumber, productId, "variantSortOrder", "ลำดับไซส์ต้องเป็นตัวเลขจำนวนเต็ม"));
   }
 }
 

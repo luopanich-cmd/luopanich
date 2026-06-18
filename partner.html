@@ -230,6 +230,54 @@
       color:#fff;
     }
 
+    .variant-group-note{
+      color:var(--text-soft);
+      font-size:12px;
+      line-height:1.45;
+    }
+
+    .size-options{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      max-width:100%;
+    }
+
+    .size-chip{
+      display:inline-flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap:2px;
+      min-width:74px;
+      max-width:100%;
+      padding:9px 10px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.08);
+      color:var(--text);
+      font-weight:900;
+      cursor:pointer;
+      text-align:left;
+    }
+
+    .size-chip small{
+      color:var(--text-soft);
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .size-chip.selected{
+      border-color:rgba(10,132,255,.82);
+      background:rgba(10,132,255,.18);
+      box-shadow:0 0 0 3px rgba(10,132,255,.16);
+    }
+
+    .size-chip:disabled{
+      opacity:.48;
+      cursor:not-allowed;
+      text-decoration:line-through;
+    }
+
     .details{
       color:var(--text-soft);
       font-size:13px;
@@ -485,6 +533,7 @@
       link: null,
       products: [],
       selectedItems: [],
+      variantSelections: {},
       search: "",
       status: "all",
       loading: true,
@@ -594,14 +643,132 @@
       }[String(status || "").trim()] || "พร้อมส่ง";
     }
 
+    function isSizeVariantProduct(product) {
+      return Boolean(
+        product &&
+        product.parentProductId &&
+        product.displayName &&
+        String(product.variantType || "").trim().toLowerCase() === "size" &&
+        product.variantValue
+      );
+    }
+
+    function getVariantGroupKey(product) {
+      return [
+        "size",
+        String(product.parentProductId || "").trim(),
+        String(product.displayName || "").trim()
+      ].join("::");
+    }
+
+    function sortVariantsByOrder(variants) {
+      return [...variants].sort((a, b) => {
+        const orderA = Number(a.variantSortOrder);
+        const orderB = Number(b.variantSortOrder);
+        if (Number.isFinite(orderA) && Number.isFinite(orderB) && orderA !== orderB) return orderA - orderB;
+        if (Number.isFinite(orderA)) return -1;
+        if (Number.isFinite(orderB)) return 1;
+        return String(a.variantValue || a.productId || "").localeCompare(String(b.variantValue || b.productId || ""), "th");
+      });
+    }
+
+    function buildCatalogItems(products) {
+      const groups = new Map();
+      const singles = [];
+
+      products.forEach(product => {
+        if (!isSizeVariantProduct(product)) {
+          singles.push(product);
+          return;
+        }
+
+        const groupKey = getVariantGroupKey(product);
+        if (!groups.has(groupKey)) {
+          groups.set(groupKey, {
+            isVariantGroup: true,
+            groupKey,
+            parentProductId: product.parentProductId,
+            displayName: product.displayName,
+            variants: []
+          });
+        }
+        groups.get(groupKey).variants.push(product);
+      });
+
+      const grouped = [...groups.values()].map(group => ({
+        ...group,
+        variants: sortVariantsByOrder(group.variants)
+      }));
+
+      return [...grouped, ...singles];
+    }
+
+    function getCatalogItemText(item) {
+      if (item.isVariantGroup) {
+        return [
+          item.displayName,
+          item.parentProductId,
+          ...item.variants.flatMap(variant => [
+            variant.productId,
+            variant.name,
+            variant.variantValue
+          ])
+        ].join(" ").toLowerCase();
+      }
+      return `${item.productId || ""} ${item.name || ""} ${item.displayName || ""} ${item.parentProductId || ""} ${item.variantValue || ""}`.toLowerCase();
+    }
+
+    function catalogItemMatchesStatus(item) {
+      if (state.status === "all") return true;
+      if (item.isVariantGroup) {
+        return item.variants.some(variant => String(variant.status || "") === state.status);
+      }
+      return String(item.status || "") === state.status;
+    }
+
     function getFilteredProducts() {
       const search = state.search.trim().toLowerCase();
-      return state.products.filter(product => {
-        const text = `${product.productId || ""} ${product.name || ""}`.toLowerCase();
-        const matchesSearch = !search || text.includes(search);
-        const matchesStatus = state.status === "all" || String(product.status || "") === state.status;
+      return buildCatalogItems(state.products).filter(item => {
+        const matchesSearch = !search || getCatalogItemText(item).includes(search);
+        const matchesStatus = catalogItemMatchesStatus(item);
         return matchesSearch && matchesStatus;
       });
+    }
+
+    function getGroupPriceLabel(group) {
+      const prices = [...new Set(group.variants.map(variant => Number(variant.price) || 0))].sort((a, b) => a - b);
+      if (!prices.length) return "฿0";
+      if (prices.length === 1) return `฿${money(prices[0])}`;
+      return `฿${money(prices[0])} - ฿${money(prices[prices.length - 1])}`;
+    }
+
+    function isVariantUnavailable(product) {
+      const status = String(product.status || "").trim();
+      const hasStock = product.stock !== undefined && product.stock !== null && product.stock !== "";
+      return status === "out" || (hasStock && Number(product.stock) <= 0);
+    }
+
+    function getVariantSubLabel(product) {
+      const parts = [];
+      if (product.stock !== undefined && product.stock !== null && product.stock !== "") {
+        parts.push(`เหลือ ${money(product.stock)}`);
+      }
+      parts.push(getStatusLabel(product.status));
+      return parts.join(" · ");
+    }
+
+    function selectVariant(groupKey, productId) {
+      state.variantSelections[groupKey] = productId;
+      render();
+    }
+
+    function addVariantGroupInterest(groupKey) {
+      const productId = state.variantSelections[groupKey];
+      if (!productId) {
+        alert("กรุณาเลือกไซส์ก่อน");
+        return;
+      }
+      addInterest(productId);
     }
 
     function addInterest(productId) {
@@ -614,6 +781,9 @@
         state.selectedItems.push({
           productId,
           name: product.name,
+          displayName: product.displayName || "",
+          parentProductId: product.parentProductId || "",
+          variantValue: product.variantValue || "",
           price: Number(product.price) || 0,
           qty: 1,
           partnerNote: ""
@@ -647,6 +817,10 @@
     }
 
     function renderProduct(product) {
+      if (product.isVariantGroup) {
+        return renderVariantGroup(product);
+      }
+
       const compareImages = String(product.compareImages || "")
         .split(",")
         .map(value => value.trim())
@@ -683,6 +857,67 @@
       `;
     }
 
+    function renderVariantGroup(group) {
+      const image = group.variants.find(variant => variant.image)?.image || "";
+      const selectedProductId = state.variantSelections[group.groupKey] || "";
+      const selectedVariant = group.variants.find(variant => variant.productId === selectedProductId);
+      const detailsText = group.variants.find(variant => variant.detailsText)?.detailsText || "";
+      const compareImages = String(group.variants.find(variant => variant.compareImages)?.compareImages || "")
+        .split(",")
+        .map(value => value.trim())
+        .filter(Boolean)
+        .slice(0, 4);
+
+      return `
+        <article class="product-card">
+          ${
+            image
+              ? `<img class="thumb" src="${escAttr(image)}" alt="${escAttr(group.displayName)}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'thumb-placeholder',textContent:'รูป'}))">`
+              : `<div class="thumb-placeholder" aria-hidden="true">รูป</div>`
+          }
+          <div class="product-main">
+            <h2 class="name">${esc(group.displayName || "-")}</h2>
+            <div class="sku-line">
+              <span class="sku-chip">กลุ่ม: ${esc(group.parentProductId || "-")}</span>
+              <span class="sku-chip">${group.variants.length} ไซส์</span>
+            </div>
+            <div class="price">${esc(getGroupPriceLabel(group))}</div>
+            ${detailsText ? `<div class="details">${esc(detailsText)}</div>` : ""}
+            <div class="variant-group-note">เลือกไซส์ที่สนใจก่อนเพิ่มเข้ารายการ ระบบจะส่งรหัส SKU จริงของไซส์นั้นให้ร้าน</div>
+            <div class="size-options" role="group" aria-label="เลือกไซส์">
+              ${group.variants.map(variant => {
+                const selected = variant.productId === selectedProductId;
+                const disabled = isVariantUnavailable(variant);
+                return `
+                  <button class="size-chip ${selected ? "selected" : ""}" type="button"
+                    ${disabled ? "disabled" : ""}
+                    onclick="selectVariant(${escAttr(jsString(group.groupKey))},${escAttr(jsString(variant.productId))})">
+                    <span>${esc(variant.variantValue || variant.productId)}</span>
+                    <small>${esc(getVariantSubLabel(variant))}</small>
+                  </button>
+                `;
+              }).join("")}
+            </div>
+            ${
+              selectedVariant
+                ? `<div class="meta">เลือกแล้ว: ${esc(selectedVariant.variantValue || "-")} · SKU: ${esc(selectedVariant.productId || "-")}</div>`
+                : `<div class="meta">กรุณาเลือกไซส์ก่อนเพิ่มในรายการสนใจ</div>`
+            }
+            ${
+              compareImages.length
+                ? `<div class="compare-images">${compareImages.map(url => `<img src="${escAttr(url)}" alt="compare" onerror="this.remove()">`).join("")}</div>`
+                : ""
+            }
+            <div class="actions">
+              <button class="btn btn-primary" type="button" style="width:100%" onclick="addVariantGroupInterest(${escAttr(jsString(group.groupKey))})">
+                เพิ่มในรายการสนใจ
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
     function renderInterestList() {
       if (!state.selectedItems.length) {
         return `<div class="panel-note">ยังไม่มีสินค้าในรายการที่สนใจ เลือกสินค้าจากแคตตาล็อกเพื่อส่งให้ร้านตรวจสอบ</div>`;
@@ -694,8 +929,10 @@
             <div class="interest-item">
               <div class="interest-head">
                 <div>
-                  <strong>${esc(item.name || item.productId)}</strong>
-                  <div class="meta">SKU: ${esc(item.productId)} · ฿${money(item.price)}</div>
+                  <strong>${esc(item.displayName || item.name || item.productId)}</strong>
+                  <div class="meta">
+                    ${item.variantValue ? `ไซส์: ${esc(item.variantValue)} · ` : ""}SKU: ${esc(item.productId)} · ฿${money(item.price)}
+                  </div>
                 </div>
                 <button class="btn btn-danger" type="button" onclick="removeInterest(${escAttr(jsString(item.productId))})">ลบ</button>
               </div>
