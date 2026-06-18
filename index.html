@@ -1785,10 +1785,11 @@ textarea:focus-visible {
 }
 
 .variant-size-options{
-  display:flex;
-  flex-wrap:wrap;
+  display:grid;
+  grid-template-columns:1fr;
   gap:8px;
   margin-top:10px;
+  max-width:100%;
 }
 
 .variant-size-chip{
@@ -1800,7 +1801,9 @@ textarea:focus-visible {
   font-size:12px;
   line-height:1.25;
   cursor:pointer;
+  text-align:left;
   max-width:100%;
+  width:100%;
 }
 
 .variant-size-chip.selected{
@@ -5142,6 +5145,53 @@ function getSelectedVariantFromGroup(group) {
   return group.variants.find(variant => String(variant.productId) === String(selectedId)) || null;
 }
 
+function getViewerVariantGroupByKey(groupKey) {
+  return buildViewerProductGroups(state.products)
+    .find(item => item.isVariantGroup && item.groupKey === groupKey) || null;
+}
+
+function getViewerVariantSummaryText(group, mode = "card") {
+  const selectedVariant = getSelectedVariantFromGroup(group);
+  const emptyText = mode === "detail"
+    ? "เลือกไซส์: กรุณาเลือกไซส์ก่อน"
+    : "กรุณาเลือกไซส์ก่อน";
+
+  if (!selectedVariant) return emptyText;
+
+  const value = selectedVariant.variantValue || "-";
+  const productId = selectedVariant.productId || "-";
+  const stock = Number(selectedVariant.stock) || 0;
+
+  return mode === "detail"
+    ? `เลือกไซส์: ${value} · SKU ${productId} · เหลือ ${stock}`
+    : `เลือก: ${value} · SKU ${productId} · เหลือ ${stock}`;
+}
+
+function updateViewerVariantSelectionDom(groupKey) {
+  const group = getViewerVariantGroupByKey(groupKey);
+  if (!group) return;
+
+  const selectedId = String(state.viewerVariantSelections[groupKey] || "");
+
+  document.querySelectorAll("[data-variant-group-key]").forEach(container => {
+    if (container.dataset.variantGroupKey !== groupKey) return;
+
+    container.querySelectorAll("[data-variant-product-id]").forEach(button => {
+      const isSelected = String(button.dataset.variantProductId || "") === selectedId;
+      button.classList.toggle("selected", isSelected);
+      button.setAttribute("aria-pressed", isSelected ? "true" : "false");
+    });
+  });
+
+  document.querySelectorAll("[data-variant-selected-summary]").forEach(summary => {
+    if (summary.dataset.variantSelectedSummary !== groupKey) return;
+    summary.textContent = getViewerVariantSummaryText(
+      group,
+      summary.dataset.variantSummaryMode || "card"
+    );
+  });
+}
+
 function getViewerItemSearchText(item) {
   if (item?.isVariantGroup) {
     return [
@@ -5181,15 +5231,7 @@ function matchesViewerFilters(item) {
 function selectViewerVariant(groupKey, productId, event) {
   if (event) event.stopPropagation();
   state.viewerVariantSelections[groupKey] = productId;
-  if (
-    productSheet?.classList.contains("show") &&
-    state.selectedProduct?.isVariantGroup &&
-    state.selectedProduct.groupKey === groupKey
-  ) {
-    renderProductSheet();
-    return;
-  }
-  renderProducts();
+  updateViewerVariantSelectionDom(groupKey);
 }
 
 function addVariantGroupToCart(groupKey, event) {
@@ -5223,7 +5265,7 @@ function openQtyForSelectedVariantFromDetail() {
 function renderVariantSizeOptions(group) {
   const selected = getSelectedVariantFromGroup(group);
   return `
-    <div class="variant-size-options">
+    <div class="variant-size-options" data-variant-group-key="${escAttr(group?.groupKey || "")}">
       ${(group?.variants || []).map(variant => {
         const status = getResolvedProductStatus(variant);
         const disabled = status === "out" || Number(variant.stock) <= 0;
@@ -5232,6 +5274,8 @@ function renderVariantSizeOptions(group) {
           <button
             type="button"
             class="variant-size-chip ${selectedClass}"
+            data-variant-product-id="${escAttr(variant.productId || "")}"
+            aria-pressed="${selectedClass ? "true" : "false"}"
             ${disabled ? "disabled" : ""}
             onclick="selectViewerVariant(${toInlineJsStringLiteral(group.groupKey)}, ${toInlineJsStringLiteral(variant.productId)}, event)">
             ${esc(variant.variantValue || variant.productId)}
@@ -5369,8 +5413,8 @@ function renderProducts(){
           ${renderVariantSizeOptions(p)}
           ${
             selectedVariant
-              ? `<div class="variant-selected-summary">เลือก: ${escapeHTML(selectedVariant.variantValue || "-")} · SKU ${escapeHTML(selectedVariant.productId || "-")} · เหลือ ${Number(selectedVariant.stock) || 0}</div>`
-              : `<div class="variant-selected-summary">กรุณาเลือกไซส์ก่อน</div>`
+              ? `<div class="variant-selected-summary" data-variant-selected-summary="${escAttr(p.groupKey)}" data-variant-summary-mode="card">เลือก: ${escapeHTML(selectedVariant.variantValue || "-")} · SKU ${escapeHTML(selectedVariant.productId || "-")} · เหลือ ${Number(selectedVariant.stock) || 0}</div>`
+              : `<div class="variant-selected-summary" data-variant-selected-summary="${escAttr(p.groupKey)}" data-variant-summary-mode="card">กรุณาเลือกไซส์ก่อน</div>`
           }
           <button class="btn btn-primary variant-add-btn" type="button"
             onclick="addVariantGroupToCart(${toInlineJsStringLiteral(p.groupKey)}, event)">
@@ -5537,7 +5581,7 @@ function renderProductSheet(){
       <div class="price">${esc(getVariantGroupPriceLabel(p))}</div>
       <div class="stock">สต็อกรวม ${getVariantGroupTotalStock(p)} ชิ้น</div>
 
-      <div class="variant-selected-summary">
+      <div class="variant-selected-summary" data-variant-selected-summary="${escAttr(p.groupKey)}" data-variant-summary-mode="detail">
         เลือกไซส์:
         ${selectedVariant
           ? `${esc(selectedVariant.variantValue || "-")} · SKU ${esc(selectedVariant.productId || "-")} · เหลือ ${Number(selectedVariant.stock) || 0}`
