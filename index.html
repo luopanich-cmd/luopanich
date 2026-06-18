@@ -1935,7 +1935,7 @@ textarea:focus-visible {
 
 .viewer-copy-tile{
   width:100%;
-  min-height:86px;
+  min-height:92px;
   border:1px solid rgba(255,255,255,.12);
   border-radius:18px;
   background:rgba(255,255,255,.07);
@@ -1943,11 +1943,11 @@ textarea:focus-visible {
   padding:12px;
   display:flex;
   flex-direction:column;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:10px;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
   font-weight:850;
-  text-align:left;
+  text-align:center;
   cursor:pointer;
 }
 
@@ -1964,13 +1964,19 @@ textarea:focus-visible {
   background:rgba(10,132,255,.18);
   color:#7cc7ff;
   border:1px solid rgba(124,199,255,.20);
-  font-size:13px;
-  font-weight:950;
+}
+
+.viewer-copy-icon .icon-sf{
+  width:18px;
+  height:18px;
+  opacity:.96;
 }
 
 .viewer-copy-label{
   font-size:13px;
   line-height:1.25;
+  max-width:100%;
+  overflow-wrap:anywhere;
 }
 
 @media (max-width:360px){
@@ -5527,10 +5533,54 @@ async function copyViewerProductInfo(type, event) {
   }
 }
 
-function renderViewerCopyTile(type, label, icon) {
+function renderViewerCopyIcon(type) {
+  const icons = {
+    name: `
+      <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M20 13l-7 7-9-9V4h7l9 9z"></path>
+        <circle cx="8" cy="8" r="1.4"></circle>
+      </svg>
+    `,
+    productId: `
+      <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M4 5v14"></path>
+        <path d="M7 5v14"></path>
+        <path d="M11 5v14"></path>
+        <path d="M15 5v14"></path>
+        <path d="M20 5v14"></path>
+      </svg>
+    `,
+    stock: `
+      <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"></path>
+        <path d="M12 12l8-4.5"></path>
+        <path d="M12 12v9"></path>
+        <path d="M12 12L4 7.5"></path>
+      </svg>
+    `,
+    image: `
+      <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="4" y="5" width="16" height="14" rx="2"></rect>
+        <circle cx="9" cy="10" r="1.5"></circle>
+        <path d="M7 17l4-4 3 3 2-2 3 3"></path>
+      </svg>
+    `,
+    costPrice: `
+      <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="8"></circle>
+        <path d="M9 8h4.5a2.5 2.5 0 010 5H9"></path>
+        <path d="M9 8v10"></path>
+        <path d="M9 13h5"></path>
+      </svg>
+    `
+  };
+  return icons[type] || icons.name;
+}
+
+function renderViewerCopyTile(type, label) {
   return `
     <button class="viewer-copy-tile" type="button" onclick="copyViewerProductInfo('${type}', event)">
-      <span class="viewer-copy-icon" aria-hidden="true">${esc(icon)}</span>
+      <span class="viewer-copy-icon" aria-hidden="true">${renderViewerCopyIcon(type)}</span>
       <span class="viewer-copy-label">${esc(label)}</span>
     </button>
   `;
@@ -5538,7 +5588,7 @@ function renderViewerCopyTile(type, label, icon) {
 
 function renderViewerCopyInfoSection() {
   const costPriceButton = canCopyViewerCostPrice()
-    ? renderViewerCopyTile("costPrice", "คัดลอกราคาทุน", "฿")
+    ? renderViewerCopyTile("costPrice", "คัดลอกราคาทุน")
     : "";
 
   return `
@@ -5557,11 +5607,11 @@ function renderViewerCopyInfoSection() {
           <button class="viewer-copy-close" type="button" aria-label="ปิดเมนูคัดลอก" onclick="toggleViewerCopyInfoSection(event)">×</button>
         </div>
         <div class="viewer-copy-grid">
-          ${renderViewerCopyTile("name", "คัดลอกชื่อสินค้า", "ชื่อ")}
-          ${renderViewerCopyTile("productId", "คัดลอกรหัสสินค้า", "SKU")}
+          ${renderViewerCopyTile("name", "คัดลอกชื่อสินค้า")}
+          ${renderViewerCopyTile("productId", "คัดลอกรหัสสินค้า")}
           ${costPriceButton}
-          ${renderViewerCopyTile("stock", "คัดลอกจำนวน", "#")}
-          ${renderViewerCopyTile("image", "คัดลอกรูปภาพ", "รูป")}
+          ${renderViewerCopyTile("stock", "คัดลอกจำนวน")}
+          ${renderViewerCopyTile("image", "คัดลอกรูปภาพ")}
         </div>
       </div>
     </section>
