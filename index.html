@@ -1838,6 +1838,53 @@ textarea:focus-visible {
   width:100%;
 }
 
+.viewer-copy-actions{
+  margin-top:12px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:var(--panel-2);
+  overflow:hidden;
+}
+
+.viewer-copy-toggle{
+  width:100%;
+  min-height:44px;
+  border:0;
+  background:transparent;
+  color:var(--text);
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  font-weight:800;
+  cursor:pointer;
+}
+
+.viewer-copy-toggle-icon{
+  color:var(--muted);
+  transition:transform .18s ease;
+}
+
+.viewer-copy-actions.expanded .viewer-copy-toggle-icon{
+  transform:rotate(180deg);
+}
+
+.viewer-copy-panel{
+  display:grid;
+  gap:8px;
+  padding:0 12px 12px;
+}
+
+.viewer-copy-panel[hidden]{
+  display:none;
+}
+
+.viewer-copy-panel .btn{
+  width:100%;
+  text-align:left;
+}
+
 .product-card:active {
   transform: scale(var(--tap-scale-card));
   box-shadow: var(--shadow-card-pressed);
@@ -5286,6 +5333,139 @@ function renderVariantSizeOptions(group) {
     </div>
   `;
 }
+
+function canCopyViewerCostPrice() {
+  return state.mode === "admin" && !!state.admin?.loggedIn;
+}
+
+function getViewerCopyProductTarget(product = state.selectedProduct) {
+  if (!product) return null;
+
+  if (product.isVariantGroup) {
+    const selectedVariant = getSelectedVariantFromGroup(product);
+    const fallbackVariant = product.variants?.[0] || {};
+    if (selectedVariant) {
+      return {
+        ...selectedVariant,
+        image: selectedVariant.image || product.image || fallbackVariant.image || ""
+      };
+    }
+
+    return {
+      name: product.displayName || fallbackVariant.name || "",
+      productId: product.parentProductId || fallbackVariant.productId || "",
+      stock: getVariantGroupTotalStock(product),
+      image: product.image || fallbackVariant.image || "",
+      costPrice: ""
+    };
+  }
+
+  return product;
+}
+
+function getViewerCopyInfoValue(type) {
+  const product = getViewerCopyProductTarget();
+  if (!product) return { label: "ข้อมูลสินค้า", value: "" };
+
+  const map = {
+    name: {
+      label: "ชื่อสินค้า",
+      value: product.name || product.displayName || ""
+    },
+    productId: {
+      label: "รหัสสินค้า",
+      value: product.productId || ""
+    },
+    stock: {
+      label: "จำนวน",
+      value: product.stock ?? ""
+    },
+    image: {
+      label: "รูปภาพ",
+      value: product.image || ""
+    },
+    costPrice: {
+      label: "ราคาทุน",
+      value: canCopyViewerCostPrice() ? product.costPrice ?? "" : ""
+    }
+  };
+
+  return map[type] || { label: "ข้อมูลสินค้า", value: "" };
+}
+
+function toggleViewerCopyInfoSection(event) {
+  if (event) event.stopPropagation();
+  const button = event?.currentTarget;
+  const root = button?.closest(".viewer-copy-actions");
+  if (!root) return;
+
+  const panel = root.querySelector(".viewer-copy-panel");
+  const expanded = !root.classList.contains("expanded");
+  root.classList.toggle("expanded", expanded);
+  if (panel) panel.hidden = !expanded;
+  if (button) button.setAttribute("aria-expanded", expanded ? "true" : "false");
+}
+
+async function copyViewerProductInfo(type, event) {
+  if (event) event.stopPropagation();
+
+  if (type === "costPrice" && !canCopyViewerCostPrice()) {
+    showToast("เฉพาะแอดมินเท่านั้นที่คัดลอกราคาทุนได้", "warning");
+    return;
+  }
+
+  const { label, value } = getViewerCopyInfoValue(type);
+  const text = String(value ?? "").trim();
+
+  if (!text) {
+    showToast(`ไม่มี${label}ให้คัดลอก`, "warning");
+    return;
+  }
+
+  try {
+    if (!navigator.clipboard?.writeText) {
+      throw new Error("Clipboard API unavailable");
+    }
+    await navigator.clipboard.writeText(text);
+    showToast(`คัดลอก${label}แล้ว`, "success");
+  } catch (err) {
+    showToast(`คัดลอก${label}ไม่สำเร็จ`, "error");
+  }
+}
+
+function renderViewerCopyInfoSection() {
+  const costPriceButton = canCopyViewerCostPrice()
+    ? `
+      <button class="btn btn-outline" type="button" onclick="copyViewerProductInfo('costPrice', event)">
+        คัดลอกราคาทุน
+      </button>
+    `
+    : "";
+
+  return `
+    <section class="viewer-copy-actions" aria-label="คัดลอกข้อมูลสินค้า">
+      <button class="viewer-copy-toggle" type="button" aria-expanded="false" onclick="toggleViewerCopyInfoSection(event)">
+        <span>คัดลอกข้อมูลสินค้า</span>
+        <span class="viewer-copy-toggle-icon" aria-hidden="true">⌄</span>
+      </button>
+      <div class="viewer-copy-panel" hidden>
+        <button class="btn btn-outline" type="button" onclick="copyViewerProductInfo('name', event)">
+          คัดลอกชื่อสินค้า
+        </button>
+        <button class="btn btn-outline" type="button" onclick="copyViewerProductInfo('productId', event)">
+          คัดลอกรหัสสินค้า
+        </button>
+        <button class="btn btn-outline" type="button" onclick="copyViewerProductInfo('stock', event)">
+          คัดลอกจำนวน
+        </button>
+        <button class="btn btn-outline" type="button" onclick="copyViewerProductInfo('image', event)">
+          คัดลอกรูปภาพ
+        </button>
+        ${costPriceButton}
+      </div>
+    </section>
+  `;
+}
   
 function renderProducts(){
   const app = document.getElementById("app");
@@ -5588,6 +5768,7 @@ function renderProductSheet(){
           : "กรุณาเลือกไซส์ก่อน"}
       </div>
       ${renderVariantSizeOptions(p)}
+      ${renderViewerCopyInfoSection()}
 
       ${
         detailProduct.detailsText || detailProduct.compareImages
@@ -5639,6 +5820,7 @@ function renderProductSheet(){
 
     <div class="price">฿${Number(p.price) || 0}</div>
     <div class="stock">คงเหลือ ${Number(p.stock) || 0} ชิ้น</div>
+    ${renderViewerCopyInfoSection()}
     
      ${
       p.detailsText || p.compareImages
