@@ -2339,7 +2339,24 @@ textarea:focus-visible {
 
 .side-menu .menu-btn {
   width: 100%;
-  margin-bottom: 12px;
+  height: auto;
+  min-height: 46px;
+  margin-bottom: 0;
+  padding: 11px 14px;
+  border-radius: 14px;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 8px;
+  line-height: 1.35;
+}
+
+.side-menu .menu-group > .btn {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 8px;
+  line-height: 1.35;
+  white-space: normal;
 }
 
 .loading {
@@ -2364,11 +2381,16 @@ textarea:focus-visible {
 .menu-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.menu-group:first-of-type {
+  margin-top: 0;
 }
 
 .menu-group.danger {
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 /* 🔒 iOS SAFARI ZOOM FIX */
@@ -7709,7 +7731,7 @@ function renderAdminMenuInStockSheet() {
     <div class="menu-group">
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(leaveAdminMode)">
-        👁 กลับสู่ Viewer
+        กลับสู่ Viewer
       </button>
 
       ${
@@ -7717,7 +7739,7 @@ function renderAdminMenuInStockSheet() {
           ? `
               <button class="btn btn-secondary"
                 onclick="closeStockMenuSheetThen(reopenLastOrderSheet)">
-                🧾 บิลล่าสุด
+                บิลล่าสุด
               </button>
             `
           : ``
@@ -7725,27 +7747,27 @@ function renderAdminMenuInStockSheet() {
 
       <button class="btn btn-primary"
         onclick="closeStockMenuSheetThen(handleOpenDashboard)">
-        📊 Dashboard
+        Dashboard
       </button>
 
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(handleOpenPendingOrders)">
-        📦 Pending Orders ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
+        Pending Orders ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
       </button>
 
       <button class="btn btn-secondary"
         onclick="openStockTimelineInsideAdminMenu()">
-        📦 Stock Timeline
+        Stock Timeline
       </button>
 
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(openPendingDeliverySheet)">
-        📦 ค้างส่ง
+        ค้างส่ง
       </button>
 
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(handleOpenAddProduct)">
-        ➕ เพิ่มสินค้าใหม่
+        เพิ่มสินค้าใหม่
       </button>
 
       <button class="btn btn-secondary"
@@ -7770,7 +7792,7 @@ function renderAdminMenuInStockSheet() {
 
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(openChangePasswordSheet)">
-        🔐 เปลี่ยนรหัสผ่าน
+        เปลี่ยนรหัสผ่าน
       </button>
     </div>
 
@@ -7779,7 +7801,7 @@ function renderAdminMenuInStockSheet() {
     <div class="menu-group danger">
       <button class="btn btn-danger"
         onclick="closeStockMenuSheetThen(handleAdminLogout)">
-        🚪 Logout
+        Logout
       </button>
     </div>
   `;
@@ -10595,8 +10617,8 @@ function openMainMenu(triggerEl){
   const hasLastOrder = !!(state.lastOrder && state.lastOrder.orderId);
   const pendingCount = getPendingOrdersCount();
   const themeToggleLabel = getCurrentTheme() === "cute"
-    ? "🌙 โหมดเข้ม"
-    : "🌸 โหมดน่ารัก";
+    ? "โหมดเข้ม"
+    : "โหมดน่ารัก";
 
   // ✅ STEP 2: Main Menu v1 = Login only (ถ้ายังไม่อยู่ admin mode)
   mainMenuSheet.innerHTML = `
@@ -10620,43 +10642,43 @@ function openMainMenu(triggerEl){
             ? `
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); leaveAdminMode();">
-                  👁 กลับสู่ Viewer
+                  กลับสู่ Viewer
                 </button>
 
                ${
                  hasLastOrder
                    ? `
-                       <button class="btn btn-secondary"
-                         onclick="closeMainMenu(); reopenLastOrderSheet();">
-                         🧾 บิลล่าสุด
-                       </button>
+                        <button class="btn btn-secondary"
+                          onclick="closeMainMenu(); reopenLastOrderSheet();">
+                          บิลล่าสุด
+                        </button>
                      `
                    : ``
                }
 
                 <button class="btn btn-primary"
                   onclick="closeMainMenu(); handleOpenDashboard();">
-                  📊 Dashboard
+                  Dashboard
                 </button>
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); handleOpenPendingOrders();">
-                  📦 Pending Orders ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
+                  Pending Orders ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
                 </button>
 
                 <button class="btn btn-secondary"
                   onclick="openStockTimelineInsideAdminMenu();">
-                  📦 Stock Timeline
+                  Stock Timeline
                 </button>
 
                  <button class="btn btn-secondary"
                    onclick="closeMainMenu(); openPendingDeliverySheet();">
-                   📦 ค้างส่ง
+                   ค้างส่ง
                  </button>
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); handleOpenAddProduct();">
-                  ➕ เพิ่มสินค้าใหม่
+                  เพิ่มสินค้าใหม่
                 </button>
 
                 <button class="btn btn-secondary"
@@ -10701,25 +10723,25 @@ function openMainMenu(triggerEl){
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openChangePasswordSheet();">
-                  🔐 เปลี่ยนรหัสผ่าน
+                  เปลี่ยนรหัสผ่าน
                 </button>
               `
             : `
              
                 <button class="btn btn-primary"
                   onclick="closeMainMenu(); enterAdmin();">
-                 🧭 ไป Admin Dashboard
+                 ไป Admin Dashboard
                 </button>
 
                 <button class="btn btn-secondary" disabled
                   style="opacity:.8; cursor:default;">
-                  👁 อยู่ใน Viewer
+                  อยู่ใน Viewer
                 </button>
               `
           : `
               <button class="btn btn-primary"
                 onclick="closeMainMenu(); openAdminEntry();">
-                🔑 Admin Login
+                Admin Login
               </button>
             `
       }
@@ -10732,7 +10754,7 @@ function openMainMenu(triggerEl){
           <div class="menu-group danger">
             <button class="btn btn-danger"
                onclick="closeMainMenu(); handleAdminLogout();">
-               🚪 Logout
+               Logout
              </button>
           </div>
         `
