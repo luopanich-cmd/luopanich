@@ -417,6 +417,36 @@ body[data-theme="cute"] .shop-subtitle{
   gap: 8px;
   margin-left: 10px;
 }  
+
+.language-switch{
+  display:inline-flex;
+  align-items:center;
+  flex-shrink:0;
+  padding:2px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:var(--surface-glass);
+  box-shadow:var(--shadow-control);
+}
+
+.language-switch button{
+  min-width:38px;
+  min-height:30px;
+  border:0;
+  border-radius:999px;
+  padding:5px 9px;
+  background:transparent;
+  color:var(--text-soft);
+  font-size:12px;
+  font-weight:800;
+  line-height:1;
+  cursor:pointer;
+}
+
+.language-switch button.active{
+  background:var(--primary);
+  color:var(--primary-text);
+}
   
 /* ================= ADMIN TITLE (only delta) ================= */
  .admin-title{
@@ -4148,6 +4178,85 @@ const state = {
 const CART_KEY = "luopanich_cart";
 const LAST_ORDER_KEY = "luopanich_last_order"; 
 const THEME_KEY = "appTheme";
+const LANG_KEY = "luopanich_lang";
+const DEFAULT_LANG = "th";
+const UI_TEXT = {
+  th: {
+    langThai: "ไทย",
+    langEn: "EN",
+    shopTitle: "ร้านค้า Luopanich",
+    shopSubtitle: "ค้นหา · กรองสถานะ · เพิ่มลงตะกร้า",
+    adminTitle: "การจัดการสินค้า",
+    adminBadge: "แอดมิน",
+    adminSubtitle: "แอดมิน · แก้ไข · ปรับสต๊อก · ตรวจออเดอร์",
+    adminLoginTitle: "เข้าสู่ระบบแอดมิน",
+    username: "ชื่อผู้ใช้",
+    password: "รหัสผ่าน",
+    login: "เข้าสู่ระบบ",
+    mainMenu: "เมนูหลัก",
+    dashboard: "แดชบอร์ดแอดมิน",
+    dashboardShort: "แดชบอร์ด",
+    pendingOrders: "ออเดอร์รออนุมัติ"
+  },
+  en: {
+    langThai: "ไทย",
+    langEn: "EN",
+    shopTitle: "Luopanich Store",
+    shopSubtitle: "Search · Filter status · Add to cart",
+    adminTitle: "Product Management",
+    adminBadge: "Admin",
+    adminSubtitle: "Admin · Edit · Adjust stock · Review orders",
+    adminLoginTitle: "Admin Login",
+    username: "Username",
+    password: "Password",
+    login: "Login",
+    mainMenu: "Main Menu",
+    dashboard: "Admin Dashboard",
+    dashboardShort: "Dashboard",
+    pendingOrders: "Pending Orders"
+  }
+};
+
+function getCurrentLang() {
+  try {
+    const savedLang = localStorage.getItem(LANG_KEY);
+    return savedLang === "en" || savedLang === "th" ? savedLang : DEFAULT_LANG;
+  } catch (err) {
+    console.warn("getCurrentLang: localStorage unavailable", err);
+    return DEFAULT_LANG;
+  }
+}
+
+function setCurrentLang(lang) {
+  const safeLang = lang === "en" ? "en" : "th";
+  try {
+    localStorage.setItem(LANG_KEY, safeLang);
+  } catch (err) {
+    console.warn("setCurrentLang: localStorage unavailable", err);
+  }
+  renderHeader();
+  if (mainMenuSheet?.classList?.contains("show")) {
+    openMainMenu();
+  }
+  if (adminLoginSheet?.classList?.contains("show")) {
+    renderAdminLogin();
+  }
+}
+
+function t(key, fallback = "") {
+  const lang = getCurrentLang();
+  return UI_TEXT[lang]?.[key] ?? UI_TEXT[DEFAULT_LANG]?.[key] ?? fallback;
+}
+
+function renderLanguageSwitch() {
+  const lang = getCurrentLang();
+  return `
+    <div class="language-switch" role="group" aria-label="เลือกภาษา">
+      <button type="button" class="${lang === "th" ? "active" : ""}" onclick="setCurrentLang('th')">${t("langThai", "ไทย")}</button>
+      <button type="button" class="${lang === "en" ? "active" : ""}" onclick="setCurrentLang('en')">${t("langEn", "EN")}</button>
+    </div>
+  `;
+}
 
 function getCurrentTheme() {
   const theme = document.body?.dataset?.theme;
@@ -6289,8 +6398,8 @@ function renderHeader(){
     h.innerHTML = `
       <div class="header-left">
       <div class="header-stack">
-        <div class="shop-title">ร้านค้า Luopanich</div>
-        <div class="shop-subtitle">ค้นหา · กรองสถานะ · เพิ่มลงตะกร้า</div>
+        <div class="shop-title">${t("shopTitle", "ร้านค้า Luopanich")}</div>
+        <div class="shop-subtitle">${t("shopSubtitle", "ค้นหา · กรองสถานะ · เพิ่มลงตะกร้า")}</div>
 
         <!-- 🔍 SEARCH ICON + EXPAND -->
 <div
@@ -6351,6 +6460,8 @@ function renderHeader(){
    <button type="button" class="filter-item ${state.viewerFilter.status === "out" ? "active" : ""}" role="menuitem" onclick="selectFilter('out')">หมด</button>
  </div>
    </div>
+
+ ${renderLanguageSwitch()}
       
  <button
    class="menu-btn"
@@ -6374,11 +6485,11 @@ function renderHeader(){
     <div class="header-left">
       <div class="header-stack">
         <div class="admin-title">
-          การจัดการสินค้า
-          <span class="badge" style="margin-left:8px;">แอดมิน</span>
+          ${t("adminTitle", "การจัดการสินค้า")}
+          <span class="badge" style="margin-left:8px;">${t("adminBadge", "แอดมิน")}</span>
           <!-- 🔴 CHANGED: เพิ่ม Mode Indicator (badge) ให้ชัด -->
         </div>
-        <div class="shop-subtitle">Admin · แก้ไข · ปรับสต๊อก · ตรวจออเดอร์</div>
+        <div class="shop-subtitle">${t("adminSubtitle", "แอดมิน · แก้ไข · ปรับสต๊อก · ตรวจออเดอร์")}</div>
       </div>
 
       <!-- 🔍 SEARCH (ICON EXPAND LIKE VIEWER) -->
@@ -6428,6 +6539,8 @@ function renderHeader(){
    <button type="button" class="filter-item ${state.admin.filters.status === "out" ? "active" : ""}" role="menuitem" onclick="selectFilter('out')">หมด</button>
  </div>
       </div>
+
+ ${renderLanguageSwitch()}
 
  <button
    class="menu-btn"
@@ -6943,22 +7056,22 @@ function renderAdminLogin(){
       <button class="btn btn-outline sheet-nav-btn"
         onclick="cancelAdminLogin()"
         aria-label="ปิดหน้าเข้าสู่ระบบ">×</button>
-      <h3 id="adminLoginSheetTitle">เข้าสู่ระบบแอดมิน</h3>
+      <h3 id="adminLoginSheetTitle">${t("adminLoginTitle", "เข้าสู่ระบบแอดมิน")}</h3>
       <div aria-hidden="true"></div>
     </div>
 
     <div class="form-group">
-      <label for="adminUser">ชื่อผู้ใช้</label>
+      <label for="adminUser">${t("username", "ชื่อผู้ใช้")}</label>
       <input id="adminUser"
-        placeholder="ชื่อผู้ใช้"
+        placeholder="${t("username", "ชื่อผู้ใช้")}"
         onfocus="focusInput(this)">
     </div>
 
     <div class="form-group">
-      <label for="adminPass">รหัสผ่าน</label>
+      <label for="adminPass">${t("password", "รหัสผ่าน")}</label>
       <input id="adminPass"
         type="password"
-        placeholder="รหัสผ่าน"
+        placeholder="${t("password", "รหัสผ่าน")}"
         onfocus="focusInput(this)">
     </div>
 
@@ -6966,7 +7079,7 @@ function renderAdminLogin(){
       <button class="btn btn-primary"
         id="adminLoginBtn"
         onclick="handleAdminLogin(this)">
-        เข้าสู่ระบบ
+        ${t("login", "เข้าสู่ระบบ")}
       </button>
 
       <button class="btn btn-outline"
@@ -7465,7 +7578,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
   }
 
   adminDashboardSheet.innerHTML = `
-    <h3 id="adminDashboardSheetTitle">แดชบอร์ดแอดมิน</h3>
+    <h3 id="adminDashboardSheetTitle">${t("dashboard", "แดชบอร์ดแอดมิน")}</h3>
     <div class="loading">กำลังโหลดข้อมูล</div>
   `;
 
@@ -7523,7 +7636,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
             onclick="backToAdminMainMenu()">
             ← กลับเมนู
           </button>
-          <h3 id="adminDashboardSheetTitle">ออเดอร์รออนุมัติ</h3>
+          <h3 id="adminDashboardSheetTitle">${t("pendingOrders", "ออเดอร์รออนุมัติ")}</h3>
         </div>
 
         ${renderAdminOrderPoSearch()}
@@ -7567,7 +7680,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
           ← กลับเมนู
         </button>
         <h3 id="adminDashboardSheetTitle">
-          <span class="dashboard-title-main">แดชบอร์ดแอดมิน</span>
+          <span class="dashboard-title-main">${t("dashboard", "แดชบอร์ดแอดมิน")}</span>
           <span class="dashboard-title-sub">(เฉพาะ APPROVED)</span>
         </h3>
       </div>
@@ -7668,7 +7781,7 @@ ${
     }
 
     adminDashboardSheet.innerHTML = `
-      <h3 id="adminDashboardSheetTitle">แดชบอร์ดแอดมิน</h3>
+      <h3 id="adminDashboardSheetTitle">${t("dashboard", "แดชบอร์ดแอดมิน")}</h3>
 
       <div style="text-align:center;color:#d93025;margin-top:32px">
         ไม่สามารถโหลดข้อมูลแดชบอร์ดได้
@@ -7738,7 +7851,7 @@ function renderAdminMenuInStockSheet() {
   adminStockSheet.classList.add("stock-menu-return-side");
   adminStockSheet.innerHTML = `
     <div class="side-menu-topbar">
-      <h3 id="adminStockSheetTitle">เมนูหลัก</h3>
+      <h3 id="adminStockSheetTitle">${t("mainMenu", "เมนูหลัก")}</h3>
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closeStockMenuSheetThen()"
         aria-label="ปิดเมนูหลัก">×</button>
@@ -7748,7 +7861,7 @@ function renderAdminMenuInStockSheet() {
       <div class="menu-section-label">ภาพรวม</div>
       <button class="btn btn-primary"
         onclick="closeStockMenuSheetThen(handleOpenDashboard)">
-        แดชบอร์ด
+        ${t("dashboardShort", "แดชบอร์ด")}
       </button>
 
       <button class="btn btn-secondary"
@@ -7761,7 +7874,7 @@ function renderAdminMenuInStockSheet() {
       <div class="menu-section-label">คำสั่งซื้อ</div>
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(handleOpenPendingOrders)">
-        ออเดอร์รออนุมัติ ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
+        ${t("pendingOrders", "ออเดอร์รออนุมัติ")} ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
       </button>
 
       <button class="btn btn-secondary"
@@ -10649,7 +10762,7 @@ function openMainMenu(triggerEl){
   // ✅ STEP 2: Main Menu v1 = Login only (ถ้ายังไม่อยู่ admin mode)
   mainMenuSheet.innerHTML = `
     <div class="side-menu-topbar">
-      <h3 id="mainMenuSheetTitle">เมนูหลัก</h3>
+      <h3 id="mainMenuSheetTitle">${t("mainMenu", "เมนูหลัก")}</h3>
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closeMainMenu()"
         aria-label="ปิดเมนูหลัก">×</button>
@@ -10663,7 +10776,7 @@ function openMainMenu(triggerEl){
                 <div class="menu-section-label">ภาพรวม</div>
                 <button class="btn btn-primary"
                   onclick="closeMainMenu(); handleOpenDashboard();">
-                  แดชบอร์ด
+                  ${t("dashboardShort", "แดชบอร์ด")}
                 </button>
 
                 <button class="btn btn-secondary"
@@ -10676,7 +10789,7 @@ function openMainMenu(triggerEl){
                 <div class="menu-section-label">คำสั่งซื้อ</div>
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); handleOpenPendingOrders();">
-                  ออเดอร์รออนุมัติ ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
+                  ${t("pendingOrders", "ออเดอร์รออนุมัติ")} ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
                 </button>
 
                  <button class="btn btn-secondary"
@@ -10775,7 +10888,7 @@ function openMainMenu(triggerEl){
 
                 <button class="btn btn-primary"
                   onclick="closeMainMenu(); enterAdmin();">
-                 ไปแดชบอร์ดแอดมิน
+                 ${t("dashboard", "แดชบอร์ดแอดมิน")}
                 </button>
 
                 <button class="btn btn-secondary" disabled
@@ -10794,7 +10907,7 @@ function openMainMenu(triggerEl){
 
                 <button class="btn btn-primary"
                   onclick="closeMainMenu(); openAdminEntry();">
-                  เข้าสู่ระบบแอดมิน
+                  ${t("adminLoginTitle", "เข้าสู่ระบบแอดมิน")}
                 </button>
               </div>
             `
