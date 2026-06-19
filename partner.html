@@ -184,6 +184,10 @@
       font-size:13px;
     }
 
+    .thumb,.thumb-placeholder,.product-card{
+      cursor:pointer;
+    }
+
     .product-main{
       min-width:0;
       display:grid;
@@ -493,6 +497,94 @@
     .helper{color:var(--text-soft);line-height:1.55}
     .hidden{display:none!important}
 
+    .detail-backdrop{
+      position:fixed;
+      inset:0;
+      z-index:30;
+      display:grid;
+      align-items:end;
+      background:rgba(0,0,0,.62);
+      padding:12px;
+    }
+
+    .detail-sheet{
+      width:min(720px,100%);
+      max-height:min(88vh,760px);
+      margin:0 auto;
+      overflow:auto;
+      border:1px solid var(--border);
+      border-radius:26px 26px 20px 20px;
+      background:rgba(25,29,36,.98);
+      box-shadow:0 24px 80px rgba(0,0,0,.48);
+    }
+
+    .detail-topbar{
+      position:sticky;
+      top:0;
+      z-index:2;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px;
+      background:rgba(25,29,36,.96);
+      border-bottom:1px solid var(--border);
+      backdrop-filter:blur(18px);
+    }
+
+    .detail-topbar strong{font-size:15px}
+    .detail-close{
+      width:40px;
+      height:40px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.08);
+      color:var(--text);
+      cursor:pointer;
+      font-size:20px;
+      font-weight:900;
+    }
+
+    .detail-body{
+      display:grid;
+      gap:14px;
+      padding:14px;
+    }
+
+    .detail-image{
+      width:100%;
+      max-height:320px;
+      object-fit:contain;
+      border:1px solid var(--border);
+      border-radius:22px;
+      background:var(--surface-2);
+    }
+
+    .detail-placeholder{
+      min-height:220px;
+      display:grid;
+      place-items:center;
+      color:var(--muted);
+      border:1px dashed var(--border);
+      border-radius:22px;
+      background:var(--surface-2);
+    }
+
+    .detail-meta-grid{
+      display:grid;
+      gap:8px;
+    }
+
+    .detail-note{
+      padding:10px 12px;
+      border:1px solid rgba(10,132,255,.24);
+      border-radius:16px;
+      background:rgba(10,132,255,.10);
+      color:var(--text-soft);
+      font-size:13px;
+      line-height:1.5;
+    }
+
     @media (min-width:760px){
       .page{padding:24px 18px 48px}
       .hero{margin:-24px -18px 22px;padding:24px 18px 18px}
@@ -534,6 +626,7 @@
       products: [],
       selectedItems: [],
       variantSelections: {},
+      detailKey: "",
       search: "",
       status: "all",
       loading: true,
@@ -735,6 +828,34 @@
       });
     }
 
+    function getCatalogItemKey(item) {
+      return item?.isVariantGroup ? item.groupKey : String(item?.productId || "");
+    }
+
+    function findCatalogItemByKey(key) {
+      const target = String(key || "");
+      if (!target) return null;
+      return buildCatalogItems(state.products).find(item => getCatalogItemKey(item) === target) || null;
+    }
+
+    function openPartnerProductDetail(key, event) {
+      if (event) event.stopPropagation();
+      state.detailKey = String(key || "");
+      render();
+    }
+
+    function closePartnerProductDetail(event) {
+      if (event) event.stopPropagation();
+      state.detailKey = "";
+      render();
+    }
+
+    function selectPartnerDetailVariant(groupKey, productId, event) {
+      if (event) event.stopPropagation();
+      state.variantSelections[groupKey] = productId;
+      render();
+    }
+
     function getGroupPriceLabel(group) {
       const prices = [...new Set(group.variants.map(variant => Number(variant.price) || 0))].sort((a, b) => a - b);
       if (!prices.length) return "฿0";
@@ -828,10 +949,10 @@
         .slice(0, 4);
 
       return `
-        <article class="product-card">
+        <article class="product-card" onclick="openPartnerProductDetail(${escAttr(jsString(product.productId))}, event)">
           ${
             product.image
-              ? `<img class="thumb" src="${escAttr(product.image)}" alt="${escAttr(product.name)}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'thumb-placeholder',textContent:'รูป'}))">`
+              ? `<img class="thumb" src="${escAttr(product.image)}" alt="${escAttr(product.name)}" onclick="openPartnerProductDetail(${escAttr(jsString(product.productId))}, event)" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'thumb-placeholder',textContent:'รูป'}))">`
               : `<div class="thumb-placeholder" aria-hidden="true">รูป</div>`
           }
           <div class="product-main">
@@ -848,7 +969,7 @@
                 : ""
             }
             <div class="actions">
-              <button class="btn btn-primary" type="button" style="width:100%" onclick="addInterest(${escAttr(jsString(product.productId))})">
+              <button class="btn btn-primary" type="button" style="width:100%" onclick="event.stopPropagation(); addInterest(${escAttr(jsString(product.productId))})">
                 เพิ่มในรายการสนใจ
               </button>
             </div>
@@ -869,10 +990,10 @@
         .slice(0, 4);
 
       return `
-        <article class="product-card">
+        <article class="product-card" onclick="openPartnerProductDetail(${escAttr(jsString(group.groupKey))}, event)">
           ${
             image
-              ? `<img class="thumb" src="${escAttr(image)}" alt="${escAttr(group.displayName)}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'thumb-placeholder',textContent:'รูป'}))">`
+              ? `<img class="thumb" src="${escAttr(image)}" alt="${escAttr(group.displayName)}" onclick="openPartnerProductDetail(${escAttr(jsString(group.groupKey))}, event)" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'thumb-placeholder',textContent:'รูป'}))">`
               : `<div class="thumb-placeholder" aria-hidden="true">รูป</div>`
           }
           <div class="product-main">
@@ -891,7 +1012,7 @@
                 return `
                   <button class="size-chip ${selected ? "selected" : ""}" type="button"
                     ${disabled ? "disabled" : ""}
-                    onclick="selectVariant(${escAttr(jsString(group.groupKey))},${escAttr(jsString(variant.productId))})">
+                    onclick="event.stopPropagation(); selectVariant(${escAttr(jsString(group.groupKey))},${escAttr(jsString(variant.productId))})">
                     <span>${esc(variant.variantValue || variant.productId)}</span>
                     <small>${esc(getVariantSubLabel(variant))}</small>
                   </button>
@@ -909,12 +1030,87 @@
                 : ""
             }
             <div class="actions">
-              <button class="btn btn-primary" type="button" style="width:100%" onclick="addVariantGroupInterest(${escAttr(jsString(group.groupKey))})">
+              <button class="btn btn-primary" type="button" style="width:100%" onclick="event.stopPropagation(); addVariantGroupInterest(${escAttr(jsString(group.groupKey))})">
                 เพิ่มในรายการสนใจ
               </button>
             </div>
           </div>
         </article>
+      `;
+    }
+
+    function renderPartnerProductDetailSheet() {
+      const item = findCatalogItemByKey(state.detailKey);
+      if (!item) return "";
+
+      const isGroup = Boolean(item.isVariantGroup);
+      const selectedProductId = isGroup ? state.variantSelections[item.groupKey] || "" : item.productId;
+      const selectedVariant = isGroup
+        ? item.variants.find(variant => variant.productId === selectedProductId)
+        : item;
+      const displayProduct = selectedVariant || (isGroup ? item.variants[0] || {} : item);
+      const image = displayProduct.image || (isGroup ? item.variants.find(variant => variant.image)?.image : item.image) || "";
+      const name = isGroup ? item.displayName : item.name;
+      const priceLabel = isGroup ? getGroupPriceLabel(item) : `฿${money(item.price)}`;
+      const status = selectedVariant ? selectedVariant.status : displayProduct.status;
+      const skuLabel = selectedVariant?.productId || (!isGroup ? item.productId : "-");
+      const detailsText = displayProduct.detailsText || (!isGroup ? item.detailsText : "");
+
+      return `
+        <div class="detail-backdrop" onclick="closePartnerProductDetail(event)">
+          <section class="detail-sheet" role="dialog" aria-modal="true" aria-label="รายละเอียดสินค้า" onclick="event.stopPropagation()">
+            <div class="detail-topbar">
+              <strong>รายละเอียดสินค้า</strong>
+              <button class="detail-close" type="button" onclick="closePartnerProductDetail(event)" aria-label="ปิด">×</button>
+            </div>
+            <div class="detail-body">
+              ${
+                image
+                  ? `<img class="detail-image" src="${escAttr(image)}" alt="${escAttr(name || skuLabel || "สินค้า")}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'detail-placeholder',textContent:'รูป'}))">`
+                  : `<div class="detail-placeholder">รูป</div>`
+              }
+              <div>
+                <h2 class="name">${esc(name || "-")}</h2>
+                <div class="price">${esc(priceLabel)}</div>
+              </div>
+              <div class="detail-meta-grid">
+                ${isGroup ? `<div class="sku-line"><span class="sku-chip">กลุ่ม: ${esc(item.parentProductId || "-")}</span></div>` : ""}
+                <div class="sku-line">
+                  <span class="sku-chip">SKU: ${esc(skuLabel)}</span>
+                  <span class="status ${escAttr(status || "")}">${esc(selectedVariant ? getStatusLabel(status) : "เลือกไซส์")}</span>
+                </div>
+                ${
+                  isGroup
+                    ? `<div class="detail-note">เลือกไซส์เพื่อส่งรหัส SKU จริงของไซส์นั้นให้ร้าน</div>`
+                    : ""
+                }
+              </div>
+              ${
+                isGroup
+                  ? `<div class="size-options" role="group" aria-label="เลือกไซส์">
+                      ${item.variants.map(variant => {
+                        const selected = variant.productId === selectedProductId;
+                        const disabled = isVariantUnavailable(variant);
+                        return `
+                          <button class="size-chip ${selected ? "selected" : ""}" type="button"
+                            ${disabled ? "disabled" : ""}
+                            onclick="selectPartnerDetailVariant(${escAttr(jsString(item.groupKey))},${escAttr(jsString(variant.productId))}, event)">
+                            <span>${esc(variant.variantValue || variant.productId)}</span>
+                            <small>${esc(getVariantSubLabel(variant))}</small>
+                          </button>
+                        `;
+                      }).join("")}
+                    </div>`
+                  : ""
+              }
+              ${detailsText ? `<div class="details">${esc(detailsText)}</div>` : ""}
+              <button class="btn btn-primary" type="button"
+                onclick="event.stopPropagation(); ${isGroup ? `addVariantGroupInterest(${escAttr(jsString(item.groupKey))})` : `addInterest(${escAttr(jsString(item.productId))})`}">
+                เพิ่มในรายการสนใจ
+              </button>
+            </div>
+          </section>
+        </div>
       `;
     }
 
@@ -1117,6 +1313,7 @@
           </div>
           <a class="btn btn-primary" href="#interestPanel" style="text-decoration:none">ดูรายการ</a>
         </div>
+        ${renderPartnerProductDetailSheet()}
       `;
     }
 
