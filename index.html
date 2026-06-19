@@ -2352,11 +2352,27 @@ textarea:focus-visible {
 
 .side-menu .menu-group > .btn {
   width: 100%;
+  min-height: 46px;
+  padding: 11px 14px;
+  border-radius: 14px;
   justify-content: flex-start;
   text-align: left;
   gap: 8px;
   line-height: 1.35;
   white-space: normal;
+}
+
+.side-menu .menu-group > .btn .badge-count {
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.menu-section-label {
+  margin: 4px 2px 2px;
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .02em;
 }
 
 .loading {
@@ -7729,9 +7745,28 @@ function renderAdminMenuInStockSheet() {
     </div>
 
     <div class="menu-group">
+      <div class="menu-section-label">ภาพรวม</div>
+      <button class="btn btn-primary"
+        onclick="closeStockMenuSheetThen(handleOpenDashboard)">
+        Dashboard
+      </button>
+
       <button class="btn btn-secondary"
-        onclick="closeStockMenuSheetThen(leaveAdminMode)">
-        กลับสู่ Viewer
+        onclick="openStockTimelineInsideAdminMenu()">
+        Stock Timeline
+      </button>
+    </div>
+
+    <div class="menu-group">
+      <div class="menu-section-label">คำสั่งซื้อ</div>
+      <button class="btn btn-secondary"
+        onclick="closeStockMenuSheetThen(handleOpenPendingOrders)">
+        Pending Orders ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
+      </button>
+
+      <button class="btn btn-secondary"
+        onclick="closeStockMenuSheetThen(openPendingDeliverySheet)">
+        ค้างส่ง
       </button>
 
       ${
@@ -7744,27 +7779,10 @@ function renderAdminMenuInStockSheet() {
             `
           : ``
       }
+    </div>
 
-      <button class="btn btn-primary"
-        onclick="closeStockMenuSheetThen(handleOpenDashboard)">
-        Dashboard
-      </button>
-
-      <button class="btn btn-secondary"
-        onclick="closeStockMenuSheetThen(handleOpenPendingOrders)">
-        Pending Orders ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
-      </button>
-
-      <button class="btn btn-secondary"
-        onclick="openStockTimelineInsideAdminMenu()">
-        Stock Timeline
-      </button>
-
-      <button class="btn btn-secondary"
-        onclick="closeStockMenuSheetThen(openPendingDeliverySheet)">
-        ค้างส่ง
-      </button>
-
+    <div class="menu-group">
+      <div class="menu-section-label">สินค้า</div>
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(handleOpenAddProduct)">
         เพิ่มสินค้าใหม่
@@ -7788,6 +7806,14 @@ function renderAdminMenuInStockSheet() {
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(openBulkProductUpdateSheet)">
         อัปเดตราคา/สถานะหลายรายการ
+      </button>
+    </div>
+
+    <div class="menu-group">
+      <div class="menu-section-label">ระบบ</div>
+      <button class="btn btn-secondary"
+        onclick="closeStockMenuSheetThen(leaveAdminMode)">
+        กลับสู่ Viewer
       </button>
 
       <button class="btn btn-secondary"
@@ -10629,46 +10655,28 @@ function openMainMenu(triggerEl){
         aria-label="ปิดเมนูหลัก">×</button>
     </div>
 
-    <!-- 🔹 MAIN ACTIONS -->
-    <div class="menu-group">
-      <button class="btn btn-outline" type="button"
-        onclick="toggleTheme()">
-        ${themeToggleLabel}
-      </button>
-
-      ${
+    ${
         (isAuthed)
           ? (state.mode === "admin")
             ? `
-                <button class="btn btn-secondary"
-                  onclick="closeMainMenu(); leaveAdminMode();">
-                  กลับสู่ Viewer
-                </button>
-
-               ${
-                 hasLastOrder
-                   ? `
-                        <button class="btn btn-secondary"
-                          onclick="closeMainMenu(); reopenLastOrderSheet();">
-                          บิลล่าสุด
-                        </button>
-                     `
-                   : ``
-               }
-
+              <div class="menu-group">
+                <div class="menu-section-label">ภาพรวม</div>
                 <button class="btn btn-primary"
                   onclick="closeMainMenu(); handleOpenDashboard();">
                   Dashboard
                 </button>
 
                 <button class="btn btn-secondary"
-                  onclick="closeMainMenu(); handleOpenPendingOrders();">
-                  Pending Orders ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
-                </button>
-
-                <button class="btn btn-secondary"
                   onclick="openStockTimelineInsideAdminMenu();">
                   Stock Timeline
+                </button>
+              </div>
+
+              <div class="menu-group">
+                <div class="menu-section-label">คำสั่งซื้อ</div>
+                <button class="btn btn-secondary"
+                  onclick="closeMainMenu(); handleOpenPendingOrders();">
+                  Pending Orders ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
                 </button>
 
                  <button class="btn btn-secondary"
@@ -10676,6 +10684,20 @@ function openMainMenu(triggerEl){
                    ค้างส่ง
                  </button>
 
+                ${
+                  hasLastOrder
+                    ? `
+                        <button class="btn btn-secondary"
+                          onclick="closeMainMenu(); reopenLastOrderSheet();">
+                          บิลล่าสุด
+                        </button>
+                      `
+                    : ``
+                }
+              </div>
+
+              <div class="menu-group">
+                <div class="menu-section-label">สินค้า</div>
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); handleOpenAddProduct();">
                   เพิ่มสินค้าใหม่
@@ -10705,7 +10727,10 @@ function openMainMenu(triggerEl){
                   onclick="closeMainMenu(); openLandedCostSheet();">
                   คำนวณต้นทุนนำเข้า
                 </button>
+              </div>
 
+              <div class="menu-group">
+                <div class="menu-section-label">คู่ค้า</div>
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openPartnerAdminSheet();">
                   คู่ค้า
@@ -10720,14 +10745,34 @@ function openMainMenu(triggerEl){
                   onclick="closeMainMenu(); openPartnerRequestsSheet();">
                   คำขอคู่ค้า
                 </button>
+              </div>
+
+              <div class="menu-group">
+                <div class="menu-section-label">ระบบ</div>
+                <button class="btn btn-outline" type="button"
+                  onclick="toggleTheme()">
+                  ${themeToggleLabel}
+                </button>
+
+                <button class="btn btn-secondary"
+                  onclick="closeMainMenu(); leaveAdminMode();">
+                  กลับสู่ Viewer
+                </button>
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openChangePasswordSheet();">
                   เปลี่ยนรหัสผ่าน
                 </button>
+              </div>
               `
             : `
-             
+              <div class="menu-group">
+                <div class="menu-section-label">ระบบ</div>
+                <button class="btn btn-outline" type="button"
+                  onclick="toggleTheme()">
+                  ${themeToggleLabel}
+                </button>
+
                 <button class="btn btn-primary"
                   onclick="closeMainMenu(); enterAdmin();">
                  ไป Admin Dashboard
@@ -10737,15 +10782,24 @@ function openMainMenu(triggerEl){
                   style="opacity:.8; cursor:default;">
                   อยู่ใน Viewer
                 </button>
+              </div>
               `
           : `
-              <button class="btn btn-primary"
-                onclick="closeMainMenu(); openAdminEntry();">
-                Admin Login
-              </button>
+              <div class="menu-group">
+                <div class="menu-section-label">ระบบ</div>
+                <button class="btn btn-outline" type="button"
+                  onclick="toggleTheme()">
+                  ${themeToggleLabel}
+                </button>
+
+                <button class="btn btn-primary"
+                  onclick="closeMainMenu(); openAdminEntry();">
+                  Admin Login
+                </button>
+              </div>
             `
       }
-    </div>
+
 
     ${
       (isAuthed)
