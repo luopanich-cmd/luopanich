@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Luopanich Private Catalog</title>
+  <title>แคตตาล็อกคู่ค้า Luopanich</title>
   <style>
     :root{
       --bg:#0f1115;
@@ -707,7 +707,7 @@
         try {
           json = JSON.parse(text);
         } catch (err) {
-          throw new Error("Invalid server response");
+          throw new Error("รูปแบบข้อมูลจากเซิร์ฟเวอร์ไม่ถูกต้อง");
         }
         if (!res.ok) {
           throw new Error(json.error || `HTTP ${res.status}`);
@@ -932,7 +932,7 @@
       );
 
       const skuEl = document.querySelector("[data-detail-sku]");
-      if (skuEl) skuEl.textContent = `SKU: ${selectedVariant.productId || "-"}`;
+      if (skuEl) skuEl.textContent = `รหัสสินค้า (SKU): ${selectedVariant.productId || "-"}`;
 
       const statusEl = document.querySelector("[data-detail-status]");
       if (statusEl) {
@@ -1048,14 +1048,14 @@
           <div class="product-main">
             <h2 class="name">${esc(product.name || "-")}</h2>
             <div class="sku-line">
-              <span class="sku-chip">SKU: ${esc(product.productId || "-")}</span>
+              <span class="sku-chip">รหัสสินค้า (SKU): ${esc(product.productId || "-")}</span>
               <span class="status ${escAttr(product.status || "")}">${esc(getStatusLabel(product.status))}</span>
             </div>
             <div class="price">฿${money(product.price)}</div>
             ${product.detailsText ? `<div class="details">${esc(product.detailsText)}</div>` : ""}
             ${
               compareImages.length
-                ? `<div class="compare-images">${compareImages.map(url => `<img src="${escAttr(url)}" alt="compare" onerror="this.remove()">`).join("")}</div>`
+                ? `<div class="compare-images">${compareImages.map(url => `<img src="${escAttr(url)}" alt="รูปเปรียบเทียบ" onerror="this.remove()">`).join("")}</div>`
                 : ""
             }
             <div class="actions">
@@ -1111,12 +1111,12 @@
             </div>
             ${
               selectedVariant
-                ? `<div class="meta">เลือกแล้ว: ${esc(selectedVariant.variantValue || "-")} · SKU: ${esc(selectedVariant.productId || "-")}</div>`
+                ? `<div class="meta">เลือกแล้ว: ${esc(selectedVariant.variantValue || "-")} · รหัสสินค้า (SKU): ${esc(selectedVariant.productId || "-")}</div>`
                 : `<div class="meta">กรุณาเลือกไซส์ก่อนเพิ่มในรายการสนใจ</div>`
             }
             ${
               compareImages.length
-                ? `<div class="compare-images">${compareImages.map(url => `<img src="${escAttr(url)}" alt="compare" onerror="this.remove()">`).join("")}</div>`
+                ? `<div class="compare-images">${compareImages.map(url => `<img src="${escAttr(url)}" alt="รูปเปรียบเทียบ" onerror="this.remove()">`).join("")}</div>`
                 : ""
             }
             <div class="actions">
@@ -1164,7 +1164,7 @@
               <div class="detail-meta-grid">
                 ${isGroup ? `<div class="sku-line"><span class="sku-chip">กลุ่ม: ${esc(item.parentProductId || "-")}</span></div>` : ""}
                 <div class="sku-line">
-                  <span class="sku-chip" data-detail-sku>SKU: ${esc(skuLabel)}</span>
+                  <span class="sku-chip" data-detail-sku>รหัสสินค้า (SKU): ${esc(skuLabel)}</span>
                   <span class="status ${escAttr(status || "")}" data-detail-status>${esc(selectedVariant ? getStatusLabel(status) : "เลือกไซส์")}</span>
                 </div>
                 ${
@@ -1224,7 +1224,7 @@
                   <div>
                     <strong>${esc(item.displayName || item.name || item.productId)}</strong>
                     <div class="meta">
-                      ${item.variantValue ? `ไซส์: ${esc(item.variantValue)} · ` : ""}SKU: ${esc(item.productId)} · ฿${money(item.price)}
+                      ${item.variantValue ? `ไซส์: ${esc(item.variantValue)} · ` : ""}รหัสสินค้า (SKU): ${esc(item.productId)} · ฿${money(item.price)}
                     </div>
                   </div>
                   <button class="btn btn-danger" type="button" onclick="removeInterest(${escAttr(jsString(item.productId))})">ลบ</button>
@@ -1323,7 +1323,7 @@
       app.innerHTML = `
         <header class="hero">
           <div class="hero-card">
-            <div class="eyebrow">Luopanich Private Catalog</div>
+            <div class="eyebrow">แคตตาล็อกคู่ค้า Luopanich</div>
             <h1>แคตตาล็อกส่วนตัวสำหรับคู่ค้า</h1>
             <div class="hero-copy">
               เลือกสินค้าที่สนใจ แล้วส่งรายการให้ร้านตรวจสอบ
