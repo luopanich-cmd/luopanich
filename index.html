@@ -410,13 +410,26 @@ body[data-theme="cute"] .shop-subtitle{
   flex-direction: column;
   min-width: 0;
 }
+.header-action-stack{
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin-left: 10px;
+}
 .header-actions{
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-left: 10px;
 }  
+
+.header-lang-row{
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
 
 .language-switch{
   display:inline-flex;
@@ -1709,7 +1722,18 @@ body[data-theme="cute"] .menu-btn:active{
 
   .header-actions{
     gap: 6px;
+  }
+
+  .header-action-stack{
+    gap: 5px;
     margin-left: 8px;
+  }
+
+  .language-switch button{
+    min-width: 34px;
+    min-height: 28px;
+    padding: 4px 8px;
+    font-size: 11px;
   }
 
   .search-wrap.active .search-input{
@@ -6431,7 +6455,9 @@ function renderHeader(){
          </div>
     </div>
 
-<div class="header-actions">
+<div class="header-action-stack">
+  <div class="header-lang-row">${renderLanguageSwitch()}</div>
+  <div class="header-actions">
 
    <div class="filter-wrap">
  <button class="filter-btn ${state.viewerFilter.status !== "all" ? "has-active-filter" : ""}"
@@ -6461,8 +6487,6 @@ function renderHeader(){
  </div>
    </div>
 
- ${renderLanguageSwitch()}
-      
  <button
    class="menu-btn"
    onclick="openMainMenu(this)"
@@ -6477,6 +6501,7 @@ function renderHeader(){
  </button>
 
    </div>   
+</div>
     `;
   }
 
@@ -6516,7 +6541,9 @@ function renderHeader(){
     </div>
   
     <!-- 🔴 CHANGED: Admin ใช้ filter + menu เหมือน Viewer -->
-    <div class="header-actions">
+    <div class="header-action-stack">
+      <div class="header-lang-row">${renderLanguageSwitch()}</div>
+      <div class="header-actions">
 
       <div class="filter-wrap">
  <button class="filter-btn ${state.admin.filters.status !== "all" ? "has-active-filter" : ""}"
@@ -6540,8 +6567,6 @@ function renderHeader(){
  </div>
       </div>
 
- ${renderLanguageSwitch()}
-
  <button
    class="menu-btn"
    onclick="openMainMenu(this)"
@@ -6556,6 +6581,7 @@ function renderHeader(){
       </button>
 
     </div>
+  </div>
   `;
 }
 
