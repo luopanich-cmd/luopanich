@@ -5,7 +5,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
  <meta name="color-scheme" content="dark">
  <meta name="theme-color" content="#0f0f12">
- <title>Stock Viewer</title>
+ <title>ร้านค้า Luopanich</title>
 
 <!-- ================= UI STYLE ================= -->
 <style>
@@ -6375,7 +6375,7 @@ function renderHeader(){
       <div class="header-stack">
         <div class="admin-title">
           การจัดการสินค้า
-          <span class="badge" style="margin-left:8px;">ADMIN</span>
+          <span class="badge" style="margin-left:8px;">แอดมิน</span>
           <!-- 🔴 CHANGED: เพิ่ม Mode Indicator (badge) ให้ชัด -->
         </div>
         <div class="shop-subtitle">Admin · แก้ไข · ปรับสต๊อก · ตรวจออเดอร์</div>
@@ -6943,22 +6943,22 @@ function renderAdminLogin(){
       <button class="btn btn-outline sheet-nav-btn"
         onclick="cancelAdminLogin()"
         aria-label="ปิดหน้าเข้าสู่ระบบ">×</button>
-      <h3 id="adminLoginSheetTitle">Admin Login</h3>
+      <h3 id="adminLoginSheetTitle">เข้าสู่ระบบแอดมิน</h3>
       <div aria-hidden="true"></div>
     </div>
 
     <div class="form-group">
-      <label for="adminUser">Username</label>
+      <label for="adminUser">ชื่อผู้ใช้</label>
       <input id="adminUser"
-        placeholder="Username"
+        placeholder="ชื่อผู้ใช้"
         onfocus="focusInput(this)">
     </div>
 
     <div class="form-group">
-      <label for="adminPass">Password</label>
+      <label for="adminPass">รหัสผ่าน</label>
       <input id="adminPass"
         type="password"
-        placeholder="Password"
+        placeholder="รหัสผ่าน"
         onfocus="focusInput(this)">
     </div>
 
@@ -6966,7 +6966,7 @@ function renderAdminLogin(){
       <button class="btn btn-primary"
         id="adminLoginBtn"
         onclick="handleAdminLogin(this)">
-        Login
+        เข้าสู่ระบบ
       </button>
 
       <button class="btn btn-outline"
@@ -7116,7 +7116,7 @@ async function handleAdminLogin(btn){
   const password = passInput.value;
 
   if (!username || !password) {
-    showToast("กรุณากรอก Username และ Password", "warning");
+    showToast("กรุณากรอกชื่อผู้ใช้และรหัสผ่าน", "warning");
     return;
   }
 
@@ -7465,7 +7465,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
   }
 
   adminDashboardSheet.innerHTML = `
-    <h3 id="adminDashboardSheetTitle">📊 Admin Dashboard</h3>
+    <h3 id="adminDashboardSheetTitle">แดชบอร์ดแอดมิน</h3>
     <div class="loading">กำลังโหลดข้อมูล</div>
   `;
 
@@ -7523,7 +7523,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
             onclick="backToAdminMainMenu()">
             ← กลับเมนู
           </button>
-          <h3 id="adminDashboardSheetTitle">📦 Pending Orders</h3>
+          <h3 id="adminDashboardSheetTitle">ออเดอร์รออนุมัติ</h3>
         </div>
 
         ${renderAdminOrderPoSearch()}
@@ -7567,7 +7567,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
           ← กลับเมนู
         </button>
         <h3 id="adminDashboardSheetTitle">
-          <span class="dashboard-title-main">📊 Admin Dashboard</span>
+          <span class="dashboard-title-main">แดชบอร์ดแอดมิน</span>
           <span class="dashboard-title-sub">(เฉพาะ APPROVED)</span>
         </h3>
       </div>
@@ -7668,7 +7668,7 @@ ${
     }
 
     adminDashboardSheet.innerHTML = `
-      <h3 id="adminDashboardSheetTitle">📊 Admin Dashboard</h3>
+      <h3 id="adminDashboardSheetTitle">แดชบอร์ดแอดมิน</h3>
 
       <div style="text-align:center;color:#d93025;margin-top:32px">
         ไม่สามารถโหลดข้อมูลแดชบอร์ดได้
@@ -7738,7 +7738,7 @@ function renderAdminMenuInStockSheet() {
   adminStockSheet.classList.add("stock-menu-return-side");
   adminStockSheet.innerHTML = `
     <div class="side-menu-topbar">
-      <h3 id="adminStockSheetTitle">Main Menu</h3>
+      <h3 id="adminStockSheetTitle">เมนูหลัก</h3>
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closeStockMenuSheetThen()"
         aria-label="ปิดเมนูหลัก">×</button>
@@ -7748,12 +7748,12 @@ function renderAdminMenuInStockSheet() {
       <div class="menu-section-label">ภาพรวม</div>
       <button class="btn btn-primary"
         onclick="closeStockMenuSheetThen(handleOpenDashboard)">
-        Dashboard
+        แดชบอร์ด
       </button>
 
       <button class="btn btn-secondary"
         onclick="openStockTimelineInsideAdminMenu()">
-        Stock Timeline
+        ไทม์ไลน์สต๊อก
       </button>
     </div>
 
@@ -7761,7 +7761,7 @@ function renderAdminMenuInStockSheet() {
       <div class="menu-section-label">คำสั่งซื้อ</div>
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(handleOpenPendingOrders)">
-        Pending Orders ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
+        ออเดอร์รออนุมัติ ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
       </button>
 
       <button class="btn btn-secondary"
@@ -7813,7 +7813,7 @@ function renderAdminMenuInStockSheet() {
       <div class="menu-section-label">ระบบ</div>
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(leaveAdminMode)">
-        กลับสู่ Viewer
+        กลับสู่หน้าร้าน
       </button>
 
       <button class="btn btn-secondary"
@@ -7880,9 +7880,9 @@ function renderPartnerOrderSourceBadge(order, options = {}) {
   return `
     <div class="partner-order-source-badge${compactClass}">
       <div><strong>ที่มา:</strong> คำขอคู่ค้า</div>
-      <div><strong>Partner:</strong> ${esc(order.partnerNameSnapshot || "-")}</div>
-      <div><strong>Partner ID:</strong> ${esc(order.partnerId || "-")}</div>
-      <div><strong>Partner Request ID:</strong> ${esc(order.partnerRequestId || "-")}</div>
+      <div><strong>คู่ค้า:</strong> ${esc(order.partnerNameSnapshot || "-")}</div>
+      <div><strong>รหัสคู่ค้า:</strong> ${esc(order.partnerId || "-")}</div>
+      <div><strong>เลขคำขอคู่ค้า:</strong> ${esc(order.partnerRequestId || "-")}</div>
     </div>
   `;
 }
@@ -7897,7 +7897,7 @@ function getAdminOrderStatusClass(status) {
 
 function getAdminOrderSourceLabel(order) {
   const source = String(order?.source || "").trim();
-  if (!source) return "Viewer";
+  if (!source) return "หน้าร้าน";
   if (source === "partner_request") return "คำขอคู่ค้า";
   return source;
 }
@@ -7912,19 +7912,19 @@ function buildAdminPoSummaryText(order) {
   const items = Array.isArray(order?.items) ? order.items : [];
   const lines = [
     `PO: ${order?.poNumber || "-"}`,
-    `Order ID: ${order?.orderId || "-"}`,
-    `Status: ${order?.status || "-"}`,
-    `Source: ${getAdminOrderSourceLabel(order)}`
+    `เลขออเดอร์: ${order?.orderId || "-"}`,
+    `สถานะ: ${order?.status || "-"}`,
+    `แหล่งที่มา: ${getAdminOrderSourceLabel(order)}`
   ];
 
   const partnerName = String(order?.partnerNameSnapshot || order?.partnerId || "").trim();
   const partnerRequestId = String(order?.partnerRequestId || "").trim();
 
   if (partnerName) {
-    lines.push(`Partner: ${partnerName}`);
+    lines.push(`คู่ค้า: ${partnerName}`);
   }
   if (partnerRequestId) {
-    lines.push(`Partner Request ID: ${partnerRequestId}`);
+    lines.push(`เลขคำขอคู่ค้า: ${partnerRequestId}`);
   }
 
   lines.push("", "รายการสินค้า:");
@@ -8189,20 +8189,20 @@ function buildAdminPoPrintHtml(order) {
           </div>
           <div class="doc-meta">
             <div><strong>PO</strong><span>${esc(order?.poNumber || "-")}</span></div>
-            <div><strong>Order ID</strong><span>${esc(order?.orderId || "-")}</span></div>
+            <div><strong>เลขออเดอร์</strong><span>${esc(order?.orderId || "-")}</span></div>
             <div><strong>พิมพ์เมื่อ</strong><span>${esc(printDateTime)}</span></div>
           </div>
         </div>
 
         <div class="meta-grid">
           <div class="meta-item"><strong>PO</strong><span>${esc(order?.poNumber || "-")}</span></div>
-          <div class="meta-item"><strong>Order ID</strong><span>${esc(order?.orderId || "-")}</span></div>
-          <div class="meta-item"><strong>Status</strong><span>${esc(status || "-")}</span></div>
-          <div class="meta-item"><strong>Source</strong><span>${esc(getAdminOrderSourceLabel(order))}</span></div>
-          ${partnerName ? `<div class="meta-item"><strong>Partner</strong><span>${esc(partnerName)}</span></div>` : ""}
-          ${partnerRequestId ? `<div class="meta-item"><strong>Partner Request ID</strong><span>${esc(partnerRequestId)}</span></div>` : ""}
-          ${createdAt ? `<div class="meta-item"><strong>Created At</strong><span>${esc(formatThaiDate(createdAt))}</span></div>` : ""}
-          ${approvedAt ? `<div class="meta-item"><strong>Approved At</strong><span>${esc(formatThaiDate(approvedAt))}</span></div>` : ""}
+          <div class="meta-item"><strong>เลขออเดอร์</strong><span>${esc(order?.orderId || "-")}</span></div>
+          <div class="meta-item"><strong>สถานะ</strong><span>${esc(status || "-")}</span></div>
+          <div class="meta-item"><strong>แหล่งที่มา</strong><span>${esc(getAdminOrderSourceLabel(order))}</span></div>
+          ${partnerName ? `<div class="meta-item"><strong>คู่ค้า</strong><span>${esc(partnerName)}</span></div>` : ""}
+          ${partnerRequestId ? `<div class="meta-item"><strong>เลขคำขอคู่ค้า</strong><span>${esc(partnerRequestId)}</span></div>` : ""}
+          ${createdAt ? `<div class="meta-item"><strong>สร้างเมื่อ</strong><span>${esc(formatThaiDate(createdAt))}</span></div>` : ""}
+          ${approvedAt ? `<div class="meta-item"><strong>อนุมัติเมื่อ</strong><span>${esc(formatThaiDate(approvedAt))}</span></div>` : ""}
         </div>
 
         <div class="section-title">รายการสินค้า</div>
@@ -8303,7 +8303,7 @@ function renderAdminOrderSummary(order) {
           <strong>${esc(order?.poNumber || "-")}</strong>
         </div>
         <div class="summary-row">
-          <span>Order ID</span>
+          <span>เลขออเดอร์</span>
           <strong>${esc(order?.orderId || "-")}</strong>
         </div>
         <div class="summary-row">
@@ -8320,7 +8320,7 @@ function renderAdminOrderSummary(order) {
           partnerRequestId
             ? `
               <div class="summary-row">
-                <span>Partner Request ID</span>
+                <span>เลขคำขอคู่ค้า</span>
                 <strong>${esc(partnerRequestId)}</strong>
               </div>
             `
@@ -10176,7 +10176,7 @@ function renderPendingDeliveryPoSummary(poNumber, entries) {
         <strong>${summary.entryCount}</strong>
       </div>
       <div class="summary-row">
-        <span>OPEN / CLOSED</span>
+        <span>เปิด / ปิดแล้ว</span>
         <strong>${summary.openCount} / ${summary.closedCount}</strong>
       </div>
       <div class="summary-row">
@@ -10184,7 +10184,7 @@ function renderPendingDeliveryPoSummary(poNumber, entries) {
         <strong>${summary.totalPendingQty}</strong>
       </div>
       <div class="summary-row">
-        <span>OPEN / CLOSED Qty</span>
+        <span>จำนวนเปิด / ปิดแล้ว</span>
         <strong>${summary.openPendingQty} / ${summary.closedPendingQty}</strong>
       </div>
       <div class="summary-row">
@@ -10192,7 +10192,7 @@ function renderPendingDeliveryPoSummary(poNumber, entries) {
         <strong>${esc(summary.skuList.join(", ") || "-")}</strong>
       </div>
       <div class="summary-row">
-        <span>Order ID</span>
+        <span>เลขออเดอร์</span>
         <strong>${esc(summary.orderIdList.join(", ") || "-")}</strong>
       </div>
       ${
@@ -10236,11 +10236,11 @@ function buildPendingDeliveryPoSummaryText(poNumber, entries) {
     `PO: ${poNumber || "-"}`,
     `สถานะรวม: ${statusText}`,
     `รายการทั้งหมด: ${summary.entryCount}`,
-    `OPEN / CLOSED: ${summary.openCount} / ${summary.closedCount}`,
+    `เปิด / ปิดแล้ว: ${summary.openCount} / ${summary.closedCount}`,
     `จำนวนค้างส่งรวม: ${summary.totalPendingQty}`,
-    `OPEN / CLOSED Qty: ${summary.openPendingQty} / ${summary.closedPendingQty}`,
+    `จำนวนเปิด / ปิดแล้ว: ${summary.openPendingQty} / ${summary.closedPendingQty}`,
     `SKU: ${summary.skuList.join(", ") || "-"}`,
-    `Order ID: ${summary.orderIdList.join(", ") || "-"}`
+    `เลขออเดอร์: ${summary.orderIdList.join(", ") || "-"}`
   ];
 
   if (summary.latestCreatedAt) {
@@ -10649,7 +10649,7 @@ function openMainMenu(triggerEl){
   // ✅ STEP 2: Main Menu v1 = Login only (ถ้ายังไม่อยู่ admin mode)
   mainMenuSheet.innerHTML = `
     <div class="side-menu-topbar">
-      <h3 id="mainMenuSheetTitle">Main Menu</h3>
+      <h3 id="mainMenuSheetTitle">เมนูหลัก</h3>
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closeMainMenu()"
         aria-label="ปิดเมนูหลัก">×</button>
@@ -10663,12 +10663,12 @@ function openMainMenu(triggerEl){
                 <div class="menu-section-label">ภาพรวม</div>
                 <button class="btn btn-primary"
                   onclick="closeMainMenu(); handleOpenDashboard();">
-                  Dashboard
+                  แดชบอร์ด
                 </button>
 
                 <button class="btn btn-secondary"
                   onclick="openStockTimelineInsideAdminMenu();">
-                  Stock Timeline
+                  ไทม์ไลน์สต๊อก
                 </button>
               </div>
 
@@ -10676,7 +10676,7 @@ function openMainMenu(triggerEl){
                 <div class="menu-section-label">คำสั่งซื้อ</div>
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); handleOpenPendingOrders();">
-                  Pending Orders ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
+                  ออเดอร์รออนุมัติ ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
                 </button>
 
                  <button class="btn btn-secondary"
@@ -10756,7 +10756,7 @@ function openMainMenu(triggerEl){
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); leaveAdminMode();">
-                  กลับสู่ Viewer
+                  กลับสู่หน้าร้าน
                 </button>
 
                 <button class="btn btn-secondary"
@@ -10775,12 +10775,12 @@ function openMainMenu(triggerEl){
 
                 <button class="btn btn-primary"
                   onclick="closeMainMenu(); enterAdmin();">
-                 ไป Admin Dashboard
+                 ไปแดชบอร์ดแอดมิน
                 </button>
 
                 <button class="btn btn-secondary" disabled
                   style="opacity:.8; cursor:default;">
-                  อยู่ใน Viewer
+                  อยู่ในหน้าร้าน
                 </button>
               </div>
               `
@@ -10794,7 +10794,7 @@ function openMainMenu(triggerEl){
 
                 <button class="btn btn-primary"
                   onclick="closeMainMenu(); openAdminEntry();">
-                  Admin Login
+                  เข้าสู่ระบบแอดมิน
                 </button>
               </div>
             `
@@ -16057,7 +16057,7 @@ function renderPartnerAdminCard(partner) {
         </span>
       </div>
       <div class="meta">
-        Partner ID: ${esc(partner.partnerId || "-")}<br>
+        รหัสคู่ค้า: ${esc(partner.partnerId || "-")}<br>
         ${partner.contactName ? `ผู้ติดต่อ: ${esc(partner.contactName)}<br>` : ""}
         ${partner.email ? `อีเมล: ${esc(partner.email)}<br>` : ""}
         ${partner.phone ? `เบอร์โทร: ${esc(partner.phone)}<br>` : ""}
@@ -16101,10 +16101,10 @@ function renderAddPartnerForm() {
     <div class="admin-detail-card" style="margin-top:14px">
       <div class="admin-detail-title">เพิ่มคู่ค้า</div>
       <div class="helper-text" style="margin-bottom:10px">
-        ใช้สร้างหรือ restore Partner ID เช่น PTR-001 เพื่อใช้สร้างลิงก์คู่ค้า
+        ใช้สร้างหรือกู้คืนรหัสคู่ค้า เช่น PTR-001 เพื่อใช้สร้างลิงก์คู่ค้า
       </div>
       <div class="form-group">
-        <label for="newPartnerId">Partner ID *</label>
+        <label for="newPartnerId">รหัสคู่ค้า *</label>
         <input id="newPartnerId" class="input" value="${escAttr(draft.partnerId || "")}"
           placeholder="PTR-001"
           oninput="updateNewPartnerField('partnerId', this.value)">
@@ -16142,8 +16142,8 @@ function renderAddPartnerForm() {
       <div class="form-group">
         <label for="newPartnerStatus">สถานะ</label>
         <select id="newPartnerStatus" onchange="updateNewPartnerField('status', this.value)">
-          <option value="active" ${draft.status === "active" ? "selected" : ""}>active</option>
-          <option value="disabled" ${draft.status === "disabled" ? "selected" : ""}>disabled</option>
+          <option value="active" ${draft.status === "active" ? "selected" : ""}>เปิดใช้งาน</option>
+          <option value="disabled" ${draft.status === "disabled" ? "selected" : ""}>ปิดใช้งาน</option>
         </select>
       </div>
       <div class="form-group">
@@ -16182,13 +16182,13 @@ function renderPartnerAdminSheet() {
         id="partnerAdminSearch"
         type="search"
         value="${escAttr(partnerState.q || "")}"
-        placeholder="ค้นหา Partner ID / ชื่อ / ผู้ติดต่อ"
+        placeholder="ค้นหารหัสคู่ค้า / ชื่อ / ผู้ติดต่อ"
         oninput="setPartnerAdminSearch(this.value)"
         onkeydown="if(event.key === 'Enter') refreshPartners();">
       <select id="partnerAdminStatus" onchange="setPartnerAdminStatusFilter(this.value)">
         <option value="all" ${partnerState.status === "all" ? "selected" : ""}>ทั้งหมด</option>
-        <option value="active" ${partnerState.status === "active" ? "selected" : ""}>active</option>
-        <option value="disabled" ${partnerState.status === "disabled" ? "selected" : ""}>disabled</option>
+        <option value="active" ${partnerState.status === "active" ? "selected" : ""}>เปิดใช้งาน</option>
+        <option value="disabled" ${partnerState.status === "disabled" ? "selected" : ""}>ปิดใช้งาน</option>
       </select>
     </div>
     <div class="bulk-product-picker-actions">
@@ -16261,7 +16261,7 @@ async function createPartnerFromAdmin() {
   const partnerName = String(draft.partnerName || "").trim();
 
   if (!partnerId) {
-    partnerState.error = "กรุณาระบุ Partner ID";
+    partnerState.error = "กรุณาระบุรหัสคู่ค้า";
     renderPartnerAdminSheet();
     return;
   }
@@ -16695,18 +16695,18 @@ function renderPartnerCatalogSheet() {
         ? renderPartnerLinksView()
         : (result ? renderPartnerCatalogSuccessCard() : `
       <div class="form-group">
-        <label for="partnerCatalogPartnerId">Partner ID</label>
+        <label for="partnerCatalogPartnerId">รหัสคู่ค้า</label>
         <input
           id="partnerCatalogPartnerId"
           class="input"
           value="${escAttr(partnerState.partnerId || "")}"
           placeholder="PTR-001"
           oninput="state.admin.partnerCatalog.partnerId = this.value; state.admin.partnerCatalog.error = '';">
-        <div class="helper-text">ต้องมี Partner ID นี้อยู่ในชีต partners และสถานะยัง active</div>
+        <div class="helper-text">ต้องมีรหัสคู่ค้านี้อยู่ในชีต partners และสถานะยังเป็น active</div>
       </div>
 
       <div class="form-group">
-        <label for="partnerCatalogLabel">Label (ไม่บังคับ)</label>
+        <label for="partnerCatalogLabel">ชื่ออ้างอิง (ไม่บังคับ)</label>
         <input
           id="partnerCatalogLabel"
           class="input"
@@ -16770,7 +16770,7 @@ function validatePartnerCatalogInput() {
   const expiresTime = expiresAt ? new Date(expiresAt).getTime() : NaN;
 
   if (!partnerId) {
-    return { valid: false, message: "กรุณาระบุ Partner ID" };
+    return { valid: false, message: "กรุณาระบุรหัสคู่ค้า" };
   }
   if (!expiresAt || Number.isNaN(expiresTime) || expiresTime <= Date.now()) {
     return { valid: false, message: "กรุณาระบุวันหมดอายุที่อยู่ในอนาคต" };
@@ -17104,7 +17104,7 @@ function renderPartnerLinkFilters() {
       <input
         id="partnerLinkPartnerId"
         value="${escAttr(partnerState.linkPartnerId || "")}"
-        placeholder="Partner ID"
+        placeholder="รหัสคู่ค้า"
         oninput="setPartnerLinkPartnerFilter(this.value)"
         onkeydown="if(event.key === 'Enter') refreshPartnerLinks();">
       <select
@@ -17134,8 +17134,8 @@ function renderPartnerLinkCard(link) {
         <div class="name">${esc(link.partnerNameSnapshot || link.partnerId || "-")}</div>
         <div class="bulk-preview-meta">
           Link ID: ${esc(link.linkId || "-")}<br>
-          Partner ID: ${esc(link.partnerId || "-")}<br>
-          Label: ${esc(link.label || "-")}<br>
+          รหัสคู่ค้า: ${esc(link.partnerId || "-")}<br>
+          ชื่ออ้างอิง: ${esc(link.label || "-")}<br>
           สร้างโดย: ${esc(link.createdBy || "-")}<br>
           สร้างเมื่อ: ${esc(formatThaiDate(link.createdAt || ""))}<br>
           หมดอายุ: ${esc(formatThaiDate(link.expiresAt || ""))}
@@ -17258,8 +17258,8 @@ function renderPartnerLinkDetail() {
       <div class="admin-detail-title">${esc(link.partnerNameSnapshot || link.partnerId || "ลิงก์คู่ค้า")}</div>
       <div class="bulk-preview-meta">
         Link ID: ${esc(link.linkId || "-")}<br>
-        Partner ID: ${esc(link.partnerId || "-")}<br>
-        Label: ${esc(link.label || "-")}<br>
+        รหัสคู่ค้า: ${esc(link.partnerId || "-")}<br>
+        ชื่ออ้างอิง: ${esc(link.label || "-")}<br>
         สร้างโดย: ${esc(link.createdBy || "-")}<br>
         สร้างเมื่อ: ${esc(formatThaiDate(link.createdAt || ""))}<br>
         หมดอายุ: ${esc(formatThaiDate(link.expiresAt || ""))}
@@ -17560,12 +17560,12 @@ function confirmDuplicatePoBeforePartnerConvert(poNumber) {
     .slice(0, 3)
     .map(order => {
       const parts = [
-        `Order ID: ${order?.orderId || "-"}`,
-        `Status: ${order?.status || "-"}`,
-        `Source: ${getAdminOrderSourceLabel(order)}`
+        `เลขออเดอร์: ${order?.orderId || "-"}`,
+        `สถานะ: ${order?.status || "-"}`,
+        `แหล่งที่มา: ${getAdminOrderSourceLabel(order)}`
       ];
       if (order?.partnerRequestId) {
-        parts.push(`Partner Request ID: ${order.partnerRequestId}`);
+        parts.push(`เลขคำขอคู่ค้า: ${order.partnerRequestId}`);
       }
       return parts.join(" | ");
     })
@@ -17614,12 +17614,12 @@ async function confirmDuplicatePoBeforeCreateOrder(poNumber) {
     .slice(0, 3)
     .map(order => {
       const parts = [
-        `Order ID: ${order?.orderId || "-"}`,
-        `Status: ${order?.status || "-"}`,
-        `Source: ${order?.source || "-"}`
+        `เลขออเดอร์: ${order?.orderId || "-"}`,
+        `สถานะ: ${order?.status || "-"}`,
+        `แหล่งที่มา: ${order?.source || "-"}`
       ];
       if (order?.partnerRequestId) {
-        parts.push(`Partner Request ID: ${order.partnerRequestId}`);
+        parts.push(`เลขคำขอคู่ค้า: ${order.partnerRequestId}`);
       }
       return parts.join(" | ");
     })
@@ -17691,7 +17691,7 @@ async function convertPartnerRequestToOrderFromAdmin(requestId) {
     requestState.convertResult = json.data || null;
     requestState.convertError = "";
     requestState.convertPoNumber = "";
-    showToast("สร้างออเดอร์แล้ว รออนุมัติใน Pending Orders", "success");
+    showToast("สร้างออเดอร์แล้ว รออนุมัติในออเดอร์รออนุมัติ", "success");
 
     try {
       state.admin.orders = await fetchOrders();
@@ -17832,7 +17832,7 @@ function renderPartnerRequestsFilters() {
       <input
         id="partnerRequestPartnerId"
         value="${escAttr(requestState.partnerId || "")}"
-        placeholder="Partner ID"
+        placeholder="รหัสคู่ค้า"
         oninput="setPartnerRequestPartnerFilter(this.value)"
         onkeydown="if(event.key === 'Enter') refreshPartnerRequests();">
       <select
@@ -17864,7 +17864,7 @@ function renderPartnerRequestCard(request) {
         <div class="name">${esc(request.partnerNameSnapshot || request.partnerId || "-")}</div>
         <div class="bulk-preview-meta">
           Request: ${esc(request.requestId || "-")}<br>
-          Partner ID: ${esc(request.partnerId || "-")}<br>
+          รหัสคู่ค้า: ${esc(request.partnerId || "-")}<br>
           ผู้ติดต่อ: ${esc(request.contactName || "-")} · ${esc(request.contactPhone || "-")}<br>
           อีเมล: ${esc(request.contactEmail || "-")}<br>
           วันที่: ${esc(formatThaiDate(request.submittedAt || ""))}
@@ -17956,7 +17956,7 @@ function renderPartnerRequestConvertCard(request) {
     <div class="admin-detail-card" style="margin-top:14px">
       <div class="admin-detail-title">สร้างออเดอร์จากคำขอ</div>
       <div class="helper-text">
-        ออเดอร์ที่สร้างจากคำขอคู่ค้าจะเริ่มเป็น PENDING และต้องอนุมัติใน Pending Orders ก่อน ระบบจึงจะตัดสต็อก
+        ออเดอร์ที่สร้างจากคำขอคู่ค้าจะเริ่มเป็น PENDING และต้องอนุมัติในออเดอร์รออนุมัติก่อน ระบบจึงจะตัดสต็อก
       </div>
 
       <div class="form-group" style="margin-top:10px">
@@ -17982,9 +17982,9 @@ function renderPartnerRequestConvertCard(request) {
         result
           ? `
             <div class="bulk-import-success-card" role="status" aria-live="polite" style="margin-top:10px">
-              <strong>สร้างออเดอร์แล้ว รออนุมัติใน Pending Orders</strong>
+              <strong>สร้างออเดอร์แล้ว รออนุมัติในออเดอร์รออนุมัติ</strong>
               <div class="helper-text" style="margin-top:8px">
-                Order ID: ${esc(result.orderId || "-")}<br>
+                เลขออเดอร์: ${esc(result.orderId || "-")}<br>
                 สถานะ: ${esc(result.status || "PENDING")}<br>
                 PO: ${esc(result.poNumber || "-")}<br>
                 รวม: ${esc(formatPartnerRequestMoney(result.total || 0))}<br>
@@ -18030,7 +18030,7 @@ function renderPartnerRequestDetail() {
       <div class="admin-detail-title">${esc(request.partnerNameSnapshot || request.partnerId || "คำขอคู่ค้า")}</div>
       <div class="bulk-preview-meta">
         Request: ${esc(request.requestId || "-")}<br>
-        Partner ID: ${esc(request.partnerId || "-")}<br>
+        รหัสคู่ค้า: ${esc(request.partnerId || "-")}<br>
         ผู้ติดต่อ: ${esc(request.contactName || "-")}<br>
         โทร: ${esc(request.contactPhone || "-")}<br>
         อีเมล: ${esc(request.contactEmail || "-")}<br>
@@ -18499,7 +18499,7 @@ function exportOrderPrint() {
   printWindow.document.write(`
     <html>
     <head>
-      <title>Order ${safeOrderId}</title>
+      <title>ออเดอร์ ${safeOrderId}</title>
       <style>
         @page {
           size: A4;
@@ -18635,7 +18635,7 @@ function exportOrderPrint() {
   timeStyle: "short"
 })}
 </div>
-    <div>Order ${safeOrderId}</div>
+    <div>ออเดอร์ ${safeOrderId}</div>
   </div>
 
      <div class="content">
