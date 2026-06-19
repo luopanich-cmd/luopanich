@@ -495,6 +495,193 @@ function createPartnerLink(params, auth) {
   }
 }
 
+function listPartners(params, auth) {
+  if (!auth || !auth.username) {
+    throw new Error("Unauthorized");
+  }
+
+  const searchText = String(params.q || "").trim().toLowerCase();
+  const statusFilter = String(params.status || "").trim().toLowerCase();
+
+  const ss = getSS();
+  ensurePartnerCatalogSheets_(ss);
+  const partnerData = getSheetDataBySchema_(
+    ss,
+    PARTNER_SHEET_NAMES.partners
+  );
+
+  const partners = partnerData.rows
+    .map(row => buildSafePartnerObject_(partnerData, row))
+    .filter(partner => partner.partnerId)
+    .filter(partner => {
+      if (statusFilter && statusFilter !== "all") {
+        if (normalizePartnerStatus_(partner.status) !== statusFilter) {
+          return false;
+        }
+      }
+
+      if (searchText) {
+        const haystack = [
+          partner.partnerId,
+          partner.partnerName,
+          partner.contactName,
+          partner.email,
+          partner.phone,
+          partner.company,
+          partner.status,
+          partner.note
+        ].join(" ").toLowerCase();
+        if (haystack.indexOf(searchText) === -1) {
+          return false;
+        }
+      }
+
+      return true;
+    })
+    .sort((left, right) =>
+      String(left.partnerId || "").localeCompare(
+        String(right.partnerId || "")
+      )
+    );
+
+  return {
+    success: true,
+    data: {
+      partners,
+      total: partners.length
+    }
+  };
+}
+
+function createPartner(params, auth) {
+  if (!auth || !auth.username) {
+    throw new Error("Unauthorized");
+  }
+
+  const partnerId = normalizePartnerIdInput_(params.partnerId);
+  const partnerName = sanitizePartnerMasterText_(params.partnerName);
+  const status = normalizePartnerStatusForWrite_(params.status, "active");
+
+  if (!partnerId) {
+    throw new Error("Partner ID is required");
+  }
+  if (!partnerName) {
+    throw new Error("Partner name is required");
+  }
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+
+  try {
+    const ss = getSS();
+    ensurePartnerCatalogSheets_(ss);
+    const partnerData = getSheetDataBySchema_(
+      ss,
+      PARTNER_SHEET_NAMES.partners
+    );
+
+    if (findPartnerRowById_(partnerData, partnerId)) {
+      throw new Error("Partner ID already exists");
+    }
+
+    const now = new Date();
+    const row = [
+      partnerId,
+      partnerName,
+      sanitizePartnerMasterText_(params.contactName),
+      sanitizePartnerMasterText_(params.email),
+      sanitizePartnerMasterText_(params.phone),
+      sanitizePartnerMasterText_(params.company),
+      status,
+      sanitizePartnerMasterText_(params.note),
+      now,
+      auth.username,
+      now,
+      auth.username
+    ];
+
+    partnerData.sheet.appendRow(row);
+
+    return {
+      success: true,
+      data: {
+        partner: buildSafePartnerObject_(partnerData, row)
+      }
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function updatePartner(params, auth) {
+  if (!auth || !auth.username) {
+    throw new Error("Unauthorized");
+  }
+
+  const partnerId = normalizePartnerIdInput_(params.partnerId);
+  if (!partnerId) {
+    throw new Error("Partner ID is required");
+  }
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+
+  try {
+    const ss = getSS();
+    ensurePartnerCatalogSheets_(ss);
+    const partnerData = getSheetDataBySchema_(
+      ss,
+      PARTNER_SHEET_NAMES.partners
+    );
+    const match = findPartnerRowById_(partnerData, partnerId);
+    if (!match) {
+      throw new Error("Partner not found");
+    }
+
+    const nextRow = match.row.slice();
+    const editableFields = [
+      "partnerName",
+      "contactName",
+      "email",
+      "phone",
+      "company",
+      "note"
+    ];
+
+    editableFields.forEach(field => {
+      if (Object.prototype.hasOwnProperty.call(params, field)) {
+        nextRow[partnerData.col[field]] =
+          sanitizePartnerMasterText_(params[field]);
+      }
+    });
+
+    if (Object.prototype.hasOwnProperty.call(params, "status")) {
+      nextRow[partnerData.col.status] =
+        normalizePartnerStatusForWrite_(params.status);
+    }
+
+    if (!String(nextRow[partnerData.col.partnerName] || "").trim()) {
+      throw new Error("Partner name is required");
+    }
+
+    nextRow[partnerData.col.updatedAt] = new Date();
+    nextRow[partnerData.col.updatedBy] = auth.username;
+
+    partnerData.sheet
+      .getRange(match.rowNumber, 1, 1, partnerData.headers.length)
+      .setValues([nextRow]);
+
+    return {
+      success: true,
+      data: {
+        partner: buildSafePartnerObject_(partnerData, nextRow)
+      }
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 function getPartnerCatalog(partnerToken) {
   const rawToken = String(partnerToken || "").trim();
   if (!rawToken) {
@@ -1605,6 +1792,55 @@ function findPartnerById_(partnerData, partnerId) {
   };
 }
 
+function findPartnerRowById_(partnerData, partnerId) {
+  const targetId = normalizePartnerIdInput_(partnerId);
+  if (!targetId) return null;
+
+  const index = partnerData.rows.findIndex(row =>
+    String(row[partnerData.col.partnerId] || "").trim() === targetId
+  );
+  if (index === -1) return null;
+
+  return {
+    row: partnerData.rows[index],
+    rowNumber: index + 2
+  };
+}
+
+function normalizePartnerIdInput_(value) {
+  return String(value || "").trim();
+}
+
+function sanitizePartnerMasterText_(value) {
+  return String(value || "").trim();
+}
+
+function normalizePartnerStatusForWrite_(value, defaultStatus) {
+  const rawStatus = String(value || "").trim();
+  const status = normalizePartnerStatus_(rawStatus || defaultStatus || "");
+  if (status !== "active" && status !== "disabled") {
+    throw new Error("Invalid partner status");
+  }
+  return status;
+}
+
+function buildSafePartnerObject_(partnerData, row) {
+  return {
+    partnerId: String(row[partnerData.col.partnerId] || "").trim(),
+    partnerName: String(row[partnerData.col.partnerName] || "").trim(),
+    contactName: String(row[partnerData.col.contactName] || "").trim(),
+    email: String(row[partnerData.col.email] || "").trim(),
+    phone: String(row[partnerData.col.phone] || "").trim(),
+    company: String(row[partnerData.col.company] || "").trim(),
+    status: String(row[partnerData.col.status] || "").trim(),
+    note: String(row[partnerData.col.note] || "").trim(),
+    createdAt: row[partnerData.col.createdAt] || "",
+    createdBy: String(row[partnerData.col.createdBy] || "").trim(),
+    updatedAt: row[partnerData.col.updatedAt] || "",
+    updatedBy: String(row[partnerData.col.updatedBy] || "").trim()
+  };
+}
+
 function findPartnerLinkByTokenHash_(linkData, tokenHash) {
   const targetHash = String(tokenHash || "").trim();
   const row = linkData.rows.find(item =>
@@ -2372,6 +2608,24 @@ function doPost(e) {
       });
     }
 
+
+    if (action === "listPartners") {
+      return json(
+        listPartners(params, auth)
+      );
+    }
+
+    if (action === "createPartner") {
+      return json(
+        createPartner(params, auth)
+      );
+    }
+
+    if (action === "updatePartner") {
+      return json(
+        updatePartner(params, auth)
+      );
+    }
 
     if (action === "createPartnerLink") {
       return json(
