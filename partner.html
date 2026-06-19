@@ -890,6 +890,31 @@
         : `<div class="detail-placeholder">รูป</div>`;
     }
 
+    function normalizeImageUrlForCompare(value) {
+      return String(value || "").trim();
+    }
+
+    function updatePartnerDetailImage(imageSlot, nextImage, altText) {
+      if (!imageSlot) return;
+      const normalizedNext = normalizeImageUrlForCompare(nextImage);
+      const currentImage = imageSlot.querySelector(".detail-image");
+      const currentSrc = normalizeImageUrlForCompare(currentImage?.getAttribute("src"));
+
+      if (currentImage && normalizedNext) {
+        if (currentSrc !== normalizedNext) {
+          currentImage.src = normalizedNext;
+        }
+        currentImage.alt = altText || "สินค้า";
+        return;
+      }
+
+      if (!currentImage && !normalizedNext && imageSlot.querySelector(".detail-placeholder")) {
+        return;
+      }
+
+      imageSlot.innerHTML = renderPartnerDetailImage(normalizedNext, altText);
+    }
+
     function updatePartnerDetailSelection(groupKey, productId) {
       const item = findCatalogItemByKey(groupKey);
       const selectedVariant = item?.variants?.find(variant => variant.productId === productId);
@@ -900,12 +925,11 @@
       });
 
       const imageSlot = document.querySelector("[data-detail-image-slot]");
-      if (imageSlot) {
-        imageSlot.innerHTML = renderPartnerDetailImage(
-          selectedVariant.image || item.variants.find(variant => variant.image)?.image || "",
-          item.displayName || selectedVariant.name || selectedVariant.productId
-        );
-      }
+      updatePartnerDetailImage(
+        imageSlot,
+        selectedVariant.image || item.variants.find(variant => variant.image)?.image || "",
+        item.displayName || selectedVariant.name || selectedVariant.productId
+      );
 
       const skuEl = document.querySelector("[data-detail-sku]");
       if (skuEl) skuEl.textContent = `SKU: ${selectedVariant.productId || "-"}`;
