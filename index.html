@@ -1053,6 +1053,13 @@ button:disabled {
   box-sizing:border-box;
 } 
 
+.admin-po-search-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:10px;
+}
+
 @media (max-width: 480px){
   .admin-sheet-topbar{
     display:grid;
@@ -3918,7 +3925,9 @@ const state = {
     filters: {
       status: "all",
       dashboardFrom: "",
-      dashboardTo: ""
+      dashboardTo: "",
+      poQuery: "",
+      poQueryDraft: ""
     },
     bulkProductImport: {
       rawText: "",
@@ -7243,6 +7252,119 @@ function resetAdminDashboardRange() {
   openAdminDashboard("SUMMARY", true);
 }
 
+function getAdminOrderPoQuery() {
+  return String(state.admin.filters?.poQuery || "").trim().toLowerCase();
+}
+
+function orderMatchesAdminPoQuery(order) {
+  const query = getAdminOrderPoQuery();
+  if (!query) return true;
+
+  return String(order?.poNumber || "")
+    .trim()
+    .toLowerCase()
+    .includes(query);
+}
+
+function getDuplicatePoOrderMap() {
+  const map = new Map();
+  const orders = Array.isArray(state.admin.orders) ? state.admin.orders : [];
+
+  orders.forEach(order => {
+    const key = normalizePoNumberForCompare(order?.poNumber);
+    if (!key) return;
+
+    if (!map.has(key)) {
+      map.set(key, []);
+    }
+    map.get(key).push(order);
+  });
+
+  return map;
+}
+
+function getDuplicatePoInfo(order, duplicatePoMap = getDuplicatePoOrderMap()) {
+  const key = normalizePoNumberForCompare(order?.poNumber);
+  if (!key) return null;
+
+  const duplicates = duplicatePoMap.get(key) || [];
+  if (duplicates.length < 2) return null;
+
+  const currentOrderId = String(order?.orderId || "").trim();
+  const otherOrder = duplicates.find(item =>
+    String(item?.orderId || "").trim() !== currentOrderId
+  );
+
+  return {
+    count: duplicates.length,
+    otherOrderId: otherOrder?.orderId || ""
+  };
+}
+
+function renderDuplicatePoBadge(order, duplicatePoMap) {
+  const duplicateInfo = getDuplicatePoInfo(order, duplicatePoMap);
+  if (!duplicateInfo) return "";
+
+  return `
+    <div class="stock">
+      <span class="status-badge compact status-pending">⚠️ PO ซ้ำ</span>
+      ${
+        duplicateInfo.otherOrderId
+          ? `<span>ซ้ำกับ Order: ${esc(duplicateInfo.otherOrderId)}</span>`
+          : ""
+      }
+    </div>
+  `;
+}
+
+function renderAdminOrderPoSearch() {
+  const value = state.admin.filters?.poQueryDraft ?? state.admin.filters?.poQuery ?? "";
+  return `
+    <div class="form-group">
+      <label>ค้นหาเลข PO</label>
+      <input
+        id="adminOrderPoSearch"
+        type="search"
+        value="${escAttr(value)}"
+        placeholder="ค้นหาเลข PO"
+        oninput="setAdminOrderPoQueryDraft(this.value)"
+        onkeydown="handleAdminOrderPoSearchKey(event)">
+      <div class="admin-po-search-actions">
+        <button class="btn btn-primary" type="button" onclick="applyAdminOrderPoQuery()">ค้นหา</button>
+        <button class="btn btn-outline" type="button" onclick="clearAdminOrderPoQuery()">ล้าง</button>
+      </div>
+    </div>
+  `;
+}
+
+function setAdminOrderPoQueryDraft(value) {
+  state.admin.filters.poQueryDraft = value || "";
+}
+
+function handleAdminOrderPoSearchKey(event) {
+  if (event.key !== "Enter") return;
+
+  event.preventDefault();
+  applyAdminOrderPoQuery();
+}
+
+function applyAdminOrderPoQuery() {
+  const input = document.getElementById("adminOrderPoSearch");
+  const value = input ? input.value : state.admin.filters.poQueryDraft || "";
+
+  state.admin.filters.poQuery = String(value || "").trim();
+  state.admin.filters.poQueryDraft = state.admin.filters.poQuery;
+  allowOpenOrders = true;
+  openAdminDashboard(state.admin.dashboardMode || "SUMMARY", true);
+}
+
+function clearAdminOrderPoQuery() {
+  state.admin.filters.poQuery = "";
+  state.admin.filters.poQueryDraft = "";
+  allowOpenOrders = true;
+  openAdminDashboard(state.admin.dashboardMode || "SUMMARY", true);
+}
+
 async function openAdminDashboard(mode = "SUMMARY", force = false) {
   if (!force && !allowOpenOrders) return;
 
@@ -7293,7 +7415,9 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
       : []
     ).filter(o => {
       const status = String(o.status || "").toUpperCase();
-      return status === "APPROVED" && isOrderInRange(o, from, to);
+      return status === "APPROVED" &&
+        isOrderInRange(o, from, to) &&
+        orderMatchesAdminPoQuery(o);
     });
 
    console.log(
@@ -7308,13 +7432,17 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
     const pendingOrders = (Array.isArray(state.admin.orders)
       ? state.admin.orders
       : []
-    ).filter(o => String(o.status || "").toUpperCase() === "PENDING");
+    ).filter(o =>
+      String(o.status || "").toUpperCase() === "PENDING" &&
+      orderMatchesAdminPoQuery(o)
+    );
 
     const pendingCount = (Array.isArray(state.admin.orders)
       ? state.admin.orders
       : []
     ).filter(o => String(o.status || "").toUpperCase() === "PENDING").length;
 
+    const duplicatePoMap = getDuplicatePoOrderMap();
     const summary = calculateDashboardSummary(approvedOrders);
 
     if (mode === "PENDING") {
@@ -7327,6 +7455,8 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
           <h3 id="adminDashboardSheetTitle">📦 Pending Orders</h3>
         </div>
 
+        ${renderAdminOrderPoSearch()}
+
         ${
           pendingOrders.length
             ? pendingOrders.map(o => `
@@ -7336,6 +7466,8 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
                   onclick="openAdminOrder(${toInlineJsStringLiteral(o.orderId)})"
                   onkeydown="handleKeyboardActivation(event, this)">
                   <div class="name">${esc(o.orderId)}</div>
+                  <div class="stock">PO: ${esc(o.poNumber || "-")}</div>
+                  ${renderDuplicatePoBadge(o, duplicatePoMap)}
                   <div class="admin-card-meta">
                     <span class="status-badge compact status-pending">${esc(o.status)}</span>
                     <span>รวม ฿${Number(o.total || 0).toLocaleString("th-TH")}</span>
@@ -7379,6 +7511,8 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
           <label>ถึงวันที่</label>
           <input id="dashboardDateTo" type="date" value="${escAttr(to)}">
         </div>
+
+        ${renderAdminOrderPoSearch()}
       </div>
 
       <div class="action-row">
@@ -7430,6 +7564,8 @@ ${
               onclick="openAdminOrder(${toInlineJsStringLiteral(o.orderId)})"
               onkeydown="handleKeyboardActivation(event, this)">
               <div class="name">${esc(o.orderId)}</div>
+              <div class="stock">PO: ${esc(o.poNumber || "-")}</div>
+              ${renderDuplicatePoBadge(o, duplicatePoMap)}
               <div class="admin-card-meta">
                 <span class="status-badge compact status-approved">${esc(o.status)}</span>
                 <span>รวม ฿${Number(o.total || 0).toLocaleString("th-TH")}</span>
@@ -7666,6 +7802,443 @@ function renderPartnerOrderSourceBadge(order, options = {}) {
       <div><strong>Partner:</strong> ${esc(order.partnerNameSnapshot || "-")}</div>
       <div><strong>Partner ID:</strong> ${esc(order.partnerId || "-")}</div>
       <div><strong>Partner Request ID:</strong> ${esc(order.partnerRequestId || "-")}</div>
+    </div>
+  `;
+}
+
+function getAdminOrderStatusClass(status) {
+  return {
+    PENDING: "status-pending",
+    APPROVED: "status-approved",
+    REJECTED: "status-rejected"
+  }[String(status || "").toUpperCase()] || "status-neutral";
+}
+
+function getAdminOrderSourceLabel(order) {
+  const source = String(order?.source || "").trim();
+  if (!source) return "Viewer";
+  if (source === "partner_request") return "คำขอคู่ค้า";
+  return source;
+}
+
+function formatAdminPoSummaryMoney(value) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return "-";
+  return `฿${amount.toLocaleString("th-TH")}`;
+}
+
+function buildAdminPoSummaryText(order) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const lines = [
+    `PO: ${order?.poNumber || "-"}`,
+    `Order ID: ${order?.orderId || "-"}`,
+    `Status: ${order?.status || "-"}`,
+    `Source: ${getAdminOrderSourceLabel(order)}`
+  ];
+
+  const partnerName = String(order?.partnerNameSnapshot || order?.partnerId || "").trim();
+  const partnerRequestId = String(order?.partnerRequestId || "").trim();
+
+  if (partnerName) {
+    lines.push(`Partner: ${partnerName}`);
+  }
+  if (partnerRequestId) {
+    lines.push(`Partner Request ID: ${partnerRequestId}`);
+  }
+
+  lines.push("", "รายการสินค้า:");
+
+  if (items.length) {
+    items.forEach((item, index) => {
+      const productId = String(item?.productId || "").trim() || "-";
+      const name = String(item?.name || "").trim();
+      const qty = Number(item?.qty) || 0;
+      const price = Number(item?.price);
+      const lineTotal = Number.isFinite(price)
+        ? formatAdminPoSummaryMoney(price * qty)
+        : "-";
+      const itemName = name ? ` - ${name}` : "";
+
+      lines.push(`${index + 1}. [${productId}]${itemName} x ${qty} = ${lineTotal}`);
+    });
+  } else {
+    lines.push("-");
+  }
+
+  lines.push("", `รวม: ${formatAdminPoSummaryMoney(order?.total)}`);
+  return lines.join("\n");
+}
+
+function copyAdminPoSummary(orderId) {
+  const cleanOrderId = String(orderId || "").trim();
+  const orders = Array.isArray(state.admin.orders) ? state.admin.orders : [];
+  const order = orders.find(item => String(item?.orderId || "").trim() === cleanOrderId) ||
+    (
+      String(state.admin.selectedOrder?.orderId || "").trim() === cleanOrderId
+        ? state.admin.selectedOrder
+        : null
+    );
+
+  if (!order) {
+    showToast("ไม่พบข้อมูลออเดอร์สำหรับคัดลอก", "warning");
+    return;
+  }
+
+  copyTextToClipboard(
+    buildAdminPoSummaryText(order),
+    "คัดลอกสรุป PO แล้ว"
+  );
+}
+
+function getAdminPoPrintItemImage(item) {
+  const directImage = String(item?.imageSnapshot || item?.image || item?.imageUrl || "").trim();
+  if (directImage) return directImage;
+
+  const productId = normalizeProductId(item?.productId || "");
+  if (!productId) return "";
+
+  const products = [
+    ...(Array.isArray(state.products) ? state.products : []),
+    ...(Array.isArray(state.admin?.products) ? state.admin.products : [])
+  ];
+  const product = products.find(productItem =>
+    normalizeProductId(productItem?.productId || "") === productId
+  );
+  return String(product?.image || product?.imageUrl || "").trim();
+}
+
+function buildAdminPoPrintHtml(order) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const status = String(order?.status || "-").trim();
+  const createdAt = getOrderDateValue(order);
+  const approvedAt = order?.approvedAt || "";
+  const partnerName = String(order?.partnerNameSnapshot || order?.partnerId || "").trim();
+  const partnerRequestId = String(order?.partnerRequestId || "").trim();
+  const total = Number(order?.total) || 0;
+  const shopName = "ร้านค้า Luopanich";
+  const printDateTime = new Date().toLocaleString("th-TH");
+  const orderNote = String(order?.note || order?.adminNote || order?.message || "").trim();
+  const itemRows = items.length
+    ? items.map((item, index) => {
+      const productId = String(item?.productId || "").trim() || "-";
+      const name = String(item?.name || "").trim();
+      const imageUrl = getAdminPoPrintItemImage(item);
+      const qty = Number(item?.qty) || 0;
+      const price = Number(item?.price) || 0;
+      const lineTotal = price * qty;
+      const imageCell = imageUrl
+        ? `<img class="po-print-thumb" src="${escAttr(imageUrl)}" alt="${escAttr(name || productId)}" onerror="this.replaceWith(document.createTextNode('-'));">`
+        : "-";
+
+      return `
+        <tr>
+          <td>${index + 1}</td>
+          <td class="thumb-col">${imageCell}</td>
+          <td>${esc(productId)}</td>
+          <td>${esc(name || "-")}</td>
+          <td class="num">${qty}</td>
+          <td class="num">฿${price.toLocaleString("th-TH")}</td>
+          <td class="num">฿${lineTotal.toLocaleString("th-TH")}</td>
+        </tr>
+      `;
+    }).join("")
+    : `<tr><td colspan="7" class="empty">ไม่มีรายการสินค้า</td></tr>`;
+
+  return `
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>ใบสรุป PO ${esc(order?.poNumber || "-")}</title>
+      <style>
+        @page { size: A4; margin: 14mm; }
+        * { box-sizing:border-box; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          color:#111827;
+          font-size:13px;
+          margin:0;
+          background:#fff;
+        }
+        h1 { margin:3px 0 4px; font-size:26px; line-height:1.15; color:#111827; }
+        .muted { color:#6B7280; font-size:12px; }
+        .document { width:100%; }
+        .doc-header {
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:18px;
+          padding-bottom:14px;
+          border-bottom:2px solid #111827;
+          margin-bottom:14px;
+        }
+        .shop-name { font-size:15px; font-weight:800; letter-spacing:.01em; }
+        .doc-meta {
+          min-width:210px;
+          border:1px solid #D1D5DB;
+          border-radius:10px;
+          overflow:hidden;
+        }
+        .doc-meta div {
+          display:grid;
+          grid-template-columns:72px 1fr;
+          gap:8px;
+          padding:7px 9px;
+          border-bottom:1px solid #E5E7EB;
+        }
+        .doc-meta div:last-child { border-bottom:0; }
+        .doc-meta strong { font-size:12px; color:#374151; }
+        .meta-grid {
+          display:grid;
+          grid-template-columns:repeat(2, minmax(0, 1fr));
+          gap:8px 14px;
+          margin:14px 0;
+          padding:12px;
+          border:1px solid #D1D5DB;
+          border-radius:10px;
+        }
+        .meta-item { display:grid; grid-template-columns:120px 1fr; gap:8px; }
+        .meta-item strong { color:#374151; }
+        .section-title {
+          margin:16px 0 8px;
+          font-size:15px;
+          font-weight:800;
+        }
+        table { width:100%; border-collapse:collapse; table-layout:fixed; }
+        th, td { border:1px solid #D1D5DB; padding:7px; text-align:left; vertical-align:top; }
+        th { background:#F3F4F6; color:#111827; font-weight:800; }
+        th:nth-child(1) { width:30px; }
+        th:nth-child(2) { width:54px; }
+        th:nth-child(3) { width:88px; }
+        th:nth-child(5) { width:58px; }
+        th:nth-child(6),
+        th:nth-child(7) { width:82px; }
+        td { word-break:break-word; }
+        .thumb-col { width:48px; text-align:center; }
+        .po-print-thumb {
+          width:40px;
+          height:40px;
+          object-fit:cover;
+          border:1px solid #E5E7EB;
+          border-radius:8px;
+          background:#F9FAFB;
+        }
+        .num { text-align:right; white-space:nowrap; }
+        .total {
+          margin-top:12px;
+          padding:10px 12px;
+          text-align:right;
+          font-size:17px;
+          font-weight:800;
+          border:1px solid #111827;
+          border-radius:10px;
+        }
+        .empty { text-align:center; color:#6B7280; }
+        .note-box {
+          margin-top:14px;
+          padding:10px 12px;
+          border:1px solid #D1D5DB;
+          border-radius:10px;
+          white-space:pre-wrap;
+        }
+        .signature-grid {
+          display:grid;
+          grid-template-columns:repeat(3, 1fr);
+          gap:14px;
+          margin-top:34px;
+          break-inside:avoid;
+        }
+        .signature-box { text-align:center; color:#374151; }
+        .signature-line {
+          height:38px;
+          border-bottom:1px solid #111827;
+          margin-bottom:7px;
+        }
+        @media print {
+          body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+          .doc-header, .meta-grid, .note-box, .signature-grid { break-inside:avoid; }
+        }
+        @media screen and (max-width:640px) {
+          .doc-header { display:block; }
+          .doc-meta { min-width:0; margin-top:12px; }
+          .meta-grid, .signature-grid { grid-template-columns:1fr; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="document">
+        <div class="doc-header">
+          <div>
+            <div class="shop-name">${esc(shopName)}</div>
+            <h1>ใบสรุป PO</h1>
+            <div class="muted">เอกสารสำหรับตรวจสอบรายการสินค้าและการแพ็กของ</div>
+          </div>
+          <div class="doc-meta">
+            <div><strong>PO</strong><span>${esc(order?.poNumber || "-")}</span></div>
+            <div><strong>Order ID</strong><span>${esc(order?.orderId || "-")}</span></div>
+            <div><strong>พิมพ์เมื่อ</strong><span>${esc(printDateTime)}</span></div>
+          </div>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-item"><strong>PO</strong><span>${esc(order?.poNumber || "-")}</span></div>
+          <div class="meta-item"><strong>Order ID</strong><span>${esc(order?.orderId || "-")}</span></div>
+          <div class="meta-item"><strong>Status</strong><span>${esc(status || "-")}</span></div>
+          <div class="meta-item"><strong>Source</strong><span>${esc(getAdminOrderSourceLabel(order))}</span></div>
+          ${partnerName ? `<div class="meta-item"><strong>Partner</strong><span>${esc(partnerName)}</span></div>` : ""}
+          ${partnerRequestId ? `<div class="meta-item"><strong>Partner Request ID</strong><span>${esc(partnerRequestId)}</span></div>` : ""}
+          ${createdAt ? `<div class="meta-item"><strong>Created At</strong><span>${esc(formatThaiDate(createdAt))}</span></div>` : ""}
+          ${approvedAt ? `<div class="meta-item"><strong>Approved At</strong><span>${esc(formatThaiDate(approvedAt))}</span></div>` : ""}
+        </div>
+
+        <div class="section-title">รายการสินค้า</div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>รูป</th>
+              <th>SKU</th>
+              <th>สินค้า</th>
+              <th class="num">จำนวน</th>
+              <th class="num">ราคา</th>
+              <th class="num">รวม</th>
+            </tr>
+          </thead>
+          <tbody>${itemRows}</tbody>
+        </table>
+
+        <div class="total">รวม: ฿${total.toLocaleString("th-TH")}</div>
+        ${orderNote ? `
+          <div class="note-box">
+            <strong>หมายเหตุ</strong><br>
+            ${esc(orderNote)}
+          </div>
+        ` : ""}
+        <div class="signature-grid">
+          <div class="signature-box"><div class="signature-line"></div>ผู้จัดทำ</div>
+          <div class="signature-box"><div class="signature-line"></div>ผู้ตรวจสอบ</div>
+          <div class="signature-box"><div class="signature-line"></div>ผู้รับสินค้า / ผู้แพ็กของ</div>
+        </div>
+      </div>
+      <script>
+        window.onload = function() {
+          window.print();
+        };
+      <\/script>
+    </body>
+    </html>
+  `;
+}
+
+function printAdminPoOrder(orderId) {
+  const cleanOrderId = String(orderId || "").trim();
+  const orders = Array.isArray(state.admin.orders) ? state.admin.orders : [];
+  const order = orders.find(item => String(item?.orderId || "").trim() === cleanOrderId) ||
+    (
+      String(state.admin.selectedOrder?.orderId || "").trim() === cleanOrderId
+        ? state.admin.selectedOrder
+        : null
+    );
+
+  if (!order) {
+    showToast("ไม่พบข้อมูลออเดอร์สำหรับพิมพ์", "warning");
+    return;
+  }
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    showToast("ไม่สามารถเปิดหน้าพิมพ์ได้", "warning");
+    return;
+  }
+
+  printWindow.document.write(buildAdminPoPrintHtml(order));
+  printWindow.document.close();
+}
+
+function renderAdminOrderSummary(order) {
+  const partnerRequestId = String(order?.partnerRequestId || "").trim();
+  const partnerName = String(order?.partnerNameSnapshot || order?.partnerId || "").trim();
+  const createdAt = getOrderDateValue(order);
+  const approvedAt = order?.approvedAt || "";
+  const status = String(order?.status || "-").trim();
+
+  return `
+    <div class="admin-detail-section">
+      <div class="admin-detail-title">สรุปออเดอร์ / PO</div>
+      <div class="cart-summary" style="margin-top:0">
+        <div class="summary-row">
+          <span>PO</span>
+          <strong>${esc(order?.poNumber || "-")}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Order ID</span>
+          <strong>${esc(order?.orderId || "-")}</strong>
+        </div>
+        <div class="summary-row">
+          <span>สถานะ</span>
+          <span class="status-badge ${getAdminOrderStatusClass(status)}">
+            ${esc(status || "-")}
+          </span>
+        </div>
+        <div class="summary-row">
+          <span>ที่มา</span>
+          <strong>${esc(getAdminOrderSourceLabel(order))}</strong>
+        </div>
+        ${
+          partnerRequestId
+            ? `
+              <div class="summary-row">
+                <span>Partner Request ID</span>
+                <strong>${esc(partnerRequestId)}</strong>
+              </div>
+            `
+            : ""
+        }
+        ${
+          partnerName
+            ? `
+              <div class="summary-row">
+                <span>Partner</span>
+                <strong>${esc(partnerName)}</strong>
+              </div>
+            `
+            : ""
+        }
+        ${
+          createdAt
+            ? `
+              <div class="summary-row">
+                <span>สร้างเมื่อ</span>
+                <strong>${esc(formatThaiDate(createdAt))}</strong>
+              </div>
+            `
+            : ""
+        }
+        ${
+          approvedAt
+            ? `
+              <div class="summary-row">
+                <span>อนุมัติเมื่อ</span>
+                <strong>${esc(formatThaiDate(approvedAt))}</strong>
+              </div>
+            `
+            : ""
+        }
+      </div>
+      <button
+        class="btn btn-outline"
+        type="button"
+        style="margin-top:12px;width:100%"
+        onclick="copyAdminPoSummary(${toInlineJsStringLiteral(order?.orderId || "")})">
+        คัดลอกสรุป PO
+      </button>
+      <button
+        class="btn btn-primary"
+        type="button"
+        style="margin-top:8px;width:100%"
+        onclick="printAdminPoOrder(${toInlineJsStringLiteral(order?.orderId || "")})">
+        พิมพ์ PO
+      </button>
     </div>
   `;
 }
@@ -8126,7 +8699,7 @@ adminOrderSheet.innerHTML = `
 
   <h3 id="adminOrderSheetTitle">${esc(order.orderId)}</h3>
 
-  ${renderPartnerOrderSourceBadge(order)}
+  ${renderAdminOrderSummary(order)}
 
  ${
    order.status !== "PENDING" &&
@@ -9408,6 +9981,175 @@ function openPendingDeliverySheet() {
    }); 
 } 
 
+function buildPendingDeliveryPoSummary(entries) {
+  const safeEntries = Array.isArray(entries) ? entries : [];
+  const uniqueValues = (field) => Array.from(new Set(
+    safeEntries
+      .map(item => String(item?.[field] || "").trim())
+      .filter(Boolean)
+  ));
+  const openEntries = safeEntries.filter(item =>
+    String(item?.status || "").toUpperCase() === "OPEN"
+  );
+  const closedEntries = safeEntries.filter(item =>
+    String(item?.status || "").toUpperCase() === "CLOSED"
+  );
+  const sumQty = (items) => items.reduce(
+    (sum, item) => sum + Math.max(0, Number(item?.qty) || 0),
+    0
+  );
+  const latestDate = (field) => safeEntries
+    .map(item => new Date(item?.[field]))
+    .filter(date => !Number.isNaN(date.getTime()))
+    .sort((a, b) => b - a)[0] || null;
+
+  return {
+    entryCount: safeEntries.length,
+    openCount: openEntries.length,
+    closedCount: closedEntries.length,
+    totalPendingQty: sumQty(safeEntries),
+    openPendingQty: sumQty(openEntries),
+    closedPendingQty: sumQty(closedEntries),
+    skuList: uniqueValues("productId"),
+    orderIdList: uniqueValues("orderId"),
+    latestCreatedAt: latestDate("createdAt"),
+    latestClosedAt: latestDate("closedAt")
+  };
+}
+
+function getPendingDeliveryPoStatusText(summary) {
+  if (!summary || summary.entryCount === 0) return "-";
+  if (summary.openCount === summary.entryCount) return "ทั้งหมดยังค้างส่ง";
+  if (summary.openCount === 0) return "ปิดครบแล้ว";
+  return "บางรายการปิดแล้ว";
+}
+
+function renderPendingDeliveryPoSummary(poNumber, entries) {
+  const summary = buildPendingDeliveryPoSummary(entries);
+  const statusText = getPendingDeliveryPoStatusText(summary);
+  const hasMultipleOrders = summary.orderIdList.length > 1;
+
+  return `
+    <div class="cart-summary" style="margin-top:12px">
+      <div class="summary-row">
+        <span>PO</span>
+        <strong>${esc(poNumber || "-")}</strong>
+      </div>
+      <div class="summary-row">
+        <span>สถานะรวม</span>
+        <strong>${esc(statusText)}</strong>
+      </div>
+      <div class="summary-row">
+        <span>รายการทั้งหมด</span>
+        <strong>${summary.entryCount}</strong>
+      </div>
+      <div class="summary-row">
+        <span>OPEN / CLOSED</span>
+        <strong>${summary.openCount} / ${summary.closedCount}</strong>
+      </div>
+      <div class="summary-row">
+        <span>จำนวนค้างส่งรวม</span>
+        <strong>${summary.totalPendingQty}</strong>
+      </div>
+      <div class="summary-row">
+        <span>OPEN / CLOSED Qty</span>
+        <strong>${summary.openPendingQty} / ${summary.closedPendingQty}</strong>
+      </div>
+      <div class="summary-row">
+        <span>SKU</span>
+        <strong>${esc(summary.skuList.join(", ") || "-")}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Order ID</span>
+        <strong>${esc(summary.orderIdList.join(", ") || "-")}</strong>
+      </div>
+      ${
+        summary.latestCreatedAt
+          ? `
+            <div class="summary-row">
+              <span>สร้างล่าสุด</span>
+              <strong>${esc(formatThaiDate(summary.latestCreatedAt))}</strong>
+            </div>
+          `
+          : ""
+      }
+      ${
+        summary.latestClosedAt
+          ? `
+            <div class="summary-row">
+              <span>ปิดล่าสุด</span>
+              <strong>${esc(formatThaiDate(summary.latestClosedAt))}</strong>
+            </div>
+          `
+          : ""
+      }
+      ${
+        hasMultipleOrders
+          ? `
+            <div class="status-badge status-pending" style="margin-top:10px">
+              ⚠️ PO นี้มีหลาย Order
+            </div>
+          `
+          : ""
+      }
+    </div>
+  `;
+}
+
+function buildPendingDeliveryPoSummaryText(poNumber, entries) {
+  const safeEntries = Array.isArray(entries) ? entries : [];
+  const summary = buildPendingDeliveryPoSummary(safeEntries);
+  const statusText = getPendingDeliveryPoStatusText(summary);
+  const lines = [
+    `PO: ${poNumber || "-"}`,
+    `สถานะรวม: ${statusText}`,
+    `รายการทั้งหมด: ${summary.entryCount}`,
+    `OPEN / CLOSED: ${summary.openCount} / ${summary.closedCount}`,
+    `จำนวนค้างส่งรวม: ${summary.totalPendingQty}`,
+    `OPEN / CLOSED Qty: ${summary.openPendingQty} / ${summary.closedPendingQty}`,
+    `SKU: ${summary.skuList.join(", ") || "-"}`,
+    `Order ID: ${summary.orderIdList.join(", ") || "-"}`
+  ];
+
+  if (summary.latestCreatedAt) {
+    lines.push(`สร้างล่าสุด: ${formatThaiDate(summary.latestCreatedAt)}`);
+  }
+  if (summary.latestClosedAt) {
+    lines.push(`ปิดล่าสุด: ${formatThaiDate(summary.latestClosedAt)}`);
+  }
+  if (summary.orderIdList.length > 1) {
+    lines.push("⚠️ PO นี้มีหลาย Order");
+  }
+
+  lines.push("", "รายละเอียดสินค้า:");
+  safeEntries.forEach(item => {
+    const detail = [
+      `- ${String(item?.productId || "-").trim() || "-"}`,
+      `ใน PO: ${Number(item?.orderedQty || 0)}`,
+      `ค้างส่ง: ${Number(item?.qty || 0)}`,
+      String(item?.status || "-").trim() || "-"
+    ];
+    lines.push(detail.join(" | "));
+    const note = String(item?.note || "").trim();
+    if (note) {
+      lines.push(`  หมายเหตุ: ${note}`);
+    }
+  });
+
+  return lines.join("\n");
+}
+
+function copyPendingDeliveryPoSummary(poNumber) {
+  const pendingDeliveries = Array.isArray(state.admin.pendingDeliveries)
+    ? state.admin.pendingDeliveries
+    : [];
+  const entries = pendingDeliveries.filter(item =>
+    String(item?.poNumber || "-") === String(poNumber || "-")
+  );
+  const text = buildPendingDeliveryPoSummaryText(poNumber || "-", entries);
+  copyTextToClipboard(text, "คัดลอกสรุปค้างส่งแล้ว");
+}
+
 function renderPendingDeliveries(list) {
 
   const container =
@@ -9529,6 +10271,14 @@ container.innerHTML =
  </span>
 
   </div>
+${renderPendingDeliveryPoSummary(po, items)}
+<button
+  class="btn btn-outline"
+  type="button"
+  style="margin-top:12px"
+  onclick="copyPendingDeliveryPoSummary(${toInlineJsStringLiteral(po)})">
+  คัดลอกสรุปค้างส่ง
+</button>
 ${
   state.admin
     .pendingDeliveryExpanded[
@@ -10283,6 +11033,11 @@ async function submitOrder(){
     if (!stockCheck.ok) {
       showToast(stockCheck.message, 'warning');
       throw new Error("STOCK_CHECK_FAILED");
+    }
+
+    if (!await confirmDuplicatePoBeforeCreateOrder(poNumber)) {
+      showToast("ยกเลิกการสร้างใบสั่งซื้อ เนื่องจากพบเลข PO ซ้ำ", "warning");
+      return;
     }
 
     // ================= STEP 2: CREATE ORDER =================
@@ -16259,6 +17014,101 @@ function setPartnerRequestConvertPoNumber(value) {
   state.admin.partnerRequests.convertError = "";
 }
 
+function normalizePoNumberForCompare(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function findDuplicatePoOrders(poNumber) {
+  const normalizedPo = normalizePoNumberForCompare(poNumber);
+  if (!normalizedPo || !Array.isArray(state.admin.orders)) return [];
+
+  return state.admin.orders.filter(order =>
+    normalizePoNumberForCompare(order?.poNumber) === normalizedPo
+  );
+}
+
+function confirmDuplicatePoBeforePartnerConvert(poNumber) {
+  const duplicates = findDuplicatePoOrders(poNumber);
+  if (!duplicates.length) return true;
+
+  const detailText = duplicates
+    .slice(0, 3)
+    .map(order => {
+      const parts = [
+        `Order ID: ${order?.orderId || "-"}`,
+        `Status: ${order?.status || "-"}`,
+        `Source: ${getAdminOrderSourceLabel(order)}`
+      ];
+      if (order?.partnerRequestId) {
+        parts.push(`Partner Request ID: ${order.partnerRequestId}`);
+      }
+      return parts.join(" | ");
+    })
+    .join("\n");
+
+  const moreText = duplicates.length > 3
+    ? `\n...และอีก ${duplicates.length - 3} ออเดอร์`
+    : "";
+
+  return window.confirm(
+    `พบเลข PO ซ้ำ: ${poNumber}\n\n${detailText}${moreText}\n\nต้องการสร้างออเดอร์ด้วย PO นี้ต่อหรือไม่?`
+  );
+}
+
+async function checkDuplicatePo(poNumber) {
+  const form = new URLSearchParams();
+  form.append("action", "checkDuplicatePo");
+  form.append("poNumber", String(poNumber || "").trim());
+
+  const res = await fetchWithTimeout(API_URL, {
+    method: "POST",
+    body: form
+  }, 8000);
+  const json = await res.json();
+
+  if (!json || json.success !== true) {
+    throw new Error(json?.message || json?.error || "Duplicate PO lookup failed");
+  }
+
+  return json.data || { duplicate: false, matches: [] };
+}
+
+async function confirmDuplicatePoBeforeCreateOrder(poNumber) {
+  let result;
+  try {
+    result = await checkDuplicatePo(poNumber);
+  } catch (err) {
+    console.warn("Duplicate PO lookup failed; continuing createOrder flow", err);
+    return true;
+  }
+
+  const matches = Array.isArray(result?.matches) ? result.matches : [];
+  if (!result?.duplicate || !matches.length) return true;
+
+  const detailText = matches
+    .slice(0, 3)
+    .map(order => {
+      const parts = [
+        `Order ID: ${order?.orderId || "-"}`,
+        `Status: ${order?.status || "-"}`,
+        `Source: ${order?.source || "-"}`
+      ];
+      if (order?.partnerRequestId) {
+        parts.push(`Partner Request ID: ${order.partnerRequestId}`);
+      }
+      return parts.join(" | ");
+    })
+    .join("\n");
+
+  const moreText = matches.length > 3
+    ? `\n...และอีก ${matches.length - 3} ออเดอร์`
+    : "";
+
+  return window.confirm(
+    `พบเลข PO ซ้ำ: ${poNumber}\n\n${detailText}${moreText}\n\nต้องการสร้างใบสั่งซื้อด้วย PO นี้ต่อหรือไม่?`
+  );
+}
+
 async function convertPartnerRequestToOrderFromAdmin(requestId) {
   if (!ensureAdminSessionForPartnerRequests()) return;
 
@@ -16273,6 +17123,13 @@ async function convertPartnerRequestToOrderFromAdmin(requestId) {
 
   if (!poNumber) {
     requestState.convertError = "กรุณาระบุเลข PO ก่อนสร้างออเดอร์";
+    requestState.convertResult = null;
+    renderPartnerRequestsSheet();
+    return;
+  }
+
+  if (!confirmDuplicatePoBeforePartnerConvert(poNumber)) {
+    requestState.convertError = "ยกเลิกการสร้างออเดอร์ เนื่องจากพบเลข PO ซ้ำ";
     requestState.convertResult = null;
     renderPartnerRequestsSheet();
     return;

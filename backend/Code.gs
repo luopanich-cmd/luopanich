@@ -2289,6 +2289,12 @@ function doPost(e) {
       );
     }
 
+    if (action === "checkDuplicatePo") {
+      return json(
+        checkDuplicatePo(params)
+      );
+    }
+
     if (action === "createOrder") {
       enforceCreateOrderBodySize(e);
 
@@ -4564,6 +4570,73 @@ function getOrders() {
 
     return obj;
   });
+}
+
+
+function normalizePoNumberForLookup_(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function checkDuplicatePo(params) {
+  const poNumber = String(params && params.poNumber || "").trim();
+  const normalizedPo = normalizePoNumberForLookup_(poNumber);
+  const data = {
+    duplicate: false,
+    poNumber,
+    matches: []
+  };
+
+  if (!normalizedPo) {
+    return {
+      success: true,
+      data
+    };
+  }
+
+  const ss = getSS();
+  const sheet = ss.getSheetByName("Orders");
+  if (!sheet || sheet.getLastRow() < 2) {
+    return {
+      success: true,
+      data
+    };
+  }
+
+  const values = sheet.getDataRange().getValues();
+  const headers = values.shift().map(header => String(header || "").trim());
+  const col = {
+    orderId: headers.indexOf("orderId"),
+    status: headers.indexOf("status"),
+    poNumber: headers.indexOf("poNumber"),
+    source: headers.indexOf("source"),
+    partnerRequestId: headers.indexOf("partnerRequestId")
+  };
+
+  if (col.poNumber < 0) {
+    return {
+      success: true,
+      data
+    };
+  }
+
+  data.matches = values
+    .filter(row => normalizePoNumberForLookup_(row[col.poNumber]) === normalizedPo)
+    .map(row => ({
+      orderId: col.orderId >= 0 ? String(row[col.orderId] || "") : "",
+      status: col.status >= 0 ? String(row[col.status] || "") : "",
+      source: col.source >= 0
+        ? String(row[col.source] || "viewer")
+        : "viewer",
+      partnerRequestId: col.partnerRequestId >= 0
+        ? String(row[col.partnerRequestId] || "")
+        : ""
+    }));
+  data.duplicate = data.matches.length > 0;
+
+  return {
+    success: true,
+    data
+  };
 }
 
 
