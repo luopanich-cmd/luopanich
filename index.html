@@ -8054,11 +8054,40 @@ function buildAdminPoPrintHtml(order) {
           border-bottom:1px solid #111827;
           margin-bottom:7px;
         }
+        .print-screen-toolbar {
+          position:sticky;
+          top:0;
+          z-index:10;
+          display:flex;
+          gap:8px;
+          justify-content:flex-end;
+          padding:10px;
+          margin:0 -2px 12px;
+          background:rgba(255,255,255,.96);
+          border-bottom:1px solid #E5E7EB;
+        }
+        .print-screen-toolbar button {
+          min-height:42px;
+          padding:9px 14px;
+          border:1px solid #D1D5DB;
+          border-radius:999px;
+          background:#111827;
+          color:#fff;
+          font-weight:800;
+          cursor:pointer;
+        }
+        .print-screen-toolbar button.secondary {
+          background:#fff;
+          color:#111827;
+        }
         @media print {
           body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+          .print-screen-toolbar { display:none !important; }
           .doc-header, .meta-grid, .note-box, .signature-grid { break-inside:avoid; }
         }
         @media screen and (max-width:640px) {
+          .print-screen-toolbar { justify-content:stretch; }
+          .print-screen-toolbar button { flex:1; }
           .doc-header { display:block; }
           .doc-meta { min-width:0; margin-top:12px; }
           .meta-grid, .signature-grid { grid-template-columns:1fr; }
@@ -8066,6 +8095,10 @@ function buildAdminPoPrintHtml(order) {
       </style>
     </head>
     <body>
+      <div class="print-screen-toolbar">
+        <button type="button" onclick="closePrintPoPage()">← กลับระบบ</button>
+        <button type="button" class="secondary" onclick="window.print()">พิมพ์อีกครั้ง</button>
+      </div>
       <div class="document">
         <div class="doc-header">
           <div>
@@ -8121,6 +8154,24 @@ function buildAdminPoPrintHtml(order) {
         </div>
       </div>
       <script>
+        function closePrintPoPage() {
+          try {
+            if (window.opener && !window.opener.closed) {
+              window.opener.focus();
+            }
+          } catch (err) {}
+
+          window.close();
+
+          setTimeout(function() {
+            if (history.length > 1) {
+              history.back();
+              return;
+            }
+            alert("กรุณาปิดหน้านี้เพื่อกลับสู่ระบบ");
+          }, 120);
+        }
+
         window.onload = function() {
           window.print();
         };
