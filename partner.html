@@ -386,13 +386,41 @@
 
     .interest-item{
       display:grid;
-      gap:8px;
+      grid-template-columns:64px minmax(0,1fr);
+      gap:10px;
       padding:10px;
       border-radius:16px;
       background:rgba(255,255,255,.06);
       border:1px solid var(--border);
       max-width:100%;
       overflow:hidden;
+    }
+
+    .interest-thumb{
+      width:64px;
+      height:64px;
+      border-radius:14px;
+      object-fit:contain;
+      background:var(--surface-2);
+      border:1px solid var(--border);
+    }
+
+    .interest-thumb-placeholder{
+      width:64px;
+      height:64px;
+      display:grid;
+      place-items:center;
+      color:var(--muted);
+      border-radius:14px;
+      background:var(--surface-2);
+      border:1px dashed var(--border);
+      font-size:12px;
+    }
+
+    .interest-main{
+      min-width:0;
+      display:grid;
+      gap:8px;
     }
 
     .interest-head{
@@ -853,7 +881,40 @@
     function selectPartnerDetailVariant(groupKey, productId, event) {
       if (event) event.stopPropagation();
       state.variantSelections[groupKey] = productId;
-      render();
+      updatePartnerDetailSelection(groupKey, productId);
+    }
+
+    function renderPartnerDetailImage(image, altText) {
+      return image
+        ? `<img class="detail-image" src="${escAttr(image)}" alt="${escAttr(altText || "สินค้า")}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'detail-placeholder',textContent:'รูป'}))">`
+        : `<div class="detail-placeholder">รูป</div>`;
+    }
+
+    function updatePartnerDetailSelection(groupKey, productId) {
+      const item = findCatalogItemByKey(groupKey);
+      const selectedVariant = item?.variants?.find(variant => variant.productId === productId);
+      if (!item || !selectedVariant) return;
+
+      document.querySelectorAll("[data-detail-size-product-id]").forEach(button => {
+        button.classList.toggle("selected", button.dataset.detailSizeProductId === productId);
+      });
+
+      const imageSlot = document.querySelector("[data-detail-image-slot]");
+      if (imageSlot) {
+        imageSlot.innerHTML = renderPartnerDetailImage(
+          selectedVariant.image || item.variants.find(variant => variant.image)?.image || "",
+          item.displayName || selectedVariant.name || selectedVariant.productId
+        );
+      }
+
+      const skuEl = document.querySelector("[data-detail-sku]");
+      if (skuEl) skuEl.textContent = `SKU: ${selectedVariant.productId || "-"}`;
+
+      const statusEl = document.querySelector("[data-detail-status]");
+      if (statusEl) {
+        statusEl.className = `status ${selectedVariant.status || ""}`;
+        statusEl.textContent = getStatusLabel(selectedVariant.status);
+      }
     }
 
     function getGroupPriceLabel(group) {
@@ -905,6 +966,7 @@
           displayName: product.displayName || "",
           parentProductId: product.parentProductId || "",
           variantValue: product.variantValue || "",
+          image: product.image || "",
           price: Number(product.price) || 0,
           qty: 1,
           partnerNote: ""
@@ -928,6 +990,10 @@
         item.partnerNote = String(value || "");
       }
       renderSummaryOnly();
+    }
+
+    function getInterestItemImage(item) {
+      return item.image || state.products.find(product => product.productId === item.productId)?.image || "";
     }
 
     function getEstimatedTotal() {
@@ -1064,11 +1130,9 @@
               <button class="detail-close" type="button" onclick="closePartnerProductDetail(event)" aria-label="ปิด">×</button>
             </div>
             <div class="detail-body">
-              ${
-                image
-                  ? `<img class="detail-image" src="${escAttr(image)}" alt="${escAttr(name || skuLabel || "สินค้า")}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'detail-placeholder',textContent:'รูป'}))">`
-                  : `<div class="detail-placeholder">รูป</div>`
-              }
+              <div data-detail-image-slot>
+                ${renderPartnerDetailImage(image, name || skuLabel || "สินค้า")}
+              </div>
               <div>
                 <h2 class="name">${esc(name || "-")}</h2>
                 <div class="price">${esc(priceLabel)}</div>
@@ -1076,8 +1140,8 @@
               <div class="detail-meta-grid">
                 ${isGroup ? `<div class="sku-line"><span class="sku-chip">กลุ่ม: ${esc(item.parentProductId || "-")}</span></div>` : ""}
                 <div class="sku-line">
-                  <span class="sku-chip">SKU: ${esc(skuLabel)}</span>
-                  <span class="status ${escAttr(status || "")}">${esc(selectedVariant ? getStatusLabel(status) : "เลือกไซส์")}</span>
+                  <span class="sku-chip" data-detail-sku>SKU: ${esc(skuLabel)}</span>
+                  <span class="status ${escAttr(status || "")}" data-detail-status>${esc(selectedVariant ? getStatusLabel(status) : "เลือกไซส์")}</span>
                 </div>
                 ${
                   isGroup
@@ -1094,6 +1158,7 @@
                         return `
                           <button class="size-chip ${selected ? "selected" : ""}" type="button"
                             ${disabled ? "disabled" : ""}
+                            data-detail-size-product-id="${escAttr(variant.productId)}"
                             onclick="selectPartnerDetailVariant(${escAttr(jsString(item.groupKey))},${escAttr(jsString(variant.productId))}, event)">
                             <span>${esc(variant.variantValue || variant.productId)}</span>
                             <small>${esc(getVariantSubLabel(variant))}</small>
@@ -1121,31 +1186,41 @@
 
       return `
         <div class="interest-list">
-          ${state.selectedItems.map(item => `
+          ${state.selectedItems.map(item => {
+            const image = getInterestItemImage(item);
+            return `
             <div class="interest-item">
-              <div class="interest-head">
-                <div>
-                  <strong>${esc(item.displayName || item.name || item.productId)}</strong>
-                  <div class="meta">
-                    ${item.variantValue ? `ไซส์: ${esc(item.variantValue)} · ` : ""}SKU: ${esc(item.productId)} · ฿${money(item.price)}
+              ${
+                image
+                  ? `<img class="interest-thumb" src="${escAttr(image)}" alt="${escAttr(item.displayName || item.name || item.productId)}" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'interest-thumb-placeholder',textContent:'รูป'}))">`
+                  : `<div class="interest-thumb-placeholder">รูป</div>`
+              }
+              <div class="interest-main">
+                <div class="interest-head">
+                  <div>
+                    <strong>${esc(item.displayName || item.name || item.productId)}</strong>
+                    <div class="meta">
+                      ${item.variantValue ? `ไซส์: ${esc(item.variantValue)} · ` : ""}SKU: ${esc(item.productId)} · ฿${money(item.price)}
+                    </div>
                   </div>
+                  <button class="btn btn-danger" type="button" onclick="removeInterest(${escAttr(jsString(item.productId))})">ลบ</button>
                 </div>
-                <button class="btn btn-danger" type="button" onclick="removeInterest(${escAttr(jsString(item.productId))})">ลบ</button>
-              </div>
-              <div class="interest-controls">
-                <label class="field-label">
-                  จำนวน
-                  <input type="number" min="1" step="1" value="${Number(item.qty) || 1}" aria-label="จำนวน"
-                    onchange="updateInterest(${escAttr(jsString(item.productId))},'qty',this.value)">
-                </label>
-                <label class="field-label">
-                  หมายเหตุ
-                  <input value="${escAttr(item.partnerNote || "")}" placeholder="หมายเหตุสำหรับสินค้านี้"
-                    oninput="updateInterest(${escAttr(jsString(item.productId))},'partnerNote',this.value)">
-                </label>
+                <div class="interest-controls">
+                  <label class="field-label">
+                    จำนวน
+                    <input type="number" min="1" step="1" value="${Number(item.qty) || 1}" aria-label="จำนวน"
+                      onchange="updateInterest(${escAttr(jsString(item.productId))},'qty',this.value)">
+                  </label>
+                  <label class="field-label">
+                    หมายเหตุ
+                    <input value="${escAttr(item.partnerNote || "")}" placeholder="หมายเหตุสำหรับสินค้านี้"
+                      oninput="updateInterest(${escAttr(jsString(item.productId))},'partnerNote',this.value)">
+                  </label>
+                </div>
               </div>
             </div>
-          `).join("")}
+          `;
+          }).join("")}
         </div>
       `;
     }
