@@ -3693,6 +3693,7 @@ textarea.input{
  <div id="adminBulkProductImportSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBulkProductImportSheetTitle" tabindex="-1"></div>
  <div id="adminBulkProductUpdateSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBulkProductUpdateSheetTitle" tabindex="-1"></div>
  <div id="adminLandedCostSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminLandedCostSheetTitle" tabindex="-1"></div>
+ <div id="adminPartnersSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminPartnersSheetTitle" tabindex="-1"></div>
  <div id="adminPartnerCatalogSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminPartnerCatalogSheetTitle" tabindex="-1"></div>
  <div id="adminPartnerRequestsSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminPartnerRequestsSheetTitle" tabindex="-1"></div>
 
@@ -3737,6 +3738,8 @@ const adminBulkProductUpdateSheet =
   document.getElementById("adminBulkProductUpdateSheet");
 const adminLandedCostSheet =
   document.getElementById("adminLandedCostSheet");
+const adminPartnersSheet =
+  document.getElementById("adminPartnersSheet");
 const adminPartnerCatalogSheet =
   document.getElementById("adminPartnerCatalogSheet");
 const adminPartnerRequestsSheet =
@@ -3760,6 +3763,7 @@ const ADMIN_SHEETS = Object.freeze({
   bulkProductImport: adminBulkProductImportSheet,
   bulkProductUpdate: adminBulkProductUpdateSheet,
   landedCost: adminLandedCostSheet,
+  partners: adminPartnersSheet,
   partnerCatalog: adminPartnerCatalogSheet,
   partnerRequests: adminPartnerRequestsSheet,
   bulkPending: bulkPendingDeliverySheet
@@ -3825,6 +3829,14 @@ Object.assign(window, {
   applyLandedCostPreview,
   calculateLandedCost,
   resetLandedCostCalculator,
+  openPartnerAdminSheet,
+  closePartnerAdminSheet,
+  backToAdminMenuFromPartnerAdmin,
+  setPartnerAdminSearch,
+  setPartnerAdminStatusFilter,
+  refreshPartners,
+  updateNewPartnerField,
+  createPartnerFromAdmin,
   openPartnerCatalogSheet,
   closePartnerCatalogSheet,
   setPartnerCatalogPickerSearch,
@@ -4006,6 +4018,26 @@ const state = {
       appliedCount: 0,
       result: null,
       errors: []
+    },
+    partners: {
+      q: "",
+      status: "all",
+      items: [],
+      total: 0,
+      loading: false,
+      error: "",
+      message: "",
+      isCreating: false,
+      newPartner: {
+        partnerId: "",
+        partnerName: "",
+        contactName: "",
+        email: "",
+        phone: "",
+        company: "",
+        status: "active",
+        note: ""
+      }
     },
     partnerCatalog: {
       view: "create",
@@ -6636,6 +6668,7 @@ function closeTopSheet(){
     document.getElementById("adminBulkProductImportSheet"),
     document.getElementById("adminBulkProductUpdateSheet"),
     document.getElementById("adminLandedCostSheet"),
+    document.getElementById("adminPartnersSheet"),
     document.getElementById("adminPartnerCatalogSheet"),
     document.getElementById("adminPartnerRequestsSheet"),
     document.getElementById("adminProductActionSheet"),
@@ -10649,6 +10682,11 @@ function openMainMenu(triggerEl){
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openLandedCostSheet();">
                   คำนวณต้นทุนนำเข้า
+                </button>
+
+                <button class="btn btn-secondary"
+                  onclick="closeMainMenu(); openPartnerAdminSheet();">
+                  คู่ค้า
                 </button>
 
                 <button class="btn btn-secondary"
@@ -15848,6 +15886,366 @@ function backToAdminMenuFromLandedCost() {
     openMainMenu();
     syncOverlayBackdropState();
   });
+}
+
+function ensureAdminSessionForPartnerAdmin() {
+  if (
+    state.mode !== "admin" ||
+    !state.admin.loggedIn ||
+    !state.admin.token ||
+    isAdminSessionExpired()
+  ) {
+    showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+    exitAdmin();
+    return false;
+  }
+  return true;
+}
+
+function resetNewPartnerDraft() {
+  state.admin.partners.newPartner = {
+    partnerId: "",
+    partnerName: "",
+    contactName: "",
+    email: "",
+    phone: "",
+    company: "",
+    status: "active",
+    note: ""
+  };
+}
+
+function openPartnerAdminSheet() {
+  if (!ensureAdminSessionForPartnerAdmin()) return;
+  state.admin.partners.error = "";
+  state.admin.partners.message = "";
+  renderPartnerAdminSheet();
+  openOverlay(adminPartnersSheet);
+  fetchPartners();
+}
+
+function closePartnerAdminSheet() {
+  closeOverlay(adminPartnersSheet);
+}
+
+function backToAdminMenuFromPartnerAdmin() {
+  closePartnerAdminSheet();
+  syncOverlayBackdropState();
+  requestAnimationFrame(() => {
+    openMainMenu();
+    syncOverlayBackdropState();
+  });
+}
+
+function setPartnerAdminSearch(value) {
+  state.admin.partners.q = value || "";
+}
+
+function setPartnerAdminStatusFilter(value) {
+  state.admin.partners.status = value || "all";
+  refreshPartners();
+}
+
+function refreshPartners() {
+  fetchPartners();
+}
+
+function updateNewPartnerField(field, value) {
+  const draft = state.admin.partners.newPartner;
+  if (!Object.prototype.hasOwnProperty.call(draft, field)) return;
+  draft[field] = value || "";
+  state.admin.partners.error = "";
+}
+
+function getPartnerStatusLabel(status) {
+  const normalized = String(status || "").trim().toLowerCase();
+  if (normalized === "active") return "active";
+  if (normalized === "disabled") return "disabled";
+  return normalized || "-";
+}
+
+function getPartnerStatusClass(status) {
+  const normalized = String(status || "").trim().toLowerCase();
+  if (normalized === "active") return "status-ready";
+  if (normalized === "disabled") return "status-neutral";
+  return "status-neutral";
+}
+
+function renderPartnerAdminCard(partner) {
+  return `
+    <div class="admin-order-card">
+      <div class="row">
+        <div class="name">${esc(partner.partnerName || partner.partnerId || "-")}</div>
+        <span class="status-badge compact ${getPartnerStatusClass(partner.status)}">
+          ${esc(getPartnerStatusLabel(partner.status))}
+        </span>
+      </div>
+      <div class="meta">
+        Partner ID: ${esc(partner.partnerId || "-")}<br>
+        ${partner.contactName ? `ผู้ติดต่อ: ${esc(partner.contactName)}<br>` : ""}
+        ${partner.email ? `อีเมล: ${esc(partner.email)}<br>` : ""}
+        ${partner.phone ? `เบอร์โทร: ${esc(partner.phone)}<br>` : ""}
+        ${partner.company ? `บริษัท: ${esc(partner.company)}<br>` : ""}
+        ${partner.note ? `หมายเหตุ: ${esc(partner.note)}<br>` : ""}
+        ${partner.updatedAt ? `อัปเดตล่าสุด: ${esc(formatThaiDate(partner.updatedAt))}` : ""}
+      </div>
+    </div>
+  `;
+}
+
+function renderPartnerAdminList() {
+  const partnerState = state.admin.partners;
+  if (partnerState.loading) {
+    return `<div class="loading">กำลังโหลดคู่ค้า...</div>`;
+  }
+  if (partnerState.error) {
+    return `
+      <div class="bulk-error-list" role="alert">
+        ${esc(partnerState.error)}
+      </div>
+    `;
+  }
+  if (!partnerState.items.length) {
+    return `<div class="empty-state">ยังไม่มีคู่ค้า</div>`;
+  }
+
+  return `
+    <div class="helper-text" style="margin-bottom:8px">
+      พบ ${Number(partnerState.total || partnerState.items.length || 0).toLocaleString("th-TH")} คู่ค้า
+    </div>
+    <div class="bulk-preview-list">
+      ${partnerState.items.map(renderPartnerAdminCard).join("")}
+    </div>
+  `;
+}
+
+function renderAddPartnerForm() {
+  const draft = state.admin.partners.newPartner;
+  return `
+    <div class="admin-detail-card" style="margin-top:14px">
+      <div class="admin-detail-title">เพิ่มคู่ค้า</div>
+      <div class="helper-text" style="margin-bottom:10px">
+        ใช้สร้างหรือ restore Partner ID เช่น PTR-001 เพื่อใช้สร้างลิงก์คู่ค้า
+      </div>
+      <div class="form-group">
+        <label for="newPartnerId">Partner ID *</label>
+        <input id="newPartnerId" class="input" value="${escAttr(draft.partnerId || "")}"
+          placeholder="PTR-001"
+          oninput="updateNewPartnerField('partnerId', this.value)">
+      </div>
+      <div class="form-group">
+        <label for="newPartnerName">ชื่อคู่ค้า *</label>
+        <input id="newPartnerName" class="input" value="${escAttr(draft.partnerName || "")}"
+          placeholder="ชื่อร้าน / ชื่อคู่ค้า"
+          oninput="updateNewPartnerField('partnerName', this.value)">
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="newPartnerContactName">ผู้ติดต่อ</label>
+          <input id="newPartnerContactName" class="input" value="${escAttr(draft.contactName || "")}"
+            oninput="updateNewPartnerField('contactName', this.value)">
+        </div>
+        <div class="form-group">
+          <label for="newPartnerPhone">เบอร์โทร</label>
+          <input id="newPartnerPhone" class="input" value="${escAttr(draft.phone || "")}"
+            oninput="updateNewPartnerField('phone', this.value)">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="newPartnerEmail">อีเมล</label>
+          <input id="newPartnerEmail" class="input" value="${escAttr(draft.email || "")}"
+            oninput="updateNewPartnerField('email', this.value)">
+        </div>
+        <div class="form-group">
+          <label for="newPartnerCompany">บริษัท</label>
+          <input id="newPartnerCompany" class="input" value="${escAttr(draft.company || "")}"
+            oninput="updateNewPartnerField('company', this.value)">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="newPartnerStatus">สถานะ</label>
+        <select id="newPartnerStatus" onchange="updateNewPartnerField('status', this.value)">
+          <option value="active" ${draft.status === "active" ? "selected" : ""}>active</option>
+          <option value="disabled" ${draft.status === "disabled" ? "selected" : ""}>disabled</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="newPartnerNote">หมายเหตุ</label>
+        <textarea id="newPartnerNote" class="input" rows="3"
+          oninput="updateNewPartnerField('note', this.value)">${esc(draft.note || "")}</textarea>
+      </div>
+      <button class="btn btn-primary" type="button"
+        ${state.admin.partners.isCreating ? "disabled" : ""}
+        onclick="createPartnerFromAdmin()">
+        ${state.admin.partners.isCreating ? "กำลังเพิ่มคู่ค้า..." : "เพิ่มคู่ค้า"}
+      </button>
+    </div>
+  `;
+}
+
+function renderPartnerAdminSheet() {
+  const partnerState = state.admin.partners;
+  adminPartnersSheet.innerHTML = `
+    <div class="sheet-topbar">
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="backToAdminMenuFromPartnerAdmin()"
+        aria-label="กลับเมนูแอดมิน">←</button>
+      <h3 id="adminPartnersSheetTitle">คู่ค้า</h3>
+      <button class="btn btn-outline sheet-nav-btn"
+        onclick="closePartnerAdminSheet()"
+        aria-label="ปิดหน้าต่างคู่ค้า">×</button>
+    </div>
+
+    <div class="helper-text" style="margin-bottom:10px">
+      จัดการข้อมูลคู่ค้าที่ใช้สร้างลิงก์ Partner Catalog เช่น PTR-001
+    </div>
+
+    <div class="bulk-product-picker-controls">
+      <input
+        id="partnerAdminSearch"
+        type="search"
+        value="${escAttr(partnerState.q || "")}"
+        placeholder="ค้นหา Partner ID / ชื่อ / ผู้ติดต่อ"
+        oninput="setPartnerAdminSearch(this.value)"
+        onkeydown="if(event.key === 'Enter') refreshPartners();">
+      <select id="partnerAdminStatus" onchange="setPartnerAdminStatusFilter(this.value)">
+        <option value="all" ${partnerState.status === "all" ? "selected" : ""}>ทั้งหมด</option>
+        <option value="active" ${partnerState.status === "active" ? "selected" : ""}>active</option>
+        <option value="disabled" ${partnerState.status === "disabled" ? "selected" : ""}>disabled</option>
+      </select>
+    </div>
+    <div class="bulk-product-picker-actions">
+      <button class="btn btn-outline" type="button" onclick="refreshPartners()">รีเฟรช</button>
+      <button class="btn btn-outline" type="button"
+        onclick="state.admin.partners.q=''; state.admin.partners.status='all'; refreshPartners();">
+        ล้างตัวกรอง
+      </button>
+    </div>
+
+    ${partnerState.message ? `<div class="bulk-import-success-card" role="status">${esc(partnerState.message)}</div>` : ""}
+    ${renderPartnerAdminList()}
+    ${renderAddPartnerForm()}
+  `;
+}
+
+async function fetchPartners() {
+  if (!ensureAdminSessionForPartnerAdmin()) return;
+  const partnerState = state.admin.partners;
+  partnerState.loading = true;
+  partnerState.error = "";
+  renderPartnerAdminSheet();
+
+  try {
+    const form = new URLSearchParams();
+    form.append("action", "listPartners");
+    form.append("token", state.admin.token);
+    if (String(partnerState.q || "").trim()) {
+      form.append("q", partnerState.q.trim());
+    }
+    if (partnerState.status && partnerState.status !== "all") {
+      form.append("status", partnerState.status);
+    }
+
+    const res = await fetchWithTimeout(API_URL, {
+      method: "POST",
+      body: form
+    }, 30000);
+    const json = await res.json();
+
+    if (json?.success !== true) {
+      if (isAuthError(json?.error)) {
+        showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+        exitAdmin({ silent: true });
+        return;
+      }
+      throw new Error(json?.error || json?.message || "ยังไม่สามารถโหลดคู่ค้าได้ กรุณาตรวจสอบการ Deploy Apps Script");
+    }
+
+    partnerState.items = Array.isArray(json.data?.partners)
+      ? json.data.partners
+      : [];
+    partnerState.total = Number(json.data?.total || partnerState.items.length || 0);
+  } catch (err) {
+    console.error(err);
+    partnerState.items = [];
+    partnerState.total = 0;
+    partnerState.error = "ยังไม่สามารถโหลดคู่ค้าได้ กรุณาตรวจสอบการ Deploy Apps Script";
+  } finally {
+    partnerState.loading = false;
+    renderPartnerAdminSheet();
+  }
+}
+
+async function createPartnerFromAdmin() {
+  if (!ensureAdminSessionForPartnerAdmin()) return;
+  const partnerState = state.admin.partners;
+  const draft = partnerState.newPartner;
+  const partnerId = String(draft.partnerId || "").trim();
+  const partnerName = String(draft.partnerName || "").trim();
+
+  if (!partnerId) {
+    partnerState.error = "กรุณาระบุ Partner ID";
+    renderPartnerAdminSheet();
+    return;
+  }
+  if (!partnerName) {
+    partnerState.error = "กรุณาระบุชื่อคู่ค้า";
+    renderPartnerAdminSheet();
+    return;
+  }
+
+  partnerState.isCreating = true;
+  partnerState.error = "";
+  partnerState.message = "";
+  renderPartnerAdminSheet();
+
+  try {
+    const form = new URLSearchParams();
+    form.append("action", "createPartner");
+    form.append("token", state.admin.token);
+    [
+      "partnerId",
+      "partnerName",
+      "contactName",
+      "email",
+      "phone",
+      "company",
+      "status",
+      "note"
+    ].forEach(field => {
+      form.append(field, String(draft[field] || "").trim());
+    });
+
+    const res = await fetchWithTimeout(API_URL, {
+      method: "POST",
+      body: form
+    }, 30000);
+    const json = await res.json();
+
+    if (json?.success !== true) {
+      if (isAuthError(json?.error)) {
+        showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+        exitAdmin({ silent: true });
+        return;
+      }
+      throw new Error(json?.error || json?.message || "เพิ่มคู่ค้าไม่สำเร็จ");
+    }
+
+    resetNewPartnerDraft();
+    partnerState.isCreating = false;
+    showToast("เพิ่มคู่ค้าสำเร็จ", "success");
+    await fetchPartners();
+    partnerState.message = "เพิ่มคู่ค้าสำเร็จ";
+    renderPartnerAdminSheet();
+  } catch (err) {
+    console.error(err);
+    partnerState.error = err.message || "เพิ่มคู่ค้าไม่สำเร็จ";
+    renderPartnerAdminSheet();
+  } finally {
+    partnerState.isCreating = false;
+    renderPartnerAdminSheet();
+  }
 }
 
 function ensureAdminSessionForPartnerCatalog() {
