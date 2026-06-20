@@ -4387,6 +4387,42 @@ const UI_TEXT = {
     approvedAt: "อนุมัติเมื่อ",
     copyPoSummary: "คัดลอกสรุป PO",
     printPo: "พิมพ์ PO",
+    poSummaryTitle: "ใบสรุป PO",
+    poPrintSubtitle: "เอกสารสำหรับตรวจสอบรายการสินค้าและการแพ็กของ",
+    printedAt: "พิมพ์เมื่อ",
+    imageLabel: "รูป",
+    noItems: "ไม่มีรายการสินค้า",
+    preparedBy: "ผู้จัดทำ",
+    checkedBy: "ผู้ตรวจสอบ",
+    receiverPacker: "ผู้รับสินค้า / ผู้แพ็กของ",
+    returnToSystem: "กลับระบบ",
+    printAgain: "พิมพ์อีกครั้ง",
+    closePrintPageAlert: "กรุณาปิดหน้านี้เพื่อกลับสู่ระบบ",
+    noOrderForCopy: "ไม่พบข้อมูลออเดอร์สำหรับคัดลอก",
+    poSummaryCopied: "คัดลอกสรุป PO แล้ว",
+    noOrderForPrint: "ไม่พบข้อมูลออเดอร์สำหรับพิมพ์",
+    printWindowOpenError: "ไม่สามารถเปิดหน้าพิมพ์ได้",
+    copyProductInfo: "คัดลอกข้อมูลสินค้า",
+    copyProductInfoSubtitle: "เลือกข้อมูลที่ต้องการคัดลอก",
+    copyProductName: "คัดลอกชื่อสินค้า",
+    copyProductCode: "คัดลอกรหัสสินค้า",
+    copyQuantity: "คัดลอกจำนวน",
+    copyImage: "คัดลอกรูปภาพ",
+    copyCostPrice: "คัดลอกราคาทุน",
+    copyMenuClose: "ปิดเมนูคัดลอก",
+    productNameLabel: "ชื่อสินค้า",
+    productImageLabel: "รูปภาพ",
+    adminOnlyCopyCostPrice: "เฉพาะแอดมินเท่านั้นที่คัดลอกราคาทุนได้",
+    copyNoValue: "ไม่มี{label}ให้คัดลอก",
+    copyValueSuccess: "คัดลอก{label}แล้ว",
+    copyValueFailed: "คัดลอก{label}ไม่สำเร็จ",
+    copyFailedRetry: "คัดลอกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+    downloadTemplate: "ดาวน์โหลดแม่แบบ",
+    copyTableHeader: "คัดลอกหัวตาราง",
+    copySampleTemplate: "คัดลอกแม่แบบตัวอย่าง",
+    bulkTemplateHeaderCopied: "คัดลอกหัวตารางแล้ว",
+    bulkSampleCopied: "คัดลอกแม่แบบตัวอย่างแล้ว",
+    bulkTemplateDownloaded: "ดาวน์โหลดแม่แบบแล้ว",
     itemList: "รายการสินค้า",
     status: "สถานะ",
     approve: "อนุมัติ",
@@ -4761,6 +4797,42 @@ const UI_TEXT = {
     approvedAt: "Approved At",
     copyPoSummary: "Copy PO summary",
     printPo: "Print PO",
+    poSummaryTitle: "PO Summary",
+    poPrintSubtitle: "Document for checking items and packing",
+    printedAt: "Printed at",
+    imageLabel: "Image",
+    noItems: "No items",
+    preparedBy: "Prepared by",
+    checkedBy: "Checked by",
+    receiverPacker: "Receiver / Packer",
+    returnToSystem: "Back to system",
+    printAgain: "Print again",
+    closePrintPageAlert: "Please close this page to return to the system",
+    noOrderForCopy: "No order found for copying",
+    poSummaryCopied: "PO summary copied",
+    noOrderForPrint: "No order found for printing",
+    printWindowOpenError: "Could not open print page",
+    copyProductInfo: "Copy product info",
+    copyProductInfoSubtitle: "Choose the information to copy",
+    copyProductName: "Copy product name",
+    copyProductCode: "Copy product code",
+    copyQuantity: "Copy quantity",
+    copyImage: "Copy image",
+    copyCostPrice: "Copy cost price",
+    copyMenuClose: "Close copy menu",
+    productNameLabel: "Product name",
+    productImageLabel: "Image",
+    adminOnlyCopyCostPrice: "Only admins can copy cost price",
+    copyNoValue: "No {label} available to copy",
+    copyValueSuccess: "{label} copied",
+    copyValueFailed: "Could not copy {label}",
+    copyFailedRetry: "Copy failed. Please try again.",
+    downloadTemplate: "Download template",
+    copyTableHeader: "Copy table header",
+    copySampleTemplate: "Copy sample template",
+    bulkTemplateHeaderCopied: "Table header copied",
+    bulkSampleCopied: "Sample template copied",
+    bulkTemplateDownloaded: "Template downloaded",
     itemList: "Items",
     status: "Status",
     approve: "Approve",
@@ -6480,32 +6552,32 @@ function getViewerCopyProductTarget(product = state.selectedProduct) {
 
 function getViewerCopyInfoValue(type) {
   const product = getViewerCopyProductTarget();
-  if (!product) return { label: "ข้อมูลสินค้า", value: "" };
+  if (!product) return { label: t("copyProductInfo", "คัดลอกข้อมูลสินค้า"), value: "" };
 
   const map = {
     name: {
-      label: "ชื่อสินค้า",
+      label: t("productNameLabel", "ชื่อสินค้า"),
       value: product.name || product.displayName || ""
     },
     productId: {
-      label: "รหัสสินค้า",
+      label: t("productCode", "รหัส"),
       value: product.productId || ""
     },
     stock: {
-      label: "จำนวน",
+      label: t("quantity", "จำนวน"),
       value: product.stock ?? ""
     },
     image: {
-      label: "รูปภาพ",
+      label: t("productImageLabel", "รูปภาพ"),
       value: product.image || ""
     },
     costPrice: {
-      label: "ราคาทุน",
+      label: t("costPriceAdmin", "ราคาต้นทุน"),
       value: canCopyViewerCostPrice() ? product.costPrice ?? "" : ""
     }
   };
 
-  return map[type] || { label: "ข้อมูลสินค้า", value: "" };
+  return map[type] || { label: t("copyProductInfo", "คัดลอกข้อมูลสินค้า"), value: "" };
 }
 
 function toggleViewerCopyInfoSection(event) {
@@ -6525,7 +6597,7 @@ async function copyViewerProductInfo(type, event) {
   if (event) event.stopPropagation();
 
   if (type === "costPrice" && !canCopyViewerCostPrice()) {
-    showToast("เฉพาะแอดมินเท่านั้นที่คัดลอกราคาทุนได้", "warning");
+    showToast(t("adminOnlyCopyCostPrice", "เฉพาะแอดมินเท่านั้นที่คัดลอกราคาทุนได้"), "warning");
     return;
   }
 
@@ -6533,7 +6605,7 @@ async function copyViewerProductInfo(type, event) {
   const text = String(value ?? "").trim();
 
   if (!text) {
-    showToast(`ไม่มี${label}ให้คัดลอก`, "warning");
+    showToast(formatUiText("copyNoValue", { label }, "ไม่มี{label}ให้คัดลอก"), "warning");
     return;
   }
 
@@ -6542,9 +6614,9 @@ async function copyViewerProductInfo(type, event) {
       throw new Error("Clipboard API unavailable");
     }
     await navigator.clipboard.writeText(text);
-    showToast(`คัดลอก${label}แล้ว`, "success");
+    showToast(formatUiText("copyValueSuccess", { label }, "คัดลอก{label}แล้ว"), "success");
   } catch (err) {
-    showToast(`คัดลอก${label}ไม่สำเร็จ`, "error");
+    showToast(formatUiText("copyValueFailed", { label }, "คัดลอก{label}ไม่สำเร็จ"), "error");
   }
 }
 
@@ -6603,30 +6675,30 @@ function renderViewerCopyTile(type, label) {
 
 function renderViewerCopyInfoSection() {
   const costPriceButton = canCopyViewerCostPrice()
-    ? renderViewerCopyTile("costPrice", "คัดลอกราคาทุน")
+    ? renderViewerCopyTile("costPrice", t("copyCostPrice", "คัดลอกราคาทุน"))
     : "";
 
   return `
-    <section class="viewer-copy-actions" aria-label="คัดลอกข้อมูลสินค้า">
+    <section class="viewer-copy-actions" aria-label="${escAttr(t("copyProductInfo", "คัดลอกข้อมูลสินค้า"))}">
       <button class="viewer-copy-toggle" type="button" aria-expanded="false" onclick="toggleViewerCopyInfoSection(event)">
-        <span>คัดลอกข้อมูลสินค้า</span>
+        <span>${t("copyProductInfo", "คัดลอกข้อมูลสินค้า")}</span>
         <span class="viewer-copy-toggle-icon" aria-hidden="true">⌄</span>
       </button>
       <div class="viewer-copy-panel" hidden>
         <div class="viewer-copy-handle" aria-hidden="true"></div>
         <div class="viewer-copy-panel-head">
           <div>
-            <div class="viewer-copy-title">คัดลอกข้อมูลสินค้า</div>
-            <div class="viewer-copy-subtitle">เลือกข้อมูลที่ต้องการคัดลอก</div>
+            <div class="viewer-copy-title">${t("copyProductInfo", "คัดลอกข้อมูลสินค้า")}</div>
+            <div class="viewer-copy-subtitle">${t("copyProductInfoSubtitle", "เลือกข้อมูลที่ต้องการคัดลอก")}</div>
           </div>
-          <button class="viewer-copy-close" type="button" aria-label="ปิดเมนูคัดลอก" onclick="toggleViewerCopyInfoSection(event)">×</button>
+          <button class="viewer-copy-close" type="button" aria-label="${escAttr(t("copyMenuClose", "ปิดเมนูคัดลอก"))}" onclick="toggleViewerCopyInfoSection(event)">×</button>
         </div>
         <div class="viewer-copy-grid">
-          ${renderViewerCopyTile("name", "คัดลอกชื่อสินค้า")}
-          ${renderViewerCopyTile("productId", "คัดลอกรหัสสินค้า")}
+          ${renderViewerCopyTile("name", t("copyProductName", "คัดลอกชื่อสินค้า"))}
+          ${renderViewerCopyTile("productId", t("copyProductCode", "คัดลอกรหัสสินค้า"))}
           ${costPriceButton}
-          ${renderViewerCopyTile("stock", "คัดลอกจำนวน")}
-          ${renderViewerCopyTile("image", "คัดลอกรูปภาพ")}
+          ${renderViewerCopyTile("stock", t("copyQuantity", "คัดลอกจำนวน"))}
+          ${renderViewerCopyTile("image", t("copyImage", "คัดลอกรูปภาพ"))}
         </div>
       </div>
     </section>
@@ -8828,10 +8900,7 @@ function getAdminOrderStatusClass(status) {
 }
 
 function getAdminOrderSourceLabel(order) {
-  const source = String(order?.source || "").trim();
-  if (!source) return "หน้าร้าน";
-  if (source === "partner_request") return "คำขอคู่ค้า";
-  return source;
+  return getAdminOrderSourceDisplayLabel(order);
 }
 
 function formatAdminPoSummaryMoney(value) {
@@ -8844,22 +8913,22 @@ function buildAdminPoSummaryText(order) {
   const items = Array.isArray(order?.items) ? order.items : [];
   const lines = [
     `PO: ${order?.poNumber || "-"}`,
-    `เลขออเดอร์: ${order?.orderId || "-"}`,
-    `สถานะ: ${order?.status || "-"}`,
-    `แหล่งที่มา: ${getAdminOrderSourceLabel(order)}`
+    `${t("orderNumber", "เลขออเดอร์")}: ${order?.orderId || "-"}`,
+    `${t("status", "สถานะ")}: ${order?.status || "-"}`,
+    `${t("source", "แหล่งที่มา")}: ${getAdminOrderSourceLabel(order)}`
   ];
 
   const partnerName = String(order?.partnerNameSnapshot || order?.partnerId || "").trim();
   const partnerRequestId = String(order?.partnerRequestId || "").trim();
 
   if (partnerName) {
-    lines.push(`คู่ค้า: ${partnerName}`);
+    lines.push(`${t("partner", "คู่ค้า")}: ${partnerName}`);
   }
   if (partnerRequestId) {
-    lines.push(`เลขคำขอคู่ค้า: ${partnerRequestId}`);
+    lines.push(`${t("partnerRequestId", "เลขคำขอคู่ค้า")}: ${partnerRequestId}`);
   }
 
-  lines.push("", "รายการสินค้า:");
+  lines.push("", `${t("itemList", "รายการสินค้า")}:`);
 
   if (items.length) {
     items.forEach((item, index) => {
@@ -8878,7 +8947,7 @@ function buildAdminPoSummaryText(order) {
     lines.push("-");
   }
 
-  lines.push("", `รวม: ${formatAdminPoSummaryMoney(order?.total)}`);
+  lines.push("", `${t("total", "รวม")}: ${formatAdminPoSummaryMoney(order?.total)}`);
   return lines.join("\n");
 }
 
@@ -8893,13 +8962,13 @@ function copyAdminPoSummary(orderId) {
     );
 
   if (!order) {
-    showToast("ไม่พบข้อมูลออเดอร์สำหรับคัดลอก", "warning");
+    showToast(t("noOrderForCopy", "ไม่พบข้อมูลออเดอร์สำหรับคัดลอก"), "warning");
     return;
   }
 
   copyTextToClipboard(
     buildAdminPoSummaryText(order),
-    "คัดลอกสรุป PO แล้ว"
+    t("poSummaryCopied", "คัดลอกสรุป PO แล้ว")
   );
 }
 
@@ -8928,9 +8997,13 @@ function buildAdminPoPrintHtml(order) {
   const partnerName = String(order?.partnerNameSnapshot || order?.partnerId || "").trim();
   const partnerRequestId = String(order?.partnerRequestId || "").trim();
   const total = Number(order?.total) || 0;
-  const shopName = "ร้านค้า Luopanich";
+  const shopName = t("shopTitle", "ร้านค้า Luopanich");
   const printDateTime = new Date().toLocaleString("th-TH");
   const orderNote = String(order?.note || order?.adminNote || order?.message || "").trim();
+  const poSummaryTitle = t("poSummaryTitle", "ใบสรุป PO");
+  const poPrintSubtitle = t("poPrintSubtitle", "เอกสารสำหรับตรวจสอบรายการสินค้าและการแพ็กของ");
+  const printedAtLabel = t("printedAt", "พิมพ์เมื่อ");
+  const closePrintPageAlert = t("closePrintPageAlert", "กรุณาปิดหน้านี้เพื่อกลับสู่ระบบ");
   const itemRows = items.length
     ? items.map((item, index) => {
       const productId = String(item?.productId || "").trim() || "-";
@@ -8955,14 +9028,14 @@ function buildAdminPoPrintHtml(order) {
         </tr>
       `;
     }).join("")
-    : `<tr><td colspan="7" class="empty">ไม่มีรายการสินค้า</td></tr>`;
+    : `<tr><td colspan="7" class="empty">${t("noItems", "ไม่มีรายการสินค้า")}</td></tr>`;
 
   return `
     <!doctype html>
     <html>
     <head>
       <meta charset="UTF-8">
-      <title>ใบสรุป PO ${esc(order?.poNumber || "-")}</title>
+      <title>${esc(poSummaryTitle)} ${esc(order?.poNumber || "-")}</title>
       <style>
         @page { size: A4; margin: 14mm; }
         * { box-sizing:border-box; }
@@ -9109,61 +9182,61 @@ function buildAdminPoPrintHtml(order) {
     </head>
     <body>
       <div class="print-screen-toolbar">
-        <button type="button" onclick="closePrintPoPage()">← กลับระบบ</button>
-        <button type="button" class="secondary" onclick="window.print()">พิมพ์อีกครั้ง</button>
+        <button type="button" onclick="closePrintPoPage()">${t("returnToSystem", "กลับระบบ")}</button>
+        <button type="button" class="secondary" onclick="window.print()">${t("printAgain", "พิมพ์อีกครั้ง")}</button>
       </div>
       <div class="document">
         <div class="doc-header">
           <div>
             <div class="shop-name">${esc(shopName)}</div>
-            <h1>ใบสรุป PO</h1>
-            <div class="muted">เอกสารสำหรับตรวจสอบรายการสินค้าและการแพ็กของ</div>
+            <h1>${esc(poSummaryTitle)}</h1>
+            <div class="muted">${esc(poPrintSubtitle)}</div>
           </div>
           <div class="doc-meta">
             <div><strong>PO</strong><span>${esc(order?.poNumber || "-")}</span></div>
-            <div><strong>เลขออเดอร์</strong><span>${esc(order?.orderId || "-")}</span></div>
-            <div><strong>พิมพ์เมื่อ</strong><span>${esc(printDateTime)}</span></div>
+            <div><strong>${t("orderNumber", "เลขออเดอร์")}</strong><span>${esc(order?.orderId || "-")}</span></div>
+            <div><strong>${esc(printedAtLabel)}</strong><span>${esc(printDateTime)}</span></div>
           </div>
         </div>
 
         <div class="meta-grid">
           <div class="meta-item"><strong>PO</strong><span>${esc(order?.poNumber || "-")}</span></div>
-          <div class="meta-item"><strong>เลขออเดอร์</strong><span>${esc(order?.orderId || "-")}</span></div>
-          <div class="meta-item"><strong>สถานะ</strong><span>${esc(status || "-")}</span></div>
-          <div class="meta-item"><strong>แหล่งที่มา</strong><span>${esc(getAdminOrderSourceLabel(order))}</span></div>
-          ${partnerName ? `<div class="meta-item"><strong>คู่ค้า</strong><span>${esc(partnerName)}</span></div>` : ""}
-          ${partnerRequestId ? `<div class="meta-item"><strong>เลขคำขอคู่ค้า</strong><span>${esc(partnerRequestId)}</span></div>` : ""}
-          ${createdAt ? `<div class="meta-item"><strong>สร้างเมื่อ</strong><span>${esc(formatThaiDate(createdAt))}</span></div>` : ""}
-          ${approvedAt ? `<div class="meta-item"><strong>อนุมัติเมื่อ</strong><span>${esc(formatThaiDate(approvedAt))}</span></div>` : ""}
+          <div class="meta-item"><strong>${t("orderNumber", "เลขออเดอร์")}</strong><span>${esc(order?.orderId || "-")}</span></div>
+          <div class="meta-item"><strong>${t("status", "สถานะ")}</strong><span>${esc(getAdminOrderStatusLabel(status) || "-")}</span></div>
+          <div class="meta-item"><strong>${t("source", "แหล่งที่มา")}</strong><span>${esc(getAdminOrderSourceLabel(order))}</span></div>
+          ${partnerName ? `<div class="meta-item"><strong>${t("partner", "คู่ค้า")}</strong><span>${esc(partnerName)}</span></div>` : ""}
+          ${partnerRequestId ? `<div class="meta-item"><strong>${t("partnerRequestId", "เลขคำขอคู่ค้า")}</strong><span>${esc(partnerRequestId)}</span></div>` : ""}
+          ${createdAt ? `<div class="meta-item"><strong>${t("createdAt", "สร้างเมื่อ")}</strong><span>${esc(formatThaiDate(createdAt))}</span></div>` : ""}
+          ${approvedAt ? `<div class="meta-item"><strong>${t("approvedAt", "อนุมัติเมื่อ")}</strong><span>${esc(formatThaiDate(approvedAt))}</span></div>` : ""}
         </div>
 
-        <div class="section-title">รายการสินค้า</div>
+        <div class="section-title">${t("itemList", "รายการสินค้า")}</div>
         <table>
           <thead>
             <tr>
               <th>#</th>
-              <th>รูป</th>
+              <th>${t("imageLabel", "รูป")}</th>
               <th>SKU</th>
-              <th>สินค้า</th>
-              <th class="num">จำนวน</th>
-              <th class="num">ราคา</th>
-              <th class="num">รวม</th>
+              <th>${t("productLabel", "สินค้า")}</th>
+              <th class="num">${t("quantity", "จำนวน")}</th>
+              <th class="num">${t("price", "ราคา")}</th>
+              <th class="num">${t("total", "รวม")}</th>
             </tr>
           </thead>
           <tbody>${itemRows}</tbody>
         </table>
 
-        <div class="total">รวม: ฿${total.toLocaleString("th-TH")}</div>
+        <div class="total">${t("total", "รวม")}: ฿${total.toLocaleString("th-TH")}</div>
         ${orderNote ? `
           <div class="note-box">
-            <strong>หมายเหตุ</strong><br>
+            <strong>${t("note", "หมายเหตุ")}</strong><br>
             ${esc(orderNote)}
           </div>
         ` : ""}
         <div class="signature-grid">
-          <div class="signature-box"><div class="signature-line"></div>ผู้จัดทำ</div>
-          <div class="signature-box"><div class="signature-line"></div>ผู้ตรวจสอบ</div>
-          <div class="signature-box"><div class="signature-line"></div>ผู้รับสินค้า / ผู้แพ็กของ</div>
+          <div class="signature-box"><div class="signature-line"></div>${t("preparedBy", "ผู้จัดทำ")}</div>
+          <div class="signature-box"><div class="signature-line"></div>${t("checkedBy", "ผู้ตรวจสอบ")}</div>
+          <div class="signature-box"><div class="signature-line"></div>${t("receiverPacker", "ผู้รับสินค้า / ผู้แพ็กของ")}</div>
         </div>
       </div>
       <script>
@@ -9181,7 +9254,7 @@ function buildAdminPoPrintHtml(order) {
               history.back();
               return;
             }
-            alert("กรุณาปิดหน้านี้เพื่อกลับสู่ระบบ");
+            alert(${toInlineJsStringLiteral(closePrintPageAlert)});
           }, 120);
         }
 
@@ -9205,13 +9278,13 @@ function printAdminPoOrder(orderId) {
     );
 
   if (!order) {
-    showToast("ไม่พบข้อมูลออเดอร์สำหรับพิมพ์", "warning");
+    showToast(t("noOrderForPrint", "ไม่พบข้อมูลออเดอร์สำหรับพิมพ์"), "warning");
     return;
   }
 
   const printWindow = window.open("", "_blank");
   if (!printWindow) {
-    showToast("ไม่สามารถเปิดหน้าพิมพ์ได้", "warning");
+    showToast(t("printWindowOpenError", "ไม่สามารถเปิดหน้าพิมพ์ได้"), "warning");
     return;
   }
 
@@ -14252,16 +14325,16 @@ async function copyTextToClipboard(text, successMessage) {
     showToast(successMessage, "success");
   } catch (err) {
     console.error(err);
-    showToast("คัดลอกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง", "error");
+    showToast(t("copyFailedRetry", "คัดลอกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"), "error");
   }
 }
 
 function copyBulkProductHeader() {
-  copyTextToClipboard(getBulkProductTemplateHeader(), "คัดลอกหัวตารางแล้ว");
+  copyTextToClipboard(getBulkProductTemplateHeader(), t("bulkTemplateHeaderCopied", "คัดลอกหัวตารางแล้ว"));
 }
 
 function copyBulkProductSample() {
-  copyTextToClipboard(BULK_PRODUCT_SAMPLE, "คัดลอกแม่แบบตัวอย่างแล้ว");
+  copyTextToClipboard(BULK_PRODUCT_SAMPLE, t("bulkSampleCopied", "คัดลอกแม่แบบตัวอย่างแล้ว"));
 }
 
 async function pasteBulkProductImportFromClipboard() {
@@ -14294,7 +14367,7 @@ function downloadBulkProductTemplate() {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
-  showToast("ดาวน์โหลดแม่แบบแล้ว", "success");
+  showToast(t("bulkTemplateDownloaded", "ดาวน์โหลดแม่แบบแล้ว"), "success");
 }
 
 function handleBulkProductFileUpload(event) {
@@ -14498,13 +14571,13 @@ function renderBulkProductImportSheet() {
 
     <div class="bulk-import-actions">
       <button class="btn btn-outline" type="button" onclick="downloadBulkProductTemplate()">
-        ดาวน์โหลดแม่แบบ
+        ${t("downloadTemplate", "ดาวน์โหลดแม่แบบ")}
       </button>
       <button class="btn btn-outline" type="button" onclick="copyBulkProductHeader()">
-        คัดลอกหัวตาราง
+        ${t("copyTableHeader", "คัดลอกหัวตาราง")}
       </button>
       <button class="btn btn-outline" type="button" onclick="copyBulkProductSample()">
-        คัดลอกแม่แบบตัวอย่าง
+        ${t("copySampleTemplate", "คัดลอกแม่แบบตัวอย่าง")}
       </button>
       <div class="form-group">
         <label for="bulkProductImportFile">อัปโหลดไฟล์ TSV</label>
