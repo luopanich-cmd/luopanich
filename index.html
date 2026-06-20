@@ -12065,70 +12065,15 @@ function getValidatedDeliveryNoteData() {
 }
 
 function buildDeliveryNoteDisplayRows(items) {
-  const rows = [];
-  const groups = new Map();
-
-  (Array.isArray(items) ? items : []).forEach(item => {
-    const variantMeta = item.variantMeta;
-    if (!variantMeta) {
-      rows.push({
-        type: "single",
-        imageUrl: item.imageUrl,
-        productId: item.productId,
-        name: item.name,
-        displayText: `${item.productId || "-"} = ${item.deliveryQty}`,
-        deliveryQty: item.deliveryQty,
-        note: item.itemNote
-      });
-      return;
-    }
-
-    const groupKey = variantMeta.groupCode;
-    if (!groups.has(groupKey)) {
-      const group = {
-        type: "variantGroup",
-        imageUrl: item.imageUrl,
-        productId: variantMeta.groupCode,
-        name: variantMeta.groupName || item.name,
-        deliveryQty: 0,
-        variants: new Map(),
-        notes: []
-      };
-      groups.set(groupKey, group);
-      rows.push(group);
-    }
-
-    const group = groups.get(groupKey);
-    if (!group.imageUrl && item.imageUrl) group.imageUrl = item.imageUrl;
-    group.deliveryQty += item.deliveryQty;
-    if (item.itemNote) group.notes.push(item.itemNote);
-
-    const sizeKey = variantMeta.size;
-    const current = group.variants.get(sizeKey) || {
-      size: sizeKey,
-      qty: 0,
-      sortOrder: variantMeta.sortOrder
-    };
-    current.qty += item.deliveryQty;
-    current.sortOrder = Math.min(current.sortOrder, variantMeta.sortOrder);
-    group.variants.set(sizeKey, current);
-  });
-
-  return rows.map(row => {
-    if (row.type !== "variantGroup") return row;
-    const parts = [...row.variants.values()]
-      .sort((a, b) => {
-        if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
-        return String(a.size || "").localeCompare(String(b.size || ""));
-      })
-      .map(variant => `${variant.size}-${variant.qty}`);
-
-    return {
-      ...row,
-      displayText: `${row.productId || "-"} = ${parts.join(" ")}`,
-      note: row.notes.join("; ")
-    };
-  });
+  return (Array.isArray(items) ? items : []).map(item => ({
+    type: "single",
+    imageUrl: item.imageUrl,
+    productId: item.productId,
+    name: item.name,
+    displayText: `${item.productId || "-"} = ${item.deliveryQty}`,
+    deliveryQty: item.deliveryQty,
+    note: item.itemNote
+  }));
 }
 
 function formatDeliveryNoteShortDate(value) {
