@@ -4339,6 +4339,57 @@ const UI_TEXT = {
     rejectEnglish: "Reject",
     createAllPendingDelivery: "สร้างรายการค้างส่งทั้งหมด",
     pendingDeliveryShort: "ค้างส่ง",
+    createBulkPendingDeliveryTitle: "สร้างค้างส่งหลายรายการ",
+    createPendingDeliveryTitle: "เพิ่มรายการค้างส่ง",
+    pendingQty: "จำนวนค้างส่ง",
+    createItems: "สร้างรายการ",
+    selectProductsWarning: "กรุณาเลือกสินค้า",
+    invalidPendingQtyRange: "จำนวนค้างส่งของ \"{name}\" ต้องเป็นจำนวนเต็ม 1-{qty}",
+    pendingDeliveryCheckError: "ไม่สามารถตรวจสอบรายการค้างส่งได้",
+    pendingQtyExceedsPoForProduct: "จำนวนค้างส่งของ \"{name}\" เกินจำนวนใน PO",
+    creatingPendingDelivery: "กำลังสร้างรายการค้างส่ง...",
+    createPendingSuccess: "สร้างรายการสำเร็จ",
+    createPendingPartialSuccess: "สร้างสำเร็จ:",
+    createPendingPartialFailed: "สร้างไม่สำเร็จ:",
+    createPendingFailed: "สร้างรายการไม่สำเร็จ",
+    orderNotFound: "ไม่พบข้อมูลออเดอร์",
+    productLabel: "สินค้า",
+    qtyInPo: "จำนวนใน PO",
+    note: "หมายเหตุ",
+    pendingNotePlaceholder: "เช่น รอของเข้า / รอรอบผลิต",
+    save: "บันทึก",
+    pendingQtyPositiveError: "จำนวนค้างส่งต้องเป็นจำนวนเต็มมากกว่า 0",
+    pendingQtyExceedsPo: "จำนวนค้างส่งเกินจำนวนใน PO",
+    createPendingDeliverySuccess: "สร้างรายการค้างส่งเรียบร้อย",
+    createPendingDeliveryError: "ไม่สามารถสร้างรายการค้างส่งได้",
+    createAllPendingDeliverySuccess: "สร้างรายการค้างส่งทั้งหมดสำเร็จ",
+    pendingDeliveryTitle: "ค้างส่ง",
+    loading: "กำลังโหลด...",
+    loadFailed: "โหลดข้อมูลไม่สำเร็จ",
+    noPendingDeliveries: "ไม่มีรายการค้างส่ง",
+    totalStatus: "สถานะรวม",
+    allEntries: "รายการทั้งหมด",
+    openClosed: "เปิด / ปิดแล้ว",
+    totalPendingQty: "จำนวนค้างส่งรวม",
+    openClosedQty: "จำนวนเปิด / ปิดแล้ว",
+    latestCreated: "สร้างล่าสุด",
+    latestClosed: "ปิดล่าสุด",
+    multipleOrderWarning: "PO นี้มีหลาย Order",
+    allPendingOpen: "ทั้งหมดยังค้างส่ง",
+    allPendingClosed: "ปิดครบแล้ว",
+    mixedPendingClosed: "บางรายการปิดแล้ว",
+    copyPendingDeliverySummary: "คัดลอกสรุปค้างส่ง",
+    pendingCopied: "คัดลอกสรุปค้างส่งแล้ว",
+    pendingDetailTitle: "รายละเอียดสินค้า",
+    pendingInPo: "ใน PO",
+    deliveredComplete: "ส่งครบแล้ว",
+    confirmDeliveredTitle: "ยืนยันการส่งครบ",
+    confirmDeliveredDesc: "ยืนยันว่ารายการค้างส่งนี้ส่งครบเรียบร้อยแล้ว?",
+    closePendingSuccess: "ส่งครบเรียบร้อย",
+    closePendingError: "ไม่สามารถปิดรายการค้างส่งได้",
+    genericError: "เกิดข้อผิดพลาด",
+    statusOpen: "เปิด",
+    statusClosed: "ปิดแล้ว",
     statusPending: "รออนุมัติ",
     statusApproved: "อนุมัติแล้ว",
     statusRejected: "ปฏิเสธแล้ว",
@@ -4492,6 +4543,57 @@ const UI_TEXT = {
     rejectEnglish: "Reject",
     createAllPendingDelivery: "Create all pending delivery",
     pendingDeliveryShort: "Pending delivery",
+    createBulkPendingDeliveryTitle: "Create multiple pending deliveries",
+    createPendingDeliveryTitle: "Add pending delivery",
+    pendingQty: "Pending qty",
+    createItems: "Create items",
+    selectProductsWarning: "Please select products",
+    invalidPendingQtyRange: "Pending qty for \"{name}\" must be a whole number from 1-{qty}",
+    pendingDeliveryCheckError: "Could not check pending delivery items",
+    pendingQtyExceedsPoForProduct: "Pending qty for \"{name}\" exceeds PO qty",
+    creatingPendingDelivery: "Creating pending delivery...",
+    createPendingSuccess: "Items created successfully",
+    createPendingPartialSuccess: "Created:",
+    createPendingPartialFailed: "Failed:",
+    createPendingFailed: "Could not create items",
+    orderNotFound: "Order not found",
+    productLabel: "Product",
+    qtyInPo: "Qty in PO",
+    note: "Note",
+    pendingNotePlaceholder: "Example: waiting for stock / next production batch",
+    save: "Save",
+    pendingQtyPositiveError: "Pending qty must be a whole number greater than 0",
+    pendingQtyExceedsPo: "Pending qty exceeds PO qty",
+    createPendingDeliverySuccess: "Pending delivery created",
+    createPendingDeliveryError: "Could not create pending delivery",
+    createAllPendingDeliverySuccess: "All pending delivery items created",
+    pendingDeliveryTitle: "Pending delivery",
+    loading: "Loading...",
+    loadFailed: "Could not load data",
+    noPendingDeliveries: "No pending delivery items",
+    totalStatus: "Overall status",
+    allEntries: "Total entries",
+    openClosed: "Open / Closed",
+    totalPendingQty: "Total pending qty",
+    openClosedQty: "Open / Closed qty",
+    latestCreated: "Latest created",
+    latestClosed: "Latest closed",
+    multipleOrderWarning: "This PO has multiple orders",
+    allPendingOpen: "All items are still pending",
+    allPendingClosed: "All items are closed",
+    mixedPendingClosed: "Some items are closed",
+    copyPendingDeliverySummary: "Copy pending delivery summary",
+    pendingCopied: "Pending delivery summary copied",
+    pendingDetailTitle: "Item details",
+    pendingInPo: "In PO",
+    deliveredComplete: "Delivered complete",
+    confirmDeliveredTitle: "Confirm delivered complete",
+    confirmDeliveredDesc: "Confirm this pending delivery item has been delivered completely?",
+    closePendingSuccess: "Marked as delivered complete",
+    closePendingError: "Could not close pending delivery",
+    genericError: "Something went wrong",
+    statusOpen: "Open",
+    statusClosed: "Closed",
     statusPending: "Pending",
     statusApproved: "Approved",
     statusRejected: "Rejected",
@@ -4602,6 +4704,15 @@ function getAdminOrderSourceDisplayLabel(order) {
   if (!source) return t("sourceViewer", "หน้าร้าน");
   if (source === "partner_request") return t("sourcePartnerRequest", "คำขอคู่ค้า");
   return source;
+}
+
+function getPendingDeliveryStatusLabel(status) {
+  const statusKey = String(status || "").toUpperCase();
+  const statusTextKey = {
+    OPEN: "statusOpen",
+    CLOSED: "statusClosed"
+  }[statusKey];
+  return statusTextKey ? t(statusTextKey, statusKey) : (statusKey || "-");
 }
 
 function renderLanguageSwitch() {
@@ -9425,7 +9536,7 @@ function closeAdminOrderSheet() {
 
    if (!order) {
      showToast(
-       "ไม่พบข้อมูลออเดอร์",
+       t("orderNotFound", "ไม่พบข้อมูลออเดอร์"),
        "warning"
      );
      return;
@@ -9504,7 +9615,7 @@ function closeAdminOrderSheet() {
    width:100%;
    box-sizing:border-box;
   ">
-    📦 สร้างค้างส่งหลายรายการ
+    ${t("createBulkPendingDeliveryTitle", "สร้างค้างส่งหลายรายการ")}
   </h3>
 
   <div></div>
@@ -9569,7 +9680,7 @@ function closeAdminOrderSheet() {
      opacity:.7;
      margin-bottom:4px;
    ">
-   จำนวนค้างส่ง
+   ${t("pendingQty", "จำนวนค้างส่ง")}
  </div>
 
          <input
@@ -9599,9 +9710,9 @@ style="
        <button
          class="btn btn-primary"
          onclick="
-           submitBulkPendingDelivery()
-         ">
-         สร้างรายการ
+         submitBulkPendingDelivery()
+       ">
+         ${t("createItems", "สร้างรายการ")}
        </button>
      </div>
 
@@ -9629,7 +9740,7 @@ style="
 
      if (!items.length) {
        showToast(
-         "กรุณาเลือกสินค้า",
+         t("selectProductsWarning", "กรุณาเลือกสินค้า"),
          "warning"
        );
        return;
@@ -9646,7 +9757,13 @@ style="
 
      if (invalidItem) {
        showToast(
-         `จำนวนค้างส่งของ "${invalidItem.name || invalidItem.productId}" ต้องเป็นจำนวนเต็ม 1-${invalidItem.orderedQty}`,
+         formatUiText(
+           t("invalidPendingQtyRange", "จำนวนค้างส่งของ \"{name}\" ต้องเป็นจำนวนเต็ม 1-{qty}"),
+           {
+             name: invalidItem.name || invalidItem.productId,
+             qty: invalidItem.orderedQty
+           }
+         ),
          "warning"
        );
        return;
@@ -9665,7 +9782,7 @@ style="
          console.error(err);
          showToast(
            err.message ||
-           "ไม่สามารถตรวจสอบรายการค้างส่งได้",
+           t("pendingDeliveryCheckError", "ไม่สามารถตรวจสอบรายการค้างส่งได้"),
            "error"
          );
          return;
@@ -9697,14 +9814,19 @@ style="
 
      if (cumulativeInvalidItem) {
        showToast(
-         `จำนวนค้างส่งของ "${cumulativeInvalidItem.name || cumulativeInvalidItem.productId}" เกินจำนวนใน PO`,
+         formatUiText(
+           t("pendingQtyExceedsPoForProduct", "จำนวนค้างส่งของ \"{name}\" เกินจำนวนใน PO"),
+           {
+             name: cumulativeInvalidItem.name || cumulativeInvalidItem.productId
+           }
+         ),
          "warning"
        );
        return;
      }
 
      showLoading(
-       "กำลังสร้างรายการค้างส่ง..."
+       t("creatingPendingDelivery", "กำลังสร้างรายการค้างส่ง...")
      );
 
      const succeededItems = [];
@@ -9730,7 +9852,7 @@ style="
          if (!result?.success) {
            throw new Error(
              result?.error ||
-             "Create pending failed"
+             t("createPendingFailed", "สร้างรายการไม่สำเร็จ")
            );
          }
 
@@ -9738,14 +9860,14 @@ style="
        } catch (err) {
          failedItems.push({
            item,
-           error: err.message || "Create pending failed"
+           error: err.message || t("createPendingFailed", "สร้างรายการไม่สำเร็จ")
          });
        }
      }
 
      if (failedItems.length === 0) {
        showToast(
-         "สร้างรายการสำเร็จ",
+         t("createPendingSuccess", "สร้างรายการสำเร็จ"),
          "success"
        );
 
@@ -9768,7 +9890,7 @@ style="
          .join("\n");
 
        showToast(
-         `สร้างสำเร็จ:\n${successText}\n\nสร้างไม่สำเร็จ:\n${failureText}`,
+         `${t("createPendingPartialSuccess", "สร้างสำเร็จ:")}\n${successText}\n\n${t("createPendingPartialFailed", "สร้างไม่สำเร็จ:")}\n${failureText}`,
          "warning",
          7000
        );
@@ -9782,7 +9904,7 @@ style="
      }
 
      showToast(
-       "สร้างรายการไม่สำเร็จ\n" +
+       t("createPendingFailed", "สร้างรายการไม่สำเร็จ") + "\n" +
          failedItems
            .map(({ item, error }) =>
              `- ${item.name || item.productId}: ${error}`
@@ -9856,29 +9978,29 @@ createPendingDeliverySheet.innerHTML = `
             createPendingDeliverySheet
           )
         ">
-        ← กลับ
+        ${t("back", "กลับ")}
       </button>
 
-      <h3 id="createPendingDeliverySheetTitle">📦 เพิ่มรายการค้างส่ง</h3>
+      <h3 id="createPendingDeliverySheetTitle">${t("createPendingDeliveryTitle", "เพิ่มรายการค้างส่ง")}</h3>
 
     </div>
 
       <div class="card info-card">
 
       <div class="info-row">
-        <span class="info-label">สินค้า</span>
+        <span class="info-label">${t("productLabel", "สินค้า")}</span>
         <span class="info-value">${esc(productId)}</span>
       </div>
 
       <div class="info-row">
-        <span class="info-label">จำนวนใน PO</span>
+        <span class="info-label">${t("qtyInPo", "จำนวนใน PO")}</span>
         <span class="info-value">${orderedQty}</span>
       </div>
 
       <div class="form-group">
 
 <label class="stock">
-  จำนวนค้างส่ง
+  ${t("pendingQty", "จำนวนค้างส่ง")}
 </label>
 
         <input
@@ -9896,13 +10018,13 @@ createPendingDeliverySheet.innerHTML = `
       <div class="form-group">
 
         <label>
-          หมายเหตุ
+          ${t("note", "หมายเหตุ")}
         </label>
 
         <textarea
           id="pendingNoteInput"
           class="input"
-          placeholder="เช่น รอของเข้า / รอรอบผลิต"
+          placeholder="${t("pendingNotePlaceholder", "เช่น รอของเข้า / รอรอบผลิต")}"
           rows="3"></textarea>
 
       </div>
@@ -9911,7 +10033,7 @@ createPendingDeliverySheet.innerHTML = `
   <button
     onclick="createPendingDelivery()"
     class="btn btn-primary">
-    บันทึก
+    ${t("save", "บันทึก")}
   </button>
 </div>
 
@@ -9934,7 +10056,7 @@ async function createPendingDelivery() {
   state.admin.isSubmitting = true;
 
   showLoading(
-    "กำลังสร้างรายการค้างส่ง..."
+    t("creatingPendingDelivery", "กำลังสร้างรายการค้างส่ง...")
   );  
 
     if (!state.admin?.token) {
@@ -9976,7 +10098,7 @@ async function createPendingDelivery() {
 
     if (!Number.isInteger(qty) || qty <= 0) {
       throw new Error(
-        "จำนวนค้างส่งต้องเป็นจำนวนเต็มมากกว่า 0"
+        t("pendingQtyPositiveError", "จำนวนค้างส่งต้องเป็นจำนวนเต็มมากกว่า 0")
       );
     }
 
@@ -10004,7 +10126,7 @@ async function createPendingDelivery() {
 
  if (existingOpenQty + qty > orderedQty) {
    throw new Error(
-     "จำนวนค้างส่งเกินจำนวนใน PO"
+     t("pendingQtyExceedsPo", "จำนวนค้างส่งเกินจำนวนใน PO")
    );
  }
    
@@ -10056,12 +10178,12 @@ async function createPendingDelivery() {
     if (!result?.success) {
       throw new Error(
         result?.error ||
-        "Create pending delivery failed"
+        t("createPendingDeliveryError", "ไม่สามารถสร้างรายการค้างส่งได้")
       );
     }
 
  showToast(
-   "สร้างรายการค้างส่งเรียบร้อย",
+   t("createPendingDeliverySuccess", "สร้างรายการค้างส่งเรียบร้อย"),
    "success"
  );
 
@@ -10077,7 +10199,7 @@ async function createPendingDelivery() {
 
     showToast(
       err.message ||
-        "ไม่สามารถสร้างรายการค้างส่งได้",
+        t("createPendingDeliveryError", "ไม่สามารถสร้างรายการค้างส่งได้"),
       "error",
       5000
     );
@@ -10100,7 +10222,7 @@ async function createPendingDelivery() {
 
      if (!order) {
        showToast(
-         "ไม่พบข้อมูลออเดอร์",
+         t("orderNotFound", "ไม่พบข้อมูลออเดอร์"),
          "warning"
        );
        return;
@@ -10120,7 +10242,7 @@ async function createPendingDelivery() {
      }
 
      showLoading(
-       "กำลังสร้างรายการค้างส่ง..."
+       t("creatingPendingDelivery", "กำลังสร้างรายการค้างส่ง...")
      );
 
      const succeededItems = [];
@@ -10146,7 +10268,7 @@ async function createPendingDelivery() {
          if (!result?.success) {
            throw new Error(
              result?.error ||
-             "Create pending delivery failed"
+             t("createPendingDeliveryError", "ไม่สามารถสร้างรายการค้างส่งได้")
            );
          }
 
@@ -10154,14 +10276,14 @@ async function createPendingDelivery() {
        } catch (err) {
          failedItems.push({
            item,
-           error: err.message || "Create pending delivery failed"
+           error: err.message || t("createPendingDeliveryError", "ไม่สามารถสร้างรายการค้างส่งได้")
          });
        }
      }
 
      if (failedItems.length === 0) {
        showToast(
-         "สร้างรายการค้างส่งทั้งหมดสำเร็จ",
+         t("createAllPendingDeliverySuccess", "สร้างรายการค้างส่งทั้งหมดสำเร็จ"),
          "success"
        );
 
@@ -10190,7 +10312,7 @@ async function createPendingDelivery() {
      }
 
      showToast(
-       "ไม่สามารถสร้างรายการค้างส่งได้\n" +
+       t("createPendingDeliveryError", "ไม่สามารถสร้างรายการค้างส่งได้") + "\n" +
          failedItems
            .map(({ item, error }) =>
              `- ${item.name || item.productId}: ${error}`
@@ -10535,12 +10657,12 @@ function openPendingDeliverySheet() {
       <button
         class="btn btn-outline back-btn"
         onclick="closePendingDeliverySheet()">
-        ← กลับ
+        ${t("back", "กลับ")}
       </button>
 
       <h3 id="pendingDeliverySheetTitle">
         <span class="dashboard-title-main">
-          📦 ค้างส่ง
+          ${t("pendingDeliveryTitle", "ค้างส่ง")}
         </span>
       </h3>
     </div>
@@ -10548,7 +10670,7 @@ function openPendingDeliverySheet() {
     <div id="pendingDeliveryList">
       <div class="card">
         <div style="font-weight:600;">
-          กำลังโหลด...
+          ${t("loading", "กำลังโหลด...")}
         </div>
       </div>
     </div>
@@ -10578,7 +10700,7 @@ function openPendingDeliverySheet() {
      if (container) {
        container.innerHTML = `
          <div class="card">
-           โหลดข้อมูลไม่สำเร็จ
+           ${t("loadFailed", "โหลดข้อมูลไม่สำเร็จ")}
          </div>
        `;
      }
@@ -10623,9 +10745,9 @@ function buildPendingDeliveryPoSummary(entries) {
 
 function getPendingDeliveryPoStatusText(summary) {
   if (!summary || summary.entryCount === 0) return "-";
-  if (summary.openCount === summary.entryCount) return "ทั้งหมดยังค้างส่ง";
-  if (summary.openCount === 0) return "ปิดครบแล้ว";
-  return "บางรายการปิดแล้ว";
+  if (summary.openCount === summary.entryCount) return t("allPendingOpen", "ทั้งหมดยังค้างส่ง");
+  if (summary.openCount === 0) return t("allPendingClosed", "ปิดครบแล้ว");
+  return t("mixedPendingClosed", "บางรายการปิดแล้ว");
 }
 
 function renderPendingDeliveryPoSummary(poNumber, entries) {
@@ -10640,23 +10762,23 @@ function renderPendingDeliveryPoSummary(poNumber, entries) {
         <strong>${esc(poNumber || "-")}</strong>
       </div>
       <div class="summary-row">
-        <span>สถานะรวม</span>
+        <span>${t("totalStatus", "สถานะรวม")}</span>
         <strong>${esc(statusText)}</strong>
       </div>
       <div class="summary-row">
-        <span>รายการทั้งหมด</span>
+        <span>${t("allEntries", "รายการทั้งหมด")}</span>
         <strong>${summary.entryCount}</strong>
       </div>
       <div class="summary-row">
-        <span>เปิด / ปิดแล้ว</span>
+        <span>${t("openClosed", "เปิด / ปิดแล้ว")}</span>
         <strong>${summary.openCount} / ${summary.closedCount}</strong>
       </div>
       <div class="summary-row">
-        <span>จำนวนค้างส่งรวม</span>
+        <span>${t("totalPendingQty", "จำนวนค้างส่งรวม")}</span>
         <strong>${summary.totalPendingQty}</strong>
       </div>
       <div class="summary-row">
-        <span>จำนวนเปิด / ปิดแล้ว</span>
+        <span>${t("openClosedQty", "จำนวนเปิด / ปิดแล้ว")}</span>
         <strong>${summary.openPendingQty} / ${summary.closedPendingQty}</strong>
       </div>
       <div class="summary-row">
@@ -10664,14 +10786,14 @@ function renderPendingDeliveryPoSummary(poNumber, entries) {
         <strong>${esc(summary.skuList.join(", ") || "-")}</strong>
       </div>
       <div class="summary-row">
-        <span>เลขออเดอร์</span>
+        <span>${t("orderNumber", "เลขออเดอร์")}</span>
         <strong>${esc(summary.orderIdList.join(", ") || "-")}</strong>
       </div>
       ${
         summary.latestCreatedAt
           ? `
             <div class="summary-row">
-              <span>สร้างล่าสุด</span>
+              <span>${t("latestCreated", "สร้างล่าสุด")}</span>
               <strong>${esc(formatThaiDate(summary.latestCreatedAt))}</strong>
             </div>
           `
@@ -10681,7 +10803,7 @@ function renderPendingDeliveryPoSummary(poNumber, entries) {
         summary.latestClosedAt
           ? `
             <div class="summary-row">
-              <span>ปิดล่าสุด</span>
+              <span>${t("latestClosed", "ปิดล่าสุด")}</span>
               <strong>${esc(formatThaiDate(summary.latestClosedAt))}</strong>
             </div>
           `
@@ -10691,7 +10813,7 @@ function renderPendingDeliveryPoSummary(poNumber, entries) {
         hasMultipleOrders
           ? `
             <div class="status-badge status-pending" style="margin-top:10px">
-              ⚠️ PO นี้มีหลาย Order
+              ⚠️ ${t("multipleOrderWarning", "PO นี้มีหลาย Order")}
             </div>
           `
           : ""
@@ -10706,37 +10828,37 @@ function buildPendingDeliveryPoSummaryText(poNumber, entries) {
   const statusText = getPendingDeliveryPoStatusText(summary);
   const lines = [
     `PO: ${poNumber || "-"}`,
-    `สถานะรวม: ${statusText}`,
-    `รายการทั้งหมด: ${summary.entryCount}`,
-    `เปิด / ปิดแล้ว: ${summary.openCount} / ${summary.closedCount}`,
-    `จำนวนค้างส่งรวม: ${summary.totalPendingQty}`,
-    `จำนวนเปิด / ปิดแล้ว: ${summary.openPendingQty} / ${summary.closedPendingQty}`,
+    `${t("totalStatus", "สถานะรวม")}: ${statusText}`,
+    `${t("allEntries", "รายการทั้งหมด")}: ${summary.entryCount}`,
+    `${t("openClosed", "เปิด / ปิดแล้ว")}: ${summary.openCount} / ${summary.closedCount}`,
+    `${t("totalPendingQty", "จำนวนค้างส่งรวม")}: ${summary.totalPendingQty}`,
+    `${t("openClosedQty", "จำนวนเปิด / ปิดแล้ว")}: ${summary.openPendingQty} / ${summary.closedPendingQty}`,
     `SKU: ${summary.skuList.join(", ") || "-"}`,
-    `เลขออเดอร์: ${summary.orderIdList.join(", ") || "-"}`
+    `${t("orderNumber", "เลขออเดอร์")}: ${summary.orderIdList.join(", ") || "-"}`
   ];
 
   if (summary.latestCreatedAt) {
-    lines.push(`สร้างล่าสุด: ${formatThaiDate(summary.latestCreatedAt)}`);
+    lines.push(`${t("latestCreated", "สร้างล่าสุด")}: ${formatThaiDate(summary.latestCreatedAt)}`);
   }
   if (summary.latestClosedAt) {
-    lines.push(`ปิดล่าสุด: ${formatThaiDate(summary.latestClosedAt)}`);
+    lines.push(`${t("latestClosed", "ปิดล่าสุด")}: ${formatThaiDate(summary.latestClosedAt)}`);
   }
   if (summary.orderIdList.length > 1) {
-    lines.push("⚠️ PO นี้มีหลาย Order");
+    lines.push(`⚠️ ${t("multipleOrderWarning", "PO นี้มีหลาย Order")}`);
   }
 
-  lines.push("", "รายละเอียดสินค้า:");
+  lines.push("", `${t("pendingDetailTitle", "รายละเอียดสินค้า")}:`);
   safeEntries.forEach(item => {
     const detail = [
       `- ${String(item?.productId || "-").trim() || "-"}`,
-      `ใน PO: ${Number(item?.orderedQty || 0)}`,
-      `ค้างส่ง: ${Number(item?.qty || 0)}`,
-      String(item?.status || "-").trim() || "-"
+      `${t("pendingInPo", "ใน PO")}: ${Number(item?.orderedQty || 0)}`,
+      `${t("pendingDeliveryShort", "ค้างส่ง")}: ${Number(item?.qty || 0)}`,
+      getPendingDeliveryStatusLabel(item?.status)
     ];
     lines.push(detail.join(" | "));
     const note = String(item?.note || "").trim();
     if (note) {
-      lines.push(`  หมายเหตุ: ${note}`);
+      lines.push(`  ${t("note", "หมายเหตุ")}: ${note}`);
     }
   });
 
@@ -10751,7 +10873,7 @@ function copyPendingDeliveryPoSummary(poNumber) {
     String(item?.poNumber || "-") === String(poNumber || "-")
   );
   const text = buildPendingDeliveryPoSummaryText(poNumber || "-", entries);
-  copyTextToClipboard(text, "คัดลอกสรุปค้างส่งแล้ว");
+  copyTextToClipboard(text, t("pendingCopied", "คัดลอกสรุปค้างส่งแล้ว"));
 }
 
 function renderPendingDeliveries(list) {
@@ -10767,7 +10889,7 @@ function renderPendingDeliveries(list) {
     container.innerHTML = `
       <div class="card admin-card">
         <div class="name">
-          ไม่มีรายการค้างส่ง
+          ${t("noPendingDeliveries", "ไม่มีรายการค้างส่ง")}
         </div>
       </div>
     `;
@@ -10842,7 +10964,7 @@ container.innerHTML =
 
    <div>
      📦 PO: ${esc(po)}
-     (${items.length} รายการ)
+     (${items.length} ${t("itemUnit", "รายการ")})
    </div>
 
    <div
@@ -10855,8 +10977,8 @@ container.innerHTML =
 
      ${
        poStatus[po] > 0
-       ? `⏳ ค้างส่ง ${poStatus[po]} รายการ`
-       : `✅ ส่งครบแล้ว`
+       ? `⏳ ${t("pendingDeliveryShort", "ค้างส่ง")} ${poStatus[po]} ${t("itemUnit", "รายการ")}`
+       : `✅ ${t("deliveredComplete", "ส่งครบแล้ว")}`
      }
 
    </div>
@@ -10881,7 +11003,7 @@ ${renderPendingDeliveryPoSummary(po, items)}
   type="button"
   style="margin-top:12px"
   onclick="copyPendingDeliveryPoSummary(${toInlineJsStringLiteral(po)})">
-  คัดลอกสรุปค้างส่ง
+  ${t("copyPendingDeliverySummary", "คัดลอกสรุปค้างส่ง")}
 </button>
 ${
   state.admin
@@ -10907,15 +11029,15 @@ ${
 
         <div class="admin-card-meta">
           <span>SKU: ${esc(item.productId || "-")}</span>
-          <span>ใน PO: ${Number(item.orderedQty || 0)}</span>
-          <span>ค้างส่ง: ${Number(item.qty || 0)}</span>
+          <span>${t("pendingInPo", "ใน PO")}: ${Number(item.orderedQty || 0)}</span>
+          <span>${t("pendingDeliveryShort", "ค้างส่ง")}: ${Number(item.qty || 0)}</span>
         </div>
 
  ${
    item.status === "OPEN"
      ? `
      <div class="status-badge status-open" style="margin-top:10px">
-       OPEN
+       ${esc(getPendingDeliveryStatusLabel(item.status))}
      </div>
      <button
        class="btn btn-success"
@@ -10928,12 +11050,12 @@ ${
            ${toInlineJsStringLiteral(item.pendingId)}
          )
        ">
-       ✅ ส่งครบแล้ว
+       ✅ ${t("deliveredComplete", "ส่งครบแล้ว")}
      </button>
      `
      : `
      <div class="status-badge status-closed" style="margin-top:10px">
-       CLOSED
+       ${esc(getPendingDeliveryStatusLabel(item.status))}
      </div>
      `
  }
@@ -10972,7 +11094,7 @@ async function markPendingDelivered(
  <div class="confirm-complete-sheet">
 
    <h3 id="confirmSheetTitle" class="confirm-complete-title">
-     ยืนยันการส่งครบ
+     ${t("confirmDeliveredTitle", "ยืนยันการส่งครบ")}
    </h3>
 
    <div class="confirm-complete-icon">
@@ -10980,8 +11102,7 @@ async function markPendingDelivered(
    </div>
 
    <div class="confirm-complete-desc">
-     ยืนยันว่ารายการค้างส่งนี้
-     ส่งครบเรียบร้อยแล้ว ?
+     ${t("confirmDeliveredDesc", "ยืนยันว่ารายการค้างส่งนี้ส่งครบเรียบร้อยแล้ว?")}
    </div>
 
    <div class="confirm-complete-actions">
@@ -10991,7 +11112,7 @@ async function markPendingDelivered(
        onclick="
          closeOverlay(confirmSheet)
        ">
-       ยกเลิก
+       ${t("cancel", "ยกเลิก")}
      </button>
 
      <button
@@ -11002,7 +11123,7 @@ async function markPendingDelivered(
            ${toInlineJsStringLiteral(pendingId)}
          );
        ">
-       ✅ ส่งครบแล้ว
+       ✅ ${t("deliveredComplete", "ส่งครบแล้ว")}
      </button>
 
    </div>
@@ -11064,7 +11185,7 @@ async function markPendingDelivered(
      if (!result?.success) {
        throw new Error(
          result?.error ||
-         "Close pending failed"
+         t("closePendingError", "ไม่สามารถปิดรายการค้างส่งได้")
        );
      }
 
@@ -11077,7 +11198,7 @@ async function markPendingDelivered(
      renderPendingDeliveries(list);
 
      showToast(
-       "ส่งครบเรียบร้อย",
+       t("closePendingSuccess", "ส่งครบเรียบร้อย"),
        "success"
      );
 
@@ -11087,7 +11208,7 @@ async function markPendingDelivered(
 
      showToast(
        err.message ||
-       "เกิดข้อผิดพลาด",
+       t("genericError", "เกิดข้อผิดพลาด"),
        "error"
      );
    }
