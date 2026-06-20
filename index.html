@@ -4220,7 +4220,27 @@ const UI_TEXT = {
     mainMenu: "เมนูหลัก",
     dashboard: "แดชบอร์ดแอดมิน",
     dashboardShort: "แดชบอร์ด",
-    pendingOrders: "ออเดอร์รออนุมัติ"
+    pendingOrders: "ออเดอร์รออนุมัติ",
+    productCode: "รหัส",
+    productGroup: "กลุ่ม",
+    price: "ราคา",
+    quantity: "จำนวน",
+    stock: "สต๊อก",
+    search: "ค้นหา",
+    productSearchPlaceholder: "ค้นหาสินค้า / รหัส",
+    filterStatus: "กรองสถานะ",
+    allProducts: "ทั้งหมด",
+    addToCart: "เพิ่มลงตะกร้า",
+    selectSize: "เลือกไซส์",
+    totalStock: "สต๊อกรวม",
+    selected: "เลือก",
+    remaining: "เหลือ",
+    selectSizeFirst: "กรุณาเลือกไซส์ก่อน",
+    statusReady: "พร้อมส่ง",
+    statusReadyPlus: "พร้อมส่ง สามารถบวกเพิ่มได้",
+    statusShipping: "กำลังเดินทาง",
+    statusWarehouse: "อยู่โกดัง",
+    statusOut: "หมด"
   },
   en: {
     langThai: "ไทย",
@@ -4237,7 +4257,27 @@ const UI_TEXT = {
     mainMenu: "Main Menu",
     dashboard: "Admin Dashboard",
     dashboardShort: "Dashboard",
-    pendingOrders: "Pending Orders"
+    pendingOrders: "Pending Orders",
+    productCode: "Code",
+    productGroup: "Group",
+    price: "Price",
+    quantity: "Qty",
+    stock: "Stock",
+    search: "Search",
+    productSearchPlaceholder: "Search product / code",
+    filterStatus: "Filter status",
+    allProducts: "All",
+    addToCart: "Add to cart",
+    selectSize: "Select size",
+    totalStock: "Total stock",
+    selected: "Selected",
+    remaining: "Left",
+    selectSizeFirst: "Please select a size first",
+    statusReady: "Ready",
+    statusReadyPlus: "Ready · Can add more",
+    statusShipping: "Shipping",
+    statusWarehouse: "Warehouse",
+    statusOut: "Out of stock"
   }
 };
 
@@ -4265,11 +4305,26 @@ function setCurrentLang(lang) {
   if (adminLoginSheet?.classList?.contains("show")) {
     renderAdminLogin();
   }
+  if (state.mode === "viewer" && Array.isArray(state.products)) {
+    renderProducts();
+  }
 }
 
 function t(key, fallback = "") {
   const lang = getCurrentLang();
   return UI_TEXT[lang]?.[key] ?? UI_TEXT[DEFAULT_LANG]?.[key] ?? fallback;
+}
+
+function getViewerStatusLabel(status) {
+  const statusKey = normalizeProductStatus(status);
+  const statusTextKey = {
+    ready: "statusReady",
+    ready_plus: "statusReadyPlus",
+    shipping: "statusShipping",
+    warehouse: "statusWarehouse",
+    out: "statusOut"
+  }[statusKey] || "statusReady";
+  return t(statusTextKey, t("statusReady", "พร้อมส่ง"));
 }
 
 function renderLanguageSwitch() {
@@ -5901,15 +5956,6 @@ function renderProducts(){
   let found = false;
 
   pageItems.forEach(p => {
-    const statusMap = {
-      ready:     "พร้อมส่ง",
-      ready_plus:
-        "พร้อมส่ง สามารถบวกเพิ่มได้",
-      shipping:  "อยู่ระหว่างจัดส่ง",
-      warehouse: "อยู่โกดังไทย",
-      out:       "หมด"
-    };
- 
     const statusKey = p.isVariantGroup ? getVariantGroupResolvedStatus(p) : p.resolvedStatus;
     const allowedStatusClasses = new Set([
       "ready",
@@ -5921,7 +5967,7 @@ function renderProducts(){
     const statusClass = allowedStatusClasses.has(statusKey)
       ? statusKey
       : "ready";
-    let statusText  = statusMap[statusKey] || "พร้อมส่ง";
+    let statusText  = getViewerStatusLabel(statusKey);
 
     /* ================= CARD ================= */
     const card = document.createElement("div");
@@ -5948,20 +5994,20 @@ function renderProducts(){
 
         <div class="info">
           <div class="name">${escapeHTML(p.displayName)}</div>
-          <div class="sku">กลุ่ม: ${escapeHTML(p.parentProductId)}</div>
-          <div class="price">ราคา: ${escapeHTML(getVariantGroupPriceLabel(p))}</div>
+          <div class="sku">${t("productGroup", "กลุ่ม")}: ${escapeHTML(p.parentProductId)}</div>
+          <div class="price">${t("price", "ราคา")}: ${escapeHTML(getVariantGroupPriceLabel(p))}</div>
           <div class="variant-group-summary">
-            เลือกไซส์ · สต็อกรวม ${getVariantGroupTotalStock(p)} ชิ้น
+            ${t("selectSize", "เลือกไซส์")} · ${t("totalStock", "สต็อกรวม")} ${getVariantGroupTotalStock(p)}
           </div>
           ${renderVariantSizeOptions(p)}
           ${
             selectedVariant
-              ? `<div class="variant-selected-summary" data-variant-selected-summary="${escAttr(p.groupKey)}" data-variant-summary-mode="card">เลือก: ${escapeHTML(selectedVariant.variantValue || "-")} · SKU ${escapeHTML(selectedVariant.productId || "-")} · เหลือ ${Number(selectedVariant.stock) || 0}</div>`
-              : `<div class="variant-selected-summary" data-variant-selected-summary="${escAttr(p.groupKey)}" data-variant-summary-mode="card">กรุณาเลือกไซส์ก่อน</div>`
+              ? `<div class="variant-selected-summary" data-variant-selected-summary="${escAttr(p.groupKey)}" data-variant-summary-mode="card">${t("selected", "เลือก")}: ${escapeHTML(selectedVariant.variantValue || "-")} · SKU ${escapeHTML(selectedVariant.productId || "-")} · ${t("remaining", "เหลือ")} ${Number(selectedVariant.stock) || 0}</div>`
+              : `<div class="variant-selected-summary" data-variant-selected-summary="${escAttr(p.groupKey)}" data-variant-summary-mode="card">${t("selectSizeFirst", "กรุณาเลือกไซส์ก่อน")}</div>`
           }
           <button class="btn btn-primary variant-add-btn" type="button"
             onclick="addVariantGroupToCart(${toInlineJsStringLiteral(p.groupKey)}, event)">
-            เพิ่มลงตะกร้า
+            ${t("addToCart", "เพิ่มลงตะกร้า")}
           </button>
         </div>
       `;
@@ -5974,12 +6020,12 @@ function renderProducts(){
 
       <div class="info">
         <div class="name">${escapeHTML(p.name)}</div>
-        <div class="sku">รหัส: ${escapeHTML(p.productId)}</div>
+        <div class="sku">${t("productCode", "รหัส")}: ${escapeHTML(p.productId)}</div>
         ${renderAdminProductVariantMeta(p)}
-        <div class="price">ราคา: ฿${Number(p.price).toLocaleString()}</div>
+        <div class="price">${t("price", "ราคา")}: ฿${Number(p.price).toLocaleString()}</div>
 
         <div class="meta">
-          <span class="qty">จำนวน: ${Number(p.stock) || 0}</span>
+          <span class="qty">${t("quantity", "จำนวน")}: ${Number(p.stock) || 0}</span>
           <span class="status ${statusClass}">
             ${statusText}
           </span>
@@ -6445,11 +6491,11 @@ function renderHeader(){
 
  <input
    id="viewerSearchInput"
-   placeholder="ค้นหาสินค้า / รหัส"
+   placeholder="${t("productSearchPlaceholder", "ค้นหาสินค้า / รหัส")}"
    oninput="handleSearch(this.value)"
    onfocus="focusInput(this)"
    class="search-input"
-   aria-label="ค้นหาสินค้า"
+   aria-label="${t("search", "ค้นหา")}"
  >
         </div>          
          </div>
@@ -6462,7 +6508,7 @@ function renderHeader(){
    <div class="filter-wrap">
  <button class="filter-btn ${state.viewerFilter.status !== "all" ? "has-active-filter" : ""}"
     onclick="toggleFilterDropdown(this)"
-    aria-label="กรองสินค้า"
+    aria-label="${t("filterStatus", "กรองสถานะ")}"
     aria-expanded="false"
     aria-controls="filterDropdown">
         <!-- iOS-like: line.3.horizontal.decrease (stroke, SF-style) -->
@@ -6473,17 +6519,16 @@ function renderHeader(){
         </svg>
      </button>
 
- <div id="filterDropdown" class="filter-dropdown" role="menu" aria-label="ตัวกรองสินค้า">
-   <button type="button" class="filter-item ${state.viewerFilter.status === "all" ? "active" : ""}" role="menuitem" onclick="selectFilter('all')">ทั้งหมด</button>
-   <button type="button" class="filter-item ${state.viewerFilter.status === "ready" ? "active" : ""}" role="menuitem" onclick="selectFilter('ready')">พร้อมส่ง</button>
+ <div id="filterDropdown" class="filter-dropdown" role="menu" aria-label="${t("filterStatus", "กรองสถานะ")}">
+   <button type="button" class="filter-item ${state.viewerFilter.status === "all" ? "active" : ""}" role="menuitem" onclick="selectFilter('all')">${t("allProducts", "ทั้งหมด")}</button>
+   <button type="button" class="filter-item ${state.viewerFilter.status === "ready" ? "active" : ""}" role="menuitem" onclick="selectFilter('ready')">${getViewerStatusLabel("ready")}</button>
    <button type="button" class="filter-item ${state.viewerFilter.status === "ready_plus" ? "active" : ""}" role="menuitem"
      onclick="selectFilter('ready_plus')">
-     พร้อมส่ง<br>
-     สามารถบวกเพิ่มได้
+     ${getViewerStatusLabel("ready_plus")}
    </button>
-   <button type="button" class="filter-item ${state.viewerFilter.status === "shipping" ? "active" : ""}" role="menuitem" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</button>
-   <button type="button" class="filter-item ${state.viewerFilter.status === "warehouse" ? "active" : ""}" role="menuitem" onclick="selectFilter('warehouse')">โกดังไทย</button>
-   <button type="button" class="filter-item ${state.viewerFilter.status === "out" ? "active" : ""}" role="menuitem" onclick="selectFilter('out')">หมด</button>
+   <button type="button" class="filter-item ${state.viewerFilter.status === "shipping" ? "active" : ""}" role="menuitem" onclick="selectFilter('shipping')">${getViewerStatusLabel("shipping")}</button>
+   <button type="button" class="filter-item ${state.viewerFilter.status === "warehouse" ? "active" : ""}" role="menuitem" onclick="selectFilter('warehouse')">${getViewerStatusLabel("warehouse")}</button>
+   <button type="button" class="filter-item ${state.viewerFilter.status === "out" ? "active" : ""}" role="menuitem" onclick="selectFilter('out')">${getViewerStatusLabel("out")}</button>
  </div>
    </div>
 
