@@ -4087,6 +4087,10 @@ Object.assign(window, {
   closeDeliveryNoteSheet,
   renderDeliveryNoteSheet,
   prepareDeliveryNoteSearch,
+  updateDeliveryNotePoPickerQuery,
+  setDeliveryNotePoPickerRange,
+  toggleDeliveryNotePoSelection,
+  buildDeliveryNoteFromPicker,
   printDeliveryNote,
   copyDeliveryNote,
   toggleDeliveryNoteItem,
@@ -4164,6 +4168,11 @@ const state = {
       itemQty: {},
       itemNotes: {},
       poNotes: {},
+      poPickerQuery: "",
+      poPickerRange: "last7",
+      selectedPoNumbers: [],
+      poPickerLoading: false,
+      poPickerError: "",
       error: "",
       isBuilding: false
     },
@@ -4483,6 +4492,20 @@ const UI_TEXT = {
     deliveryNote: "ใบส่งของ",
     deliveryNoteHelper: "สร้างใบส่งของจากเลข PO หนึ่งรายการหรือหลายรายการ เลือกสินค้าและจำนวนส่งในขั้นตอนถัดไป",
     deliveryNotePoInput: "เลข PO สำหรับใบส่งของ",
+    deliveryNotePoPicker: "เลือก PO จากออเดอร์ล่าสุด",
+    deliveryNotePoPickerHelp: "ค้นหาและเลือก PO ได้หลายรายการ หรือกรอกเองด้านล่าง",
+    deliveryNotePoPickerSearch: "ค้นหา PO / Order ID",
+    deliveryNotePoPickerPlaceholder: "ค้นหาเลข PO หรือ Order ID",
+    deliveryNoteRangeToday: "วันนี้",
+    deliveryNoteRangeLast7: "7 วันล่าสุด",
+    deliveryNoteRangeAll: "ทั้งหมด",
+    buildDeliveryNoteItems: "สร้างรายการสินค้า",
+    deliveryNoteNoPickerOrders: "ไม่พบออเดอร์สำหรับเลือก",
+    deliveryNotePickerLoading: "กำลังโหลดออเดอร์...",
+    deliveryNotePickerLoadError: "ไม่สามารถโหลดออเดอร์ได้",
+    deliveryNoteSelectedPoCount: "เลือกแล้ว {count} PO",
+    deliveryNoteOrderSummary: "{items} รายการ · {qty} ชิ้น",
+    orderShortLabel: "Order",
     deliveryNotePoPlaceholder: "PO-12436\nPO-12436, PO-12452\nหรือวางหลายบรรทัด",
     deliveryNoteEmptyState: "กรอกเลข PO แล้วกดค้นหา เพื่อเตรียมรายการสำหรับใบส่งของ",
     deliveryNoteNextStepHint: "ขั้นตอนถัดไปจะเพิ่มการค้นหา PO และเลือกสินค้าในใบส่งของ",
@@ -5152,6 +5175,20 @@ const UI_TEXT = {
     deliveryNote: "Delivery Note",
     deliveryNoteHelper: "Create a delivery note from one or multiple PO numbers. Product selection and delivery quantities come in the next step.",
     deliveryNotePoInput: "PO numbers for delivery note",
+    deliveryNotePoPicker: "Select PO from recent orders",
+    deliveryNotePoPickerHelp: "Search and select multiple PO numbers, or type manually below",
+    deliveryNotePoPickerSearch: "Search PO / Order ID",
+    deliveryNotePoPickerPlaceholder: "Search PO or Order ID",
+    deliveryNoteRangeToday: "Today",
+    deliveryNoteRangeLast7: "Last 7 days",
+    deliveryNoteRangeAll: "All",
+    buildDeliveryNoteItems: "Build item list",
+    deliveryNoteNoPickerOrders: "No orders available to select",
+    deliveryNotePickerLoading: "Loading orders...",
+    deliveryNotePickerLoadError: "Could not load orders",
+    deliveryNoteSelectedPoCount: "{count} PO selected",
+    deliveryNoteOrderSummary: "{items} items · {qty} units",
+    orderShortLabel: "Order",
     deliveryNotePoPlaceholder: "PO-12436\nPO-12436, PO-12452\nor paste multiple lines",
     deliveryNoteEmptyState: "Enter PO numbers and search to prepare delivery note items.",
     deliveryNoteNextStepHint: "The next step will add PO matching and product selection for the delivery note.",
@@ -11761,10 +11798,21 @@ function getDeliveryNoteState() {
       itemQty: {},
       itemNotes: {},
       poNotes: {},
+      poPickerQuery: "",
+      poPickerRange: "last7",
+      selectedPoNumbers: [],
+      poPickerLoading: false,
+      poPickerError: "",
       error: "",
       isBuilding: false
     };
   }
+  const noteState = state.admin.deliveryNote;
+  if (!Array.isArray(noteState.selectedPoNumbers)) noteState.selectedPoNumbers = [];
+  if (!noteState.poPickerRange) noteState.poPickerRange = "last7";
+  if (noteState.poPickerQuery === undefined) noteState.poPickerQuery = "";
+  if (noteState.poPickerLoading === undefined) noteState.poPickerLoading = false;
+  if (noteState.poPickerError === undefined) noteState.poPickerError = "";
   return state.admin.deliveryNote;
 }
 
@@ -11781,6 +11829,7 @@ function openDeliveryNoteSheet() {
 
   renderDeliveryNoteSheet();
   openOverlay(adminDeliveryNoteSheet);
+  ensureDeliveryNotePickerOrders();
 }
 
 function closeDeliveryNoteSheet() {
@@ -11799,6 +11848,113 @@ function parseDeliveryNotePoInput(value) {
       seen.add(key);
       return true;
     });
+}
+
+async function ensureDeliveryNotePickerOrders() {
+  const noteState = getDeliveryNoteState();
+  if (Array.isArray(state.admin.orders) && state.admin.orders.length) return;
+  if (noteState.poPickerLoading) return;
+
+  noteState.poPickerLoading = true;
+  noteState.poPickerError = "";
+  renderDeliveryNoteSheet();
+
+  try {
+    const orders = await fetchOrders();
+    state.admin.orders = Array.isArray(orders) ? orders : [];
+  } catch (err) {
+    console.error("delivery note PO picker load failed:", err);
+    noteState.poPickerError = err.message || t("deliveryNotePickerLoadError", "ไม่สามารถโหลดออเดอร์ได้");
+  } finally {
+    noteState.poPickerLoading = false;
+    renderDeliveryNoteSheet();
+  }
+}
+
+function getDeliveryNoteOrderDate(order) {
+  const value = getOrderDateValue(order);
+  const date = value ? new Date(value) : null;
+  return date && !Number.isNaN(date.getTime()) ? date : null;
+}
+
+function isDeliveryNoteOrderInRange(order, range) {
+  if (range === "all") return true;
+  const date = getDeliveryNoteOrderDate(order);
+  if (!date) return true;
+
+  const today = new Date();
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const orderDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  if (range === "today") {
+    return orderDay.getTime() === start.getTime();
+  }
+
+  const last7Start = new Date(start);
+  last7Start.setDate(last7Start.getDate() - 6);
+  return orderDay >= last7Start;
+}
+
+function getDeliveryNotePickerOrders() {
+  const noteState = getDeliveryNoteState();
+  const query = String(noteState.poPickerQuery || "").trim().toLowerCase();
+  const orders = Array.isArray(state.admin.orders) ? state.admin.orders : [];
+
+  return orders
+    .filter(order => isDeliveryNoteOrderInRange(order, noteState.poPickerRange || "last7"))
+    .filter(order => {
+      if (!query) return true;
+      return [
+        order?.poNumber,
+        order?.orderId
+      ].some(value => String(value || "").toLowerCase().includes(query));
+    })
+    .sort((a, b) => {
+      const aDate = getDeliveryNoteOrderDate(a);
+      const bDate = getDeliveryNoteOrderDate(b);
+      return (bDate ? bDate.getTime() : 0) - (aDate ? aDate.getTime() : 0);
+    });
+}
+
+function updateDeliveryNotePoPickerQuery(value) {
+  getDeliveryNoteState().poPickerQuery = String(value || "");
+  renderDeliveryNoteSheet();
+}
+
+function setDeliveryNotePoPickerRange(range) {
+  const safeRange = ["today", "last7", "all"].includes(range) ? range : "last7";
+  getDeliveryNoteState().poPickerRange = safeRange;
+  renderDeliveryNoteSheet();
+}
+
+function toggleDeliveryNotePoSelection(poNumber, checked) {
+  const noteState = getDeliveryNoteState();
+  const cleanPo = String(poNumber || "").trim();
+  const key = normalizePoNumberForCompare(cleanPo);
+  const selected = new Map(
+    (Array.isArray(noteState.selectedPoNumbers) ? noteState.selectedPoNumbers : [])
+      .map(po => [normalizePoNumberForCompare(po), po])
+      .filter(([poKey]) => poKey)
+  );
+
+  if (checked && key) {
+    selected.set(key, cleanPo);
+  } else {
+    selected.delete(key);
+  }
+
+  noteState.selectedPoNumbers = Array.from(selected.values());
+  noteState.poInput = noteState.selectedPoNumbers.join("\n");
+  renderDeliveryNoteSheet();
+}
+
+function buildDeliveryNoteFromPicker() {
+  const noteState = getDeliveryNoteState();
+  if (Array.isArray(noteState.selectedPoNumbers) && noteState.selectedPoNumbers.length) {
+    noteState.poInput = noteState.selectedPoNumbers.join("\n");
+  }
+  renderDeliveryNoteSheet();
+  prepareDeliveryNoteSearch();
 }
 
 function getDeliveryNoteItemKey(order, item, index) {
@@ -12549,6 +12705,89 @@ function copyDeliveryNote() {
   );
 }
 
+function renderDeliveryNotePoPicker() {
+  const noteState = getDeliveryNoteState();
+  const ranges = [
+    ["today", t("deliveryNoteRangeToday", "วันนี้")],
+    ["last7", t("deliveryNoteRangeLast7", "7 วันล่าสุด")],
+    ["all", t("deliveryNoteRangeAll", "ทั้งหมด")]
+  ];
+  const selectedKeys = new Set(
+    (Array.isArray(noteState.selectedPoNumbers) ? noteState.selectedPoNumbers : [])
+      .map(normalizePoNumberForCompare)
+      .filter(Boolean)
+  );
+  const orders = getDeliveryNotePickerOrders();
+  const selectedCount = selectedKeys.size;
+
+  const orderCards = noteState.poPickerLoading
+    ? `<div class="loading">${t("deliveryNotePickerLoading", "กำลังโหลดออเดอร์...")}</div>`
+    : noteState.poPickerError
+      ? `<div class="error-text">${esc(noteState.poPickerError)}</div>`
+      : orders.length
+        ? orders.map(order => {
+            const poNumber = String(order?.poNumber || "").trim();
+            const orderId = String(order?.orderId || "").trim();
+            const items = Array.isArray(order?.items) ? order.items : [];
+            const itemCount = items.length;
+            const unitCount = items.reduce((sum, item) => sum + (Number(item?.qty) || 0), 0);
+            const checked = selectedKeys.has(normalizePoNumberForCompare(poNumber));
+            const dateText = formatDeliveryNoteShortDate(getOrderDateValue(order)) || "-";
+            const statusText = getAdminOrderStatusLabel(order?.status || "-");
+            const shortOrderId = orderId.length > 18 ? `${orderId.slice(0, 18)}...` : orderId;
+
+            return `
+              <label class="card compact-card" style="display:block;cursor:pointer">
+                <div style="display:flex;gap:10px;align-items:flex-start;min-width:0">
+                  <input type="checkbox"
+                    ${checked ? "checked" : ""}
+                    onchange="toggleDeliveryNotePoSelection(${toInlineJsStringLiteral(poNumber)}, this.checked)">
+                  <span style="min-width:0;flex:1">
+                    <strong>${esc(poNumber || "-")}</strong>
+                    <div class="stock">${esc(dateText)} · ${esc(statusText || "-")}</div>
+                    <div class="stock">
+                      ${formatUiText("deliveryNoteOrderSummary", { items: itemCount, qty: unitCount }, "{items} รายการ · {qty} ชิ้น")}
+                    </div>
+                    <div class="stock">${t("orderShortLabel", "Order")}: ${esc(shortOrderId || "-")}</div>
+                  </span>
+                </div>
+              </label>
+            `;
+          }).join("")
+        : `<div class="empty-state">${t("deliveryNoteNoPickerOrders", "ไม่พบออเดอร์สำหรับเลือก")}</div>`;
+
+  return `
+    <div class="card">
+      <div class="admin-detail-title">${t("deliveryNotePoPicker", "เลือก PO จากออเดอร์ล่าสุด")}</div>
+      <div class="helper-text">${t("deliveryNotePoPickerHelp", "ค้นหาและเลือก PO ได้หลายรายการ หรือกรอกเองด้านล่าง")}</div>
+      <div class="form-group" style="margin-top:12px">
+        <label for="deliveryNotePoPickerQuery">${t("deliveryNotePoPickerSearch", "ค้นหา PO / Order ID")}</label>
+        <input
+          id="deliveryNotePoPickerQuery"
+          value="${escAttr(noteState.poPickerQuery || "")}"
+          placeholder="${escAttr(t("deliveryNotePoPickerPlaceholder", "ค้นหาเลข PO หรือ Order ID"))}"
+          oninput="updateDeliveryNotePoPickerQuery(this.value)">
+      </div>
+      <div class="action-row" style="margin:10px 0;gap:8px;flex-wrap:wrap">
+        ${ranges.map(([range, label]) => `
+          <button class="btn ${noteState.poPickerRange === range ? "btn-primary" : "btn-outline"}" type="button"
+            onclick="setDeliveryNotePoPickerRange(${toInlineJsStringLiteral(range)})">
+            ${label}
+          </button>
+        `).join("")}
+      </div>
+      <div class="helper-text" style="margin-bottom:10px">
+        ${formatUiText("deliveryNoteSelectedPoCount", { count: selectedCount }, "เลือกแล้ว {count} PO")}
+      </div>
+      <div class="delivery-note-items">${orderCards}</div>
+      <button class="btn btn-primary" type="button" style="margin-top:12px"
+        onclick="buildDeliveryNoteFromPicker()">
+        ${t("buildDeliveryNoteItems", "สร้างรายการสินค้า")}
+      </button>
+    </div>
+  `;
+}
+
 function renderDeliveryNoteMatchedOrders() {
   const noteState = getDeliveryNoteState();
   const orders = Array.isArray(noteState.matchedOrders) ? noteState.matchedOrders : [];
@@ -12635,6 +12874,8 @@ function renderDeliveryNoteSheet() {
         <span class="dashboard-title-main">${t("deliveryNote", "ใบส่งของ")}</span>
       </h3>
     </div>
+
+    ${renderDeliveryNotePoPicker()}
 
     <div class="card">
       <div class="helper-text">${t("deliveryNoteHelper", "สร้างใบส่งของจากเลข PO หนึ่งรายการหรือหลายรายการ เลือกสินค้าและจำนวนส่งในขั้นตอนถัดไป")}</div>
