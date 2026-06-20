@@ -3977,6 +3977,10 @@ Object.assign(window, {
   closeDeliveryNoteSheet,
   renderDeliveryNoteSheet,
   prepareDeliveryNoteSearch,
+  toggleDeliveryNoteItem,
+  updateDeliveryNoteItemQty,
+  updateDeliveryNoteItemNote,
+  updateDeliveryNotePoNote,
   openChangePasswordSheet,
   submitChangePassword,
   cancelAdminLogin,
@@ -4370,6 +4374,18 @@ const UI_TEXT = {
     deliveryNotePoPlaceholder: "PO-12436\nPO-12436, PO-12452\nหรือวางหลายบรรทัด",
     deliveryNoteEmptyState: "กรอกเลข PO แล้วกดค้นหา เพื่อเตรียมรายการสำหรับใบส่งของ",
     deliveryNoteNextStepHint: "ขั้นตอนถัดไปจะเพิ่มการค้นหา PO และเลือกสินค้าในใบส่งของ",
+    deliveryNoteSearching: "กำลังค้นหา PO...",
+    deliveryNotePoRequired: "กรุณากรอกเลข PO อย่างน้อย 1 รายการ",
+    deliveryNotePoNotFound: "ไม่พบ PO: {po}",
+    deliveryNoteMatchedOrders: "พบ {count} ออเดอร์",
+    deliveryNoteDuplicatePoHint: "PO นี้มีหลายออเดอร์ ระบบแสดงทั้งหมดเพื่อให้เลือกอย่างระวัง",
+    deliveryNoteItemCount: "{count} รายการ",
+    orderedQty: "จำนวนสั่ง",
+    deliveryQty: "จำนวนส่ง",
+    itemNote: "หมายเหตุสินค้า",
+    poNote: "หมายเหตุ PO",
+    noItemsInOrder: "ออเดอร์นี้ไม่มีรายการสินค้า",
+    deliveryNoteInvalidQty: "จำนวนส่งของ {sku} ต้องเป็นจำนวนเต็ม 0 ถึง {max}",
     latestBill: "บิลล่าสุด",
     addProduct: "เพิ่มสินค้าใหม่",
     addMultiSizeProduct: "เพิ่มสินค้าแบบหลายไซส์",
@@ -5021,6 +5037,18 @@ const UI_TEXT = {
     deliveryNotePoPlaceholder: "PO-12436\nPO-12436, PO-12452\nor paste multiple lines",
     deliveryNoteEmptyState: "Enter PO numbers and search to prepare delivery note items.",
     deliveryNoteNextStepHint: "The next step will add PO matching and product selection for the delivery note.",
+    deliveryNoteSearching: "Searching PO...",
+    deliveryNotePoRequired: "Please enter at least one PO number",
+    deliveryNotePoNotFound: "PO not found: {po}",
+    deliveryNoteMatchedOrders: "Found {count} orders",
+    deliveryNoteDuplicatePoHint: "This PO has multiple orders. All matches are shown so you can select carefully.",
+    deliveryNoteItemCount: "{count} items",
+    orderedQty: "Ordered qty",
+    deliveryQty: "Delivery qty",
+    itemNote: "Item note",
+    poNote: "PO note",
+    noItemsInOrder: "This order has no items",
+    deliveryNoteInvalidQty: "Delivery qty for {sku} must be an integer from 0 to {max}",
     latestBill: "Latest bill",
     addProduct: "Add product",
     addMultiSizeProduct: "Add multi-size product",
@@ -11635,19 +11663,246 @@ function closeDeliveryNoteSheet() {
   closeOverlay(adminDeliveryNoteSheet);
 }
 
-function prepareDeliveryNoteSearch() {
+function parseDeliveryNotePoInput(value) {
+  const seen = new Set();
+  return String(value || "")
+    .split(/[\s,]+/)
+    .map(item => item.trim())
+    .filter(Boolean)
+    .filter(item => {
+      const key = normalizePoNumberForCompare(item);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+function getDeliveryNoteItemKey(order, item, index) {
+  return [
+    String(order?.orderId || "").trim(),
+    String(item?.productId || "").trim(),
+    index
+  ].join("::");
+}
+
+function getDeliveryNoteItemQtyValue(noteState, key, item) {
+  const current = noteState.itemQty?.[key];
+  if (current !== undefined) return current;
+  return String(Number(item?.qty) || 0);
+}
+
+function getDeliveryNoteQtyError(key, item) {
+  const noteState = getDeliveryNoteState();
+  const rawQty = String(getDeliveryNoteItemQtyValue(noteState, key, item) ?? "").trim();
+  const qty = Number(rawQty);
+  const orderedQty = Number(item?.qty) || 0;
+
+  if (rawQty === "" || !Number.isInteger(qty) || qty < 0 || qty > orderedQty) {
+    return formatUiText(
+      "deliveryNoteInvalidQty",
+      { sku: String(item?.productId || "-"), max: orderedQty },
+      "จำนวนส่งของ {sku} ต้องเป็นจำนวนเต็ม 0 ถึง {max}"
+    );
+  }
+
+  return "";
+}
+
+async function prepareDeliveryNoteSearch() {
   const noteState = getDeliveryNoteState();
   const input = document.getElementById("deliveryNotePoInput");
   noteState.poInput = String(input?.value || noteState.poInput || "");
-  noteState.matchedOrders = [];
+  const poList = parseDeliveryNotePoInput(noteState.poInput);
   noteState.selectedItems = {};
   noteState.itemQty = {};
   noteState.itemNotes = {};
   noteState.poNotes = {};
   noteState.error = "";
-  noteState.isBuilding = false;
+  noteState.isBuilding = true;
   renderDeliveryNoteSheet();
-  showToast(t("deliveryNoteNextStepHint", "ขั้นตอนถัดไปจะเพิ่มการค้นหา PO และเลือกสินค้าในใบส่งของ"), "info");
+
+  if (!poList.length) {
+    noteState.matchedOrders = [];
+    noteState.error = t("deliveryNotePoRequired", "กรุณากรอกเลข PO อย่างน้อย 1 รายการ");
+    noteState.isBuilding = false;
+    renderDeliveryNoteSheet();
+    return;
+  }
+
+  try {
+    if (!Array.isArray(state.admin.orders) || state.admin.orders.length === 0) {
+      const orders = await fetchOrders();
+      state.admin.orders = Array.isArray(orders) ? orders : [];
+    }
+
+    const requestedPoKeys = new Set(poList.map(normalizePoNumberForCompare));
+    const matchedOrders = (Array.isArray(state.admin.orders) ? state.admin.orders : [])
+      .filter(order => requestedPoKeys.has(normalizePoNumberForCompare(order?.poNumber)));
+    const matchedPoKeys = new Set(matchedOrders.map(order => normalizePoNumberForCompare(order?.poNumber)));
+    const missingPo = poList.filter(po => !matchedPoKeys.has(normalizePoNumberForCompare(po)));
+
+    noteState.matchedOrders = matchedOrders;
+    noteState.error = missingPo.length
+      ? missingPo.map(po => formatUiText("deliveryNotePoNotFound", { po }, "ไม่พบ PO: {po}")).join(" · ")
+      : "";
+
+    matchedOrders.forEach(order => {
+      const orderId = String(order?.orderId || "").trim();
+      if (orderId && noteState.poNotes[orderId] === undefined) {
+        noteState.poNotes[orderId] = "";
+      }
+
+      (Array.isArray(order?.items) ? order.items : []).forEach((item, index) => {
+        const key = getDeliveryNoteItemKey(order, item, index);
+        noteState.selectedItems[key] = true;
+        noteState.itemQty[key] = String(Number(item?.qty) || 0);
+        noteState.itemNotes[key] = "";
+      });
+    });
+  } catch (err) {
+    console.error("prepare delivery note search failed:", err);
+    noteState.matchedOrders = [];
+    noteState.error = err.message || t("loadDataFailed", "โหลดข้อมูลไม่สำเร็จ");
+  } finally {
+    noteState.isBuilding = false;
+    renderDeliveryNoteSheet();
+  }
+}
+
+function toggleDeliveryNoteItem(key, checked) {
+  const noteState = getDeliveryNoteState();
+  noteState.selectedItems[key] = !!checked;
+  renderDeliveryNoteSheet();
+}
+
+function updateDeliveryNoteItemQty(key, value) {
+  const noteState = getDeliveryNoteState();
+  noteState.itemQty[key] = String(value || "");
+}
+
+function updateDeliveryNoteItemNote(key, value) {
+  const noteState = getDeliveryNoteState();
+  noteState.itemNotes[key] = String(value || "");
+}
+
+function updateDeliveryNotePoNote(orderId, value) {
+  const noteState = getDeliveryNoteState();
+  noteState.poNotes[String(orderId || "")] = String(value || "");
+}
+
+function renderDeliveryNoteItemRow(order, item, index) {
+  const noteState = getDeliveryNoteState();
+  const key = getDeliveryNoteItemKey(order, item, index);
+  const productId = String(item?.productId || "").trim() || "-";
+  const name = String(item?.name || "").trim();
+  const orderedQty = Number(item?.qty) || 0;
+  const imageUrl = getAdminPoPrintItemImage(item);
+  const checked = noteState.selectedItems[key] !== false;
+  const qtyValue = getDeliveryNoteItemQtyValue(noteState, key, item);
+  const qtyError = checked ? getDeliveryNoteQtyError(key, item) : "";
+  const imageCell = imageUrl
+    ? `<img class="po-print-thumb" src="${escAttr(imageUrl)}" alt="${escAttr(name || productId)}" onerror="this.replaceWith(document.createTextNode('-'));">`
+    : "-";
+
+  return `
+    <div class="card compact-card delivery-note-item-card">
+      <label style="display:flex;gap:10px;align-items:flex-start">
+        <input type="checkbox"
+          ${checked ? "checked" : ""}
+          onchange="toggleDeliveryNoteItem(${toInlineJsStringLiteral(key)}, this.checked)">
+        <span style="display:flex;gap:10px;align-items:flex-start;flex:1;min-width:0">
+          <span class="thumb-col" style="width:46px;min-width:46px;text-align:center">${imageCell}</span>
+          <span style="flex:1;min-width:0">
+            <strong>${esc(productId)}</strong>
+            <div class="stock">${esc(name || "-")}</div>
+            <div class="stock">${t("orderedQty", "จำนวนสั่ง")}: ${orderedQty}</div>
+          </span>
+        </span>
+      </label>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="form-group">
+          <label>${t("deliveryQty", "จำนวนส่ง")}</label>
+          <input type="number" min="0" max="${orderedQty}" step="1"
+            value="${escAttr(qtyValue)}"
+            oninput="updateDeliveryNoteItemQty(${toInlineJsStringLiteral(key)}, this.value)"
+            onblur="renderDeliveryNoteSheet()">
+          ${qtyError ? `<div class="error-text">${esc(qtyError)}</div>` : ""}
+        </div>
+        <div class="form-group">
+          <label>${t("itemNote", "หมายเหตุสินค้า")}</label>
+          <input value="${escAttr(noteState.itemNotes[key] || "")}"
+            oninput="updateDeliveryNoteItemNote(${toInlineJsStringLiteral(key)}, this.value)">
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderDeliveryNoteMatchedOrders() {
+  const noteState = getDeliveryNoteState();
+  const orders = Array.isArray(noteState.matchedOrders) ? noteState.matchedOrders : [];
+
+  if (noteState.isBuilding) {
+    return `<div class="card"><div class="loading">${t("deliveryNoteSearching", "กำลังค้นหา PO...")}</div></div>`;
+  }
+
+  if (noteState.error && !orders.length) {
+    return `<div class="card"><div class="error-text">${esc(noteState.error)}</div></div>`;
+  }
+
+  if (!orders.length) {
+    return `
+      <div class="card">
+        <div class="empty-state">
+          <strong>${t("deliveryNote", "ใบส่งของ")}</strong><br>
+          ${t("deliveryNoteEmptyState", "กรอกเลข PO แล้วกดค้นหา เพื่อเตรียมรายการสำหรับใบส่งของ")}
+        </div>
+      </div>
+    `;
+  }
+
+  const duplicateCounts = new Map();
+  orders.forEach(order => {
+    const key = normalizePoNumberForCompare(order?.poNumber);
+    duplicateCounts.set(key, (duplicateCounts.get(key) || 0) + 1);
+  });
+
+  return `
+    ${noteState.error ? `<div class="card"><div class="error-text">${esc(noteState.error)}</div></div>` : ""}
+    <div class="helper-text" style="margin:12px 0">
+      ${formatUiText("deliveryNoteMatchedOrders", { count: orders.length }, "พบ {count} ออเดอร์")}
+    </div>
+    ${orders.map(order => {
+      const items = Array.isArray(order?.items) ? order.items : [];
+      const orderId = String(order?.orderId || "").trim();
+      const poKey = normalizePoNumberForCompare(order?.poNumber);
+      const isDuplicatePo = (duplicateCounts.get(poKey) || 0) > 1;
+      const createdAt = getOrderDateValue(order);
+
+      return `
+        <div class="card">
+          <div class="admin-detail-title">${esc(order?.poNumber || "-")}</div>
+          <div class="stock">
+            ${t("orderNumber", "เลขออเดอร์")}: ${esc(orderId || "-")}<br>
+            ${t("date", "วันที่")}: ${esc(formatThaiDate(createdAt))}<br>
+            ${t("status", "สถานะ")}: ${esc(getAdminOrderStatusLabel(order?.status || "-"))}<br>
+            ${formatUiText("deliveryNoteItemCount", { count: items.length }, "{count} รายการ")}
+          </div>
+          ${isDuplicatePo ? `<div class="helper-text" style="margin-top:8px">${t("deliveryNoteDuplicatePoHint", "PO นี้มีหลายออเดอร์ ระบบแสดงทั้งหมดเพื่อให้เลือกอย่างระวัง")}</div>` : ""}
+          <div class="form-group" style="margin-top:10px">
+            <label>${t("poNote", "หมายเหตุ PO")}</label>
+            <input value="${escAttr(noteState.poNotes[orderId] || "")}"
+              oninput="updateDeliveryNotePoNote(${toInlineJsStringLiteral(orderId)}, this.value)">
+          </div>
+          ${
+            items.length
+              ? `<div class="delivery-note-items">${items.map((item, index) => renderDeliveryNoteItemRow(order, item, index)).join("")}</div>`
+              : `<div class="empty-state">${t("noItemsInOrder", "ออเดอร์นี้ไม่มีรายการสินค้า")}</div>`
+          }
+        </div>
+      `;
+    }).join("")}
+  `;
 }
 
 function renderDeliveryNoteSheet() {
@@ -11673,18 +11928,11 @@ function renderDeliveryNoteSheet() {
           oninput="state.admin.deliveryNote.poInput = this.value">${esc(noteState.poInput || "")}</textarea>
       </div>
       <button class="btn btn-primary" type="button" onclick="prepareDeliveryNoteSearch()">
-        ${t("searchPo", "ค้นหา PO")}
+        ${noteState.isBuilding ? t("deliveryNoteSearching", "กำลังค้นหา PO...") : t("searchPo", "ค้นหา PO")}
       </button>
     </div>
 
-    <div class="card">
-      <div class="empty-state">
-        <strong>${t("deliveryNote", "ใบส่งของ")}</strong><br>
-        ${noteState.poInput
-          ? t("deliveryNoteNextStepHint", "ขั้นตอนถัดไปจะเพิ่มการค้นหา PO และเลือกสินค้าในใบส่งของ")
-          : t("deliveryNoteEmptyState", "กรอกเลข PO แล้วกดค้นหา เพื่อเตรียมรายการสำหรับใบส่งของ")}
-      </div>
-    </div>
+    <div id="deliveryNoteResults">${renderDeliveryNoteMatchedOrders()}</div>
   `;
 }
 
