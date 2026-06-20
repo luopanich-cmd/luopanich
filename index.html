@@ -4330,6 +4330,21 @@ const UI_TEXT = {
     partners: "คู่ค้า",
     system: "ระบบ",
     stockTimeline: "ไทม์ไลน์สต๊อก",
+    stockMovementHistory: "ประวัติความเคลื่อนไหวสต๊อก",
+    stockTimelineSummary: "{items} รายการ · {qty} ชิ้น · {amount}",
+    stockTimelineSold: "ขายออก",
+    stockTimelineStockIn: "รับสต๊อกเข้า",
+    stockTimelineCreated: "เพิ่มสินค้าใหม่",
+    stockTimelineAdjusted: "ปรับสต๊อก",
+    stockTimelineReduced: "ลดสต๊อก",
+    qtyChanged: "จำนวนที่เปลี่ยน",
+    viewMoreDetails: "ดูรายละเอียดเพิ่มเติม",
+    hideDetails: "ซ่อนรายละเอียด",
+    by: "โดย",
+    noStockTimelineData: "ไม่มีข้อมูลประวัติสต๊อก",
+    stockTimelineLoadError: "ไม่สามารถโหลดข้อมูลได้",
+    totalProductLines: "ยอดรวมสินค้า",
+    totalQty: "ยอดรวมจำนวนชิ้น",
     pendingDelivery: "ค้างส่ง",
     latestBill: "บิลล่าสุด",
     addProduct: "เพิ่มสินค้าใหม่",
@@ -4689,6 +4704,21 @@ const UI_TEXT = {
     partners: "Partners",
     system: "System",
     stockTimeline: "Stock timeline",
+    stockMovementHistory: "Stock Movement History",
+    stockTimelineSummary: "{items} items · {qty} units · {amount}",
+    stockTimelineSold: "Sold",
+    stockTimelineStockIn: "Stock in",
+    stockTimelineCreated: "New product",
+    stockTimelineAdjusted: "Stock adjusted",
+    stockTimelineReduced: "Stock reduced",
+    qtyChanged: "Qty changed",
+    viewMoreDetails: "View more details",
+    hideDetails: "Hide details",
+    by: "By",
+    noStockTimelineData: "No stock movement history",
+    stockTimelineLoadError: "Could not load data",
+    totalProductLines: "Total product lines",
+    totalQty: "Total quantity",
     pendingDelivery: "Pending delivery",
     latestBill: "Latest bill",
     addProduct: "Add product",
@@ -9330,12 +9360,17 @@ async function openStockTimeline(force = false, options = {}) {
     ? "closeStockTimelineToAdminMenu()"
     : "closeStockTimelineSheet()";
   const stockTimelineTitleId = "adminStockSheetTitle";
+  const tr = t;
+  const stockTimelineTitle = t("stockMovementHistory", "ประวัติความเคลื่อนไหวสต๊อก");
+  const backLabel = t("back", "กลับ");
+  const viewMoreLabel = t("viewMoreDetails", "ดูรายละเอียดเพิ่มเติม");
+  const hideDetailsLabel = t("hideDetails", "ซ่อนรายละเอียด");
 
   closeOverlay(adminDashboardSheet);
 
   targetSheet.innerHTML = `
-    <h3 id="${stockTimelineTitleId}">📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
-    <div class="loading">กำลังโหลด...</div>
+    <h3 id="${stockTimelineTitleId}">${stockTimelineTitle}</h3>
+    <div class="loading">${t("loading", "กำลังโหลด...")}</div>
   `;
 
   openOverlay(targetSheet);
@@ -9477,12 +9512,12 @@ async function openStockTimeline(force = false, options = {}) {
 
     /* ================= RENDER ================= */
     targetSheet.innerHTML = `
-      <h3 id="${stockTimelineTitleId}">📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
+      <h3 id="${stockTimelineTitleId}">${stockTimelineTitle}</h3>
 
       <button class="btn btn-outline"
         style="width:100%;margin-bottom:12px"
         onclick="${backAction}">
-        ← กลับ
+        ${backLabel}
       </button>
 
       ${
@@ -9495,18 +9530,22 @@ async function openStockTimeline(force = false, options = {}) {
                 return `
                   <div class="card">
                     <div class="timeline-tag tag-out">
-                      🧾 ขายออก (ออเดอร์ ${esc(t.orderId)})
+                      ${tr("stockTimelineSold", "ขายออก")} (${tr("orderNumber", "เลขออเดอร์")} ${esc(t.orderId)})
                     </div>
 
                     <div class="timeline-summary">
-                      ${Number(t.totalLines) || 0} รายการ · ${Number(t.totalQty) || 0} ชิ้น · ${money(t.totalSalesAmount)}
+                      ${formatUiText("stockTimelineSummary", {
+                        items: Number(t.totalLines) || 0,
+                        qty: Number(t.totalQty) || 0,
+                        amount: money(t.totalSalesAmount)
+                      }, "{items} รายการ · {qty} ชิ้น · {amount}")}
                     </div>                    
 
                     ${t.items.map(i => `
                       <div class="timeline-product-row">
                         ${renderCartItemThumb({
                           productId: i.productId,
-                          name: i.productName || i.productId || "สินค้า",
+                          name: i.productName || i.productId || tr("productLabel", "สินค้า"),
                           image: i.image || ""
                         })}
                         <div class="timeline-main">
@@ -9515,12 +9554,12 @@ async function openStockTimeline(force = false, options = {}) {
                             ${i.productName ? ` — ${esc(i.productName)}` : ""}
                           </div>
                           <div class="timeline-row">
-                            จำนวนที่เปลี่ยน: -${Number(i.qty || 0)}
+                            ${tr("qtyChanged", "จำนวนที่เปลี่ยน")}: -${Number(i.qty || 0)}
                             ${
                               Number.isFinite(Number(i.before)) &&
                               Number.isFinite(Number(i.after))
                                 ? `<span class="timeline-muted">
-                                    · สต็อก ${Number(i.before)} → ${Number(i.after)}
+                                    · ${tr("stock", "สต๊อก")} ${Number(i.before)} → ${Number(i.after)}
                                   </span>`
                                 : ""
                             }
@@ -9533,24 +9572,26 @@ async function openStockTimeline(force = false, options = {}) {
                       <button
                         type="button"
                         class="timeline-detail-toggle"
+                        data-open-label="${escAttr(viewMoreLabel)}"
+                        data-close-label="${escAttr(hideDetailsLabel)}"
                         onclick="
                           const panel = document.getElementById(${toInlineJsStringLiteral(detailId)});
                           if (!panel) return;
                           panel.classList.toggle('show');
                           this.textContent = panel.classList.contains('show')
-                            ? 'ซ่อนรายละเอียด'
-                            : 'ดูรายละเอียดเพิ่มเติม';
+                            ? this.dataset.closeLabel
+                            : this.dataset.openLabel;
                         "
                       >
-                        ดูรายละเอียดเพิ่มเติม
+                        ${viewMoreLabel}
                       </button>
 
                       <div id="${escAttr(detailId)}" class="timeline-detail-panel">
                         <div class="timeline-detail-meta">
-                          ยอดรวมสินค้า: ${Number(t.totalLines) || 0} รายการ<br>
-                          ยอดรวมจำนวนชิ้น: ${Number(t.totalQty) || 0}<br>
-                          ยอดขายรวม: ${money(t.totalSalesAmount)}
-                          ${t.note ? `<br>หมายเหตุ: ${esc(t.note)}` : ""}
+                          ${tr("totalProductLines", "ยอดรวมสินค้า")}: ${Number(t.totalLines) || 0} ${tr("itemUnit", "รายการ")}<br>
+                          ${tr("totalQty", "ยอดรวมจำนวนชิ้น")}: ${Number(t.totalQty) || 0}<br>
+                          ${tr("totalSales", "ยอดขายรวม")}: ${money(t.totalSalesAmount)}
+                          ${t.note ? `<br>${tr("note", "หมายเหตุ")}: ${esc(t.note)}` : ""}
                         </div>
 
                         <div class="timeline-detail-list" style="margin-top:10px">
@@ -9558,15 +9599,15 @@ async function openStockTimeline(force = false, options = {}) {
                             <div class="timeline-row">
                               ${esc(i.productId)}
                               ${i.productName ? ` — ${esc(i.productName)}` : ""} |
-                              ${Number(i.qty || 0)} ชิ้น
+                              ${Number(i.qty || 0)} ${tr("pieceUnit", "ชิ้น")}
                               ${
                                 Number.isFinite(Number(i.before)) &&
                                 Number.isFinite(Number(i.after))
                                   ? ` | ${Number(i.before)} → ${Number(i.after)}`
                                   : ""
                               }
-                              | ${money(i.salePrice)}/ชิ้น
-                              | รวม ${money(i.lineTotal)}
+                              | ${money(i.salePrice)}/${tr("pieceUnit", "ชิ้น")}
+                              | ${tr("total", "รวม")} ${money(i.lineTotal)}
                             </div>
                           `).join("")}
                         </div>
@@ -9576,19 +9617,19 @@ async function openStockTimeline(force = false, options = {}) {
                     <div style="font-size:12px;color:var(--muted);margin-top:6px">
                       ${t.time.toLocaleDateString("th-TH")}
                       ${t.time.toLocaleTimeString("th-TH")}
-                      · โดย ${esc(t.by)}
+                      · ${tr("by", "โดย")} ${esc(t.by)}
                     </div>
                   </div>
                 `;
               }
 
               const typeMap = {
-                IN:     { text: "➕ รับสต๊อกเข้า", class: "tag-in" },
-                CREATE: { text: "🆕 เพิ่มสินค้าใหม่", class: "tag-create" },
-                ADJUST: { text: "✏️ ปรับสต๊อก", class: "tag-adjust" }
+                IN:     { text: tr("stockTimelineStockIn", "รับสต๊อกเข้า"), class: "tag-in" },
+                CREATE: { text: tr("stockTimelineCreated", "เพิ่มสินค้าใหม่"), class: "tag-create" },
+                ADJUST: { text: tr("stockTimelineAdjusted", "ปรับสต๊อก"), class: "tag-adjust" }
               };
 
-              typeMap.OUT = { text: "ลดสต็อก", class: "tag-out" };
+              typeMap.OUT = { text: tr("stockTimelineReduced", "ลดสต๊อก"), class: "tag-out" };
 
               const cfg = typeMap[t.type] || { text: t.type, class: "" };
 
@@ -9597,7 +9638,7 @@ async function openStockTimeline(force = false, options = {}) {
                   <div class="timeline-card-with-thumb">
                     ${renderCartItemThumb({
                       productId: t.productId,
-                      name: t.productName || t.productId || "สินค้า",
+                      name: t.productName || t.productId || tr("productLabel", "สินค้า"),
                       image: t.image || ""
                     })}
                     <div class="timeline-main">
@@ -9612,14 +9653,14 @@ async function openStockTimeline(force = false, options = {}) {
                       <div class="timeline-row">
                         ${
                           Number.isFinite(Number(t.qty))
-                            ? `จำนวนที่เปลี่ยน: ${Number(t.qty) > 0 ? "+" : ""}${Number(t.qty)}`
+                            ? `${tr("qtyChanged", "จำนวนที่เปลี่ยน")}: ${Number(t.qty) > 0 ? "+" : ""}${Number(t.qty)}`
                             : ""
                         }
                         ${
                           Number.isFinite(Number(t.before)) &&
                           Number.isFinite(Number(t.after))
                             ? `<span class="timeline-muted">
-                                · สต็อก ${Number(t.before)} → ${Number(t.after)}
+                                · ${tr("stock", "สต๊อก")} ${Number(t.before)} → ${Number(t.after)}
                               </span>`
                             : ""
                         }
@@ -9632,20 +9673,22 @@ async function openStockTimeline(force = false, options = {}) {
                           <button
                             type="button"
                             class="timeline-detail-toggle"
+                            data-open-label="${escAttr(viewMoreLabel)}"
+                            data-close-label="${escAttr(hideDetailsLabel)}"
                             onclick="
                               const panel = this.nextElementSibling;
                               if (!panel) return;
                               panel.classList.toggle('show');
                               this.textContent = panel.classList.contains('show')
-                                ? 'ซ่อนรายละเอียด'
-                                : 'ดูรายละเอียดเพิ่มเติม';
+                                ? this.dataset.closeLabel
+                                : this.dataset.openLabel;
                             "
                           >
-                            ดูรายละเอียดเพิ่มเติม
+                            ${viewMoreLabel}
                           </button>
                           <div class="timeline-detail-panel">
                             <div class="timeline-detail-meta">
-                              หมายเหตุ: ${esc(t.note)}
+                              ${tr("note", "หมายเหตุ")}: ${esc(t.note)}
                             </div>
                           </div>
                         </div>
@@ -9656,7 +9699,7 @@ async function openStockTimeline(force = false, options = {}) {
                       <div style="font-size:12px;color:var(--muted);margin-top:6px">
                         ${t.time.toLocaleDateString("th-TH")}
                         ${t.time.toLocaleTimeString("th-TH")}
-                        · โดย ${esc(t.by)}
+                        · ${tr("by", "โดย")} ${esc(t.by)}
                       </div>
                     </div>
                   </div>
@@ -9665,7 +9708,7 @@ async function openStockTimeline(force = false, options = {}) {
             }).join("")
           : `
             <div style="text-align:center;color:var(--muted);margin-top:32px">
-              ไม่มีข้อมูลประวัติสต๊อก
+              ${t("noStockTimelineData", "ไม่มีข้อมูลประวัติสต๊อก")}
             </div>
           `
       }
@@ -9675,15 +9718,15 @@ async function openStockTimeline(force = false, options = {}) {
     console.error(err);
 
     targetSheet.innerHTML = `
-      <h3 id="${stockTimelineTitleId}">📦 ประวัติความเคลื่อนไหวสต๊อก</h3>
+      <h3 id="${stockTimelineTitleId}">${stockTimelineTitle}</h3>
       <div style="text-align:center;color:#d93025;margin-top:32px">
-        ไม่สามารถโหลดข้อมูลได้
+        ${t("stockTimelineLoadError", "ไม่สามารถโหลดข้อมูลได้")}
       </div>
 
       <button class="btn btn-outline"
         style="width:100%;margin-top:16px"
         onclick="${backAction}">
-        ← กลับ
+        ${backLabel}
       </button>
     `;
   }
