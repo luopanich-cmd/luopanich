@@ -12152,7 +12152,7 @@ function buildDeliveryNotePrintHtml(data) {
   const orderSections = data.orders.map(order => {
     const displayRows = buildDeliveryNoteDisplayRows(order.items);
     const itemRows = displayRows.map((item, index) => `
-      <tr>
+      <tr class="delivery-note-print-row">
         <td>${index + 1}</td>
         <td class="thumb-col">${renderDeliveryNotePrintImage(item.imageUrl, item.name || item.productId)}</td>
         <td>${esc(item.displayText || "-")}</td>
@@ -12171,7 +12171,7 @@ function buildDeliveryNotePrintHtml(data) {
           </div>
         </div>
         ${order.poNote ? `<div class="note-box"><strong>${esc(noteLabel)}:</strong> ${esc(order.poNote)}</div>` : ""}
-        <table>
+        <table class="delivery-note-print-table">
           <thead>
             <tr>
               <th>#</th>
@@ -12231,14 +12231,36 @@ function buildDeliveryNotePrintHtml(data) {
           border-bottom:1px solid #E5E7EB;
         }
         .doc-meta div:last-child { border-bottom:0; }
-        .po-section { margin:16px 0 18px; break-inside:avoid; }
+        .po-section {
+          margin:16px 0 18px;
+          break-inside:avoid-page;
+          page-break-inside:avoid;
+        }
         .po-heading {
           display:flex;
           justify-content:space-between;
           gap:12px;
           margin-bottom:8px;
+          break-after:avoid;
+          page-break-after:avoid;
         }
         table { width:100%; border-collapse:collapse; table-layout:fixed; }
+        .delivery-note-print-table {
+          break-inside:auto;
+          page-break-inside:auto;
+        }
+        thead {
+          display:table-header-group;
+        }
+        tbody {
+          break-inside:auto;
+          page-break-inside:auto;
+        }
+        tr,
+        .delivery-note-print-row {
+          break-inside:avoid-page;
+          page-break-inside:avoid;
+        }
         th, td { border:1px solid #D1D5DB; padding:7px; text-align:left; vertical-align:top; }
         th { background:#F3F4F6; font-weight:800; }
         th:nth-child(1) { width:30px; }
@@ -12248,11 +12270,17 @@ function buildDeliveryNotePrintHtml(data) {
         .thumb-col { width:52px; text-align:center; }
         .delivery-note-thumb {
           width:42px;
+          max-width:42px;
           height:42px;
+          max-height:42px;
           object-fit:cover;
+          display:block;
+          margin:0 auto;
           border:1px solid #E5E7EB;
           border-radius:8px;
           background:#F9FAFB;
+          break-inside:avoid;
+          page-break-inside:avoid;
         }
         .num { text-align:right; white-space:nowrap; }
         .note-box {
@@ -12261,6 +12289,8 @@ function buildDeliveryNotePrintHtml(data) {
           border:1px solid #D1D5DB;
           border-radius:10px;
           white-space:pre-wrap;
+          break-inside:avoid;
+          page-break-inside:avoid;
         }
         .signature-grid {
           display:grid;
@@ -12301,7 +12331,22 @@ function buildDeliveryNotePrintHtml(data) {
         @media print {
           body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
           .print-screen-toolbar { display:none !important; }
-          .doc-header, .po-section, .signature-grid { break-inside:avoid; }
+          .doc-header,
+          .po-heading,
+          .note-box,
+          .delivery-note-print-row,
+          .thumb-col,
+          .signature-grid {
+            break-inside:avoid-page;
+            page-break-inside:avoid;
+          }
+          .po-heading {
+            break-after:avoid;
+            page-break-after:avoid;
+          }
+          thead { display:table-header-group; }
+          tfoot { display:table-footer-group; }
+          tr { break-inside:avoid-page; page-break-inside:avoid; }
         }
         @media screen and (max-width:640px) {
           .print-screen-toolbar { justify-content:stretch; }
