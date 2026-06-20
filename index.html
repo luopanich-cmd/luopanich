@@ -4276,11 +4276,87 @@ const UI_TEXT = {
     createOrderError: "เกิดข้อผิดพลาดในการสร้างใบสั่งซื้อ",
     orderCreatedTitle: "สร้างใบสั่งซื้อสำเร็จ",
     orderId: "เลขที่ใบสั่งซื้อ",
+    orderNumber: "เลขออเดอร์",
     orderSuccessNote: "ระบบบันทึกใบสั่งซื้อแล้ว และกำลังรอแอดมินตรวจสอบ/อนุมัติคำสั่งซื้อ",
     downloadOrder: "ดาวน์โหลดใบสั่งซื้อ",
     noLatestOrder: "ไม่พบบิลล่าสุด",
     productNotFound: "ไม่พบสินค้า {name}",
-    stockCheckRemaining: "{name} คงเหลือ {stock} ชิ้น (คุณเลือก {qty})"
+    stockCheckRemaining: "{name} คงเหลือ {stock} ชิ้น (คุณเลือก {qty})",
+    backToMenu: "← กลับเมนู",
+    overview: "ภาพรวม",
+    orders: "คำสั่งซื้อ",
+    products: "สินค้า",
+    partners: "คู่ค้า",
+    system: "ระบบ",
+    stockTimeline: "ไทม์ไลน์สต๊อก",
+    pendingDelivery: "ค้างส่ง",
+    latestBill: "บิลล่าสุด",
+    addProduct: "เพิ่มสินค้าใหม่",
+    addMultiSizeProduct: "เพิ่มสินค้าแบบหลายไซส์",
+    scanVariantGroups: "สแกนสินค้าเก่าเป็นกลุ่มไซส์",
+    bulkImportProducts: "นำเข้าสินค้าหลายรายการ",
+    bulkUpdateProducts: "อัปเดตราคา/สถานะหลายรายการ",
+    landedCost: "คำนวณต้นทุนนำเข้า",
+    partnerLinks: "ลิงก์คู่ค้า",
+    partnerRequests: "คำขอคู่ค้า",
+    darkMode: "โหมดเข้ม",
+    cuteMode: "โหมดน่ารัก",
+    backToViewer: "กลับสู่หน้าร้าน",
+    changePassword: "เปลี่ยนรหัสผ่าน",
+    logout: "ออกจากระบบ",
+    loadingData: "กำลังโหลดข้อมูล",
+    fromDate: "ตั้งแต่วันที่",
+    toDate: "ถึงวันที่",
+    showSummary: "ดูสรุป",
+    reset: "รีเซ็ต",
+    approvedOnly: "เฉพาะ APPROVED",
+    totalSales: "ยอดขายรวม",
+    totalCost: "ต้นทุนรวม",
+    totalProfit: "กำไรรวม",
+    orderCount: "จำนวนออเดอร์",
+    soldQty: "จำนวนสินค้าที่ขาย",
+    pendingOrdersCount: "Orders รอดำเนินการ",
+    approvedOrderListTitle: "รายการออเดอร์ APPROVED ที่นำมาคิด",
+    noPendingOrders: "ไม่มีออเดอร์รอดำเนินการ",
+    noApprovedOrdersInRange: "ไม่มีออเดอร์สถานะ APPROVED ในช่วงวันที่ที่เลือก",
+    dashboardLoadError: "ไม่สามารถโหลดข้อมูลแดชบอร์ดได้",
+    retry: "ลองใหม่",
+    back: "กลับ",
+    date: "วันที่",
+    adminOrderSummary: "สรุปออเดอร์ / PO",
+    source: "ที่มา",
+    partnerRequestId: "เลขคำขอคู่ค้า",
+    partner: "คู่ค้า",
+    createdAt: "สร้างเมื่อ",
+    approvedAt: "อนุมัติเมื่อ",
+    copyPoSummary: "คัดลอกสรุป PO",
+    printPo: "พิมพ์ PO",
+    itemList: "รายการสินค้า",
+    status: "สถานะ",
+    approve: "อนุมัติ",
+    reject: "ปฏิเสธ",
+    approveEnglish: "Approve",
+    rejectEnglish: "Reject",
+    createAllPendingDelivery: "สร้างรายการค้างส่งทั้งหมด",
+    pendingDeliveryShort: "ค้างส่ง",
+    statusPending: "รออนุมัติ",
+    statusApproved: "อนุมัติแล้ว",
+    statusRejected: "ปฏิเสธแล้ว",
+    sourceViewer: "หน้าร้าน",
+    sourcePartnerRequest: "คำขอคู่ค้า",
+    sessionExpiredLoginAgain: "Session หมดอายุ กรุณา login ใหม่",
+    approvingOrder: "กำลังอนุมัติคำสั่งซื้อ...",
+    approveRefreshWarning: "อนุมัติสำเร็จ แต่รีเฟรชข้อมูลย้อนหลังไม่สมบูรณ์",
+    approveSuccess: "อนุมัติคำสั่งซื้อสำเร็จ",
+    approveError: "ไม่สามารถอนุมัติคำสั่งซื้อได้",
+    rejectingOrder: "กำลังปฏิเสธคำสั่งซื้อ...",
+    rejectRefreshWarning: "ปฏิเสธสำเร็จ แต่รีเฟรชข้อมูลย้อนหลังไม่สมบูรณ์",
+    rejectSuccess: "ปฏิเสธคำสั่งซื้อเรียบร้อย",
+    rejectError: "ไม่สามารถปฏิเสธคำสั่งซื้อได้",
+    searchPo: "ค้นหาเลข PO",
+    clear: "ล้าง",
+    duplicatePo: "PO ซ้ำ",
+    duplicateWithOrder: "ซ้ำกับ Order"
   },
   en: {
     langThai: "ไทย",
@@ -4353,11 +4429,87 @@ const UI_TEXT = {
     createOrderError: "Could not create order",
     orderCreatedTitle: "Order created successfully",
     orderId: "Order ID",
+    orderNumber: "Order ID",
     orderSuccessNote: "The order has been saved and is waiting for admin review/approval.",
     downloadOrder: "Download order",
     noLatestOrder: "No latest order found",
     productNotFound: "Product not found: {name}",
-    stockCheckRemaining: "{name} has {stock} pcs left (you selected {qty})"
+    stockCheckRemaining: "{name} has {stock} pcs left (you selected {qty})",
+    backToMenu: "← Back to menu",
+    overview: "Overview",
+    orders: "Orders",
+    products: "Products",
+    partners: "Partners",
+    system: "System",
+    stockTimeline: "Stock timeline",
+    pendingDelivery: "Pending delivery",
+    latestBill: "Latest bill",
+    addProduct: "Add product",
+    addMultiSizeProduct: "Add multi-size product",
+    scanVariantGroups: "Scan variant groups",
+    bulkImportProducts: "Bulk import products",
+    bulkUpdateProducts: "Bulk update products",
+    landedCost: "Import cost calculator",
+    partnerLinks: "Partner links",
+    partnerRequests: "Partner requests",
+    darkMode: "Dark mode",
+    cuteMode: "Cute mode",
+    backToViewer: "Back to shop",
+    changePassword: "Change password",
+    logout: "Logout",
+    loadingData: "Loading data",
+    fromDate: "From date",
+    toDate: "To date",
+    showSummary: "Show summary",
+    reset: "Reset",
+    approvedOnly: "APPROVED only",
+    totalSales: "Total sales",
+    totalCost: "Total cost",
+    totalProfit: "Total profit",
+    orderCount: "Order count",
+    soldQty: "Sold quantity",
+    pendingOrdersCount: "Pending orders",
+    approvedOrderListTitle: "APPROVED orders included in summary",
+    noPendingOrders: "No pending orders",
+    noApprovedOrdersInRange: "No APPROVED orders in the selected date range",
+    dashboardLoadError: "Could not load dashboard data",
+    retry: "Retry",
+    back: "Back",
+    date: "Date",
+    adminOrderSummary: "Order / PO summary",
+    source: "Source",
+    partnerRequestId: "Partner Request ID",
+    partner: "Partner",
+    createdAt: "Created At",
+    approvedAt: "Approved At",
+    copyPoSummary: "Copy PO summary",
+    printPo: "Print PO",
+    itemList: "Items",
+    status: "Status",
+    approve: "Approve",
+    reject: "Reject",
+    approveEnglish: "Approve",
+    rejectEnglish: "Reject",
+    createAllPendingDelivery: "Create all pending delivery",
+    pendingDeliveryShort: "Pending delivery",
+    statusPending: "Pending",
+    statusApproved: "Approved",
+    statusRejected: "Rejected",
+    sourceViewer: "Viewer",
+    sourcePartnerRequest: "Partner request",
+    sessionExpiredLoginAgain: "Session expired. Please log in again.",
+    approvingOrder: "Approving order...",
+    approveRefreshWarning: "Approved, but audit refresh was incomplete",
+    approveSuccess: "Order approved successfully",
+    approveError: "Could not approve order",
+    rejectingOrder: "Rejecting order...",
+    rejectRefreshWarning: "Rejected, but audit refresh was incomplete",
+    rejectSuccess: "Order rejected",
+    rejectError: "Could not reject order",
+    searchPo: "Search PO",
+    clear: "Clear",
+    duplicatePo: "Duplicate PO",
+    duplicateWithOrder: "Duplicate with Order"
   }
 };
 
@@ -4433,6 +4585,23 @@ function getViewerStatusLabel(status) {
     out: "statusOut"
   }[statusKey] || "statusReady";
   return t(statusTextKey, t("statusReady", "พร้อมส่ง"));
+}
+
+function getAdminOrderStatusLabel(status) {
+  const statusKey = String(status || "").toUpperCase();
+  const statusTextKey = {
+    PENDING: "statusPending",
+    APPROVED: "statusApproved",
+    REJECTED: "statusRejected"
+  }[statusKey];
+  return statusTextKey ? t(statusTextKey, statusKey) : (statusKey || "-");
+}
+
+function getAdminOrderSourceDisplayLabel(order) {
+  const source = String(order?.source || "").trim();
+  if (!source) return t("sourceViewer", "หน้าร้าน");
+  if (source === "partner_request") return t("sourcePartnerRequest", "คำขอคู่ค้า");
+  return source;
 }
 
 function renderLanguageSwitch() {
@@ -5195,7 +5364,7 @@ async function adminApproveOrder(orderId) {
       throw new Error("Not authenticated");
     }
 
-    showLoading("กำลังอนุมัติคำสั่งซื้อ...");
+    showLoading(t("approvingOrder", "กำลังอนุมัติคำสั่งซื้อ..."));
 
     const form = new URLSearchParams();
     form.append("action", "approveOrder");
@@ -5210,16 +5379,16 @@ async function adminApproveOrder(orderId) {
       await refreshProducts();
     } catch (refreshErr) {
       console.error("post-approve refresh failed:", refreshErr);
-      showToast("อนุมัติสำเร็จ แต่รีเฟรชข้อมูลย้อนหลังไม่สมบูรณ์", "warning");
+      showToast(t("approveRefreshWarning", "อนุมัติสำเร็จ แต่รีเฟรชข้อมูลย้อนหลังไม่สมบูรณ์"), "warning");
     }
 
     // ✅ success
-    showToast("อนุมัติคำสั่งซื้อสำเร็จ", "success");
+    showToast(t("approveSuccess", "อนุมัติคำสั่งซื้อสำเร็จ"), "success");
     return json.data;
 
   } catch (err) {
     console.error(err);
-    showToast(err.message || "ไม่สามารถอนุมัติคำสั่งซื้อได้", "error");
+    showToast(err.message || t("approveError", "ไม่สามารถอนุมัติคำสั่งซื้อได้"), "error");
     throw err;
   } finally {
   safeHideLoading();
@@ -5236,7 +5405,7 @@ async function adminRejectOrder(orderId) {
       throw new Error("Not authenticated");
     }
 
-    showLoading("กำลังปฏิเสธคำสั่งซื้อ...");
+    showLoading(t("rejectingOrder", "กำลังปฏิเสธคำสั่งซื้อ..."));
 
     const form = new URLSearchParams();
     form.append("action", "rejectOrder");
@@ -5251,18 +5420,18 @@ async function adminRejectOrder(orderId) {
       await refreshProducts();
     } catch (refreshErr) {
       console.error("post-reject refresh failed:", refreshErr);
-      showToast("ปฏิเสธสำเร็จ แต่รีเฟรชข้อมูลย้อนหลังไม่สมบูรณ์", "warning");
+      showToast(t("rejectRefreshWarning", "ปฏิเสธสำเร็จ แต่รีเฟรชข้อมูลย้อนหลังไม่สมบูรณ์"), "warning");
     }
    
 
     // ✅ success
-    showToast("ปฏิเสธคำสั่งซื้อเรียบร้อย", "success");
+    showToast(t("rejectSuccess", "ปฏิเสธคำสั่งซื้อเรียบร้อย"), "success");
     return json.data;
 
   } catch (err) {
     console.error(err);
     showToast(
-      err.message || "ไม่สามารถปฏิเสธคำสั่งซื้อได้",
+      err.message || t("rejectError", "ไม่สามารถปฏิเสธคำสั่งซื้อได้"),
       "error"
     );
     throw err;
@@ -7293,7 +7462,7 @@ function openChangePasswordSheet(){
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
+    showToast(t("sessionExpiredLoginAgain", "Session หมดอายุ กรุณา login ใหม่"), "warning");
     exitAdmin();
     return;
   }
@@ -7681,10 +7850,10 @@ function renderDuplicatePoBadge(order, duplicatePoMap) {
 
   return `
     <div class="stock">
-      <span class="status-badge compact status-pending">⚠️ PO ซ้ำ</span>
+      <span class="status-badge compact status-pending">⚠️ ${t("duplicatePo", "PO ซ้ำ")}</span>
       ${
         duplicateInfo.otherOrderId
-          ? `<span>ซ้ำกับ Order: ${esc(duplicateInfo.otherOrderId)}</span>`
+          ? `<span>${t("duplicateWithOrder", "ซ้ำกับ Order")}: ${esc(duplicateInfo.otherOrderId)}</span>`
           : ""
       }
     </div>
@@ -7695,17 +7864,17 @@ function renderAdminOrderPoSearch() {
   const value = state.admin.filters?.poQueryDraft ?? state.admin.filters?.poQuery ?? "";
   return `
     <div class="form-group">
-      <label>ค้นหาเลข PO</label>
+      <label>${t("searchPo", "ค้นหาเลข PO")}</label>
       <input
         id="adminOrderPoSearch"
         type="search"
         value="${escAttr(value)}"
-        placeholder="ค้นหาเลข PO"
+        placeholder="${t("searchPo", "ค้นหาเลข PO")}"
         oninput="setAdminOrderPoQueryDraft(this.value)"
         onkeydown="handleAdminOrderPoSearchKey(event)">
       <div class="admin-po-search-actions">
-        <button class="btn btn-primary" type="button" onclick="applyAdminOrderPoQuery()">ค้นหา</button>
-        <button class="btn btn-outline" type="button" onclick="clearAdminOrderPoQuery()">ล้าง</button>
+        <button class="btn btn-primary" type="button" onclick="applyAdminOrderPoQuery()">${t("search", "ค้นหา")}</button>
+        <button class="btn btn-outline" type="button" onclick="clearAdminOrderPoQuery()">${t("clear", "ล้าง")}</button>
       </div>
     </div>
   `;
@@ -7747,7 +7916,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
+    showToast(t("sessionExpiredLoginAgain", "Session หมดอายุ กรุณา login ใหม่"), "warning");
     exitAdmin();
     return;
   }
@@ -7769,7 +7938,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
 
   adminDashboardSheet.innerHTML = `
     <h3 id="adminDashboardSheetTitle">${t("dashboard", "แดชบอร์ดแอดมิน")}</h3>
-    <div class="loading">กำลังโหลดข้อมูล</div>
+    <div class="loading">${t("loadingData", "กำลังโหลดข้อมูล")}</div>
   `;
 
   openOverlay(adminDashboardSheet);
@@ -7824,7 +7993,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
         <div class="admin-sheet-topbar">
           <button class="btn btn-outline back-btn"
             onclick="backToAdminMainMenu()">
-            ← กลับเมนู
+            ${t("backToMenu", "← กลับเมนู")}
           </button>
           <h3 id="adminDashboardSheetTitle">${t("pendingOrders", "ออเดอร์รออนุมัติ")}</h3>
         </div>
@@ -7843,19 +8012,19 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
                   <div class="stock">PO: ${esc(o.poNumber || "-")}</div>
                   ${renderDuplicatePoBadge(o, duplicatePoMap)}
                   <div class="admin-card-meta">
-                    <span class="status-badge compact status-pending">${esc(o.status)}</span>
-                    <span>รวม ฿${Number(o.total || 0).toLocaleString("th-TH")}</span>
+                    <span class="status-badge compact status-pending">${esc(getAdminOrderStatusLabel(o.status))}</span>
+                    <span>${t("total", "ยอดรวม")} ฿${Number(o.total || 0).toLocaleString("th-TH")}</span>
                   </div>
                   ${renderPartnerOrderSourceBadge(o, { compact: true })}
                   <div class="price">฿${Number(o.total || 0).toLocaleString("th-TH")}</div>
                   <div class="stock">
-                    วันที่: ${esc(formatThaiDate(getOrderDateValue(o)))}
+                    ${t("date", "วันที่")}: ${esc(formatThaiDate(getOrderDateValue(o)))}
                   </div>
                 </div>
               `).join("")
             : `
               <div class="empty-state">
-                ไม่มีออเดอร์รอดำเนินการ
+                ${t("noPendingOrders", "ไม่มีออเดอร์รอดำเนินการ")}
               </div>
             `
         }
@@ -7867,22 +8036,22 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
       <div class="admin-sheet-topbar">
         <button class="btn btn-outline back-btn"
           onclick="backToAdminMainMenu()">
-          ← กลับเมนู
+          ${t("backToMenu", "← กลับเมนู")}
         </button>
         <h3 id="adminDashboardSheetTitle">
           <span class="dashboard-title-main">${t("dashboard", "แดชบอร์ดแอดมิน")}</span>
-          <span class="dashboard-title-sub">(เฉพาะ APPROVED)</span>
+          <span class="dashboard-title-sub">(${t("approvedOnly", "เฉพาะ APPROVED")})</span>
         </h3>
       </div>
 
       <div class="dashboard-filter-wrap">
         <div class="form-group">
-          <label>ตั้งแต่วันที่</label>
+          <label>${t("fromDate", "ตั้งแต่วันที่")}</label>
           <input id="dashboardDateFrom" type="date" value="${escAttr(from)}">
         </div>
 
         <div class="form-group">
-          <label>ถึงวันที่</label>
+          <label>${t("toDate", "ถึงวันที่")}</label>
           <input id="dashboardDateTo" type="date" value="${escAttr(to)}">
         </div>
 
@@ -7891,32 +8060,32 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
 
       <div class="action-row">
         <button class="btn btn-primary" onclick="applyAdminDashboardRange()">
-          ดูสรุป
+          ${t("showSummary", "ดูสรุป")}
         </button>
         <button class="btn btn-outline" onclick="resetAdminDashboardRange()">
-          รีเซ็ต
+          ${t("reset", "รีเซ็ต")}
         </button>
       </div>
 
       <div class="card metric-card">
-        <div class="name">ยอดขายรวม</div>
+        <div class="name">${t("totalSales", "ยอดขายรวม")}</div>
         <div class="price">฿${Number(summary.totalSales).toLocaleString("th-TH")}</div>
-        <div class="stock">จำนวนออเดอร์: ${summary.orderCount}</div>
+        <div class="stock">${t("orderCount", "จำนวนออเดอร์")}: ${summary.orderCount}</div>
       </div>
 
       <div class="card metric-card">
-        <div class="name">ต้นทุนรวม</div>
+        <div class="name">${t("totalCost", "ต้นทุนรวม")}</div>
         <div class="price">฿${Number(summary.totalCost).toLocaleString("th-TH")}</div>
-        <div class="stock">จำนวนสินค้าที่ขาย: ${summary.totalQty}</div>
+        <div class="stock">${t("soldQty", "จำนวนสินค้าที่ขาย")}: ${summary.totalQty}</div>
       </div>
 
       <div class="card metric-card">
-        <div class="name">กำไรรวม</div>
+        <div class="name">${t("totalProfit", "กำไรรวม")}</div>
         <div class="price">฿${Number(summary.totalProfit).toLocaleString("th-TH")}</div>
-        <div class="stock">Orders รอดำเนินการ: ${pendingCount}</div>
+        <div class="stock">${t("pendingOrdersCount", "Orders รอดำเนินการ")}: ${pendingCount}</div>
       </div>
 
-      <h3 class="section-title">รายการออเดอร์ APPROVED ที่นำมาคิด</h3>
+      <h3 class="section-title">${t("approvedOrderListTitle", "รายการออเดอร์ APPROVED ที่นำมาคิด")}</h3>
 
 ${
   approvedOrders.length
@@ -7941,19 +8110,19 @@ ${
               <div class="stock">PO: ${esc(o.poNumber || "-")}</div>
               ${renderDuplicatePoBadge(o, duplicatePoMap)}
               <div class="admin-card-meta">
-                <span class="status-badge compact status-approved">${esc(o.status)}</span>
-                <span>รวม ฿${Number(o.total || 0).toLocaleString("th-TH")}</span>
+                <span class="status-badge compact status-approved">${esc(getAdminOrderStatusLabel(o.status))}</span>
+                <span>${t("total", "ยอดรวม")} ฿${Number(o.total || 0).toLocaleString("th-TH")}</span>
               </div>
               ${renderPartnerOrderSourceBadge(o, { compact: true })}
               <div class="price">฿${Number(o.total || 0).toLocaleString("th-TH")}</div>
               <div class="stock">
-                วันที่: ${esc(formatThaiDate(getOrderDateValue(o)))}
+                ${t("date", "วันที่")}: ${esc(formatThaiDate(getOrderDateValue(o)))}
               </div>
             </div>
           `).join("")
           : `
             <div class="empty-state">
-              ไม่มีออเดอร์สถานะ APPROVED ในช่วงวันที่ที่เลือก
+              ${t("noApprovedOrdersInRange", "ไม่มีออเดอร์สถานะ APPROVED ในช่วงวันที่ที่เลือก")}
             </div>
           `
       }
@@ -7965,7 +8134,7 @@ ${
       err.message?.includes("Session") ||
       err.message?.includes("token")
     ) {
-      showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
+      showToast(t("sessionExpiredLoginAgain", "Session หมดอายุ กรุณา login ใหม่"), "warning");
       exitAdmin();
       return;
     }
@@ -7974,19 +8143,19 @@ ${
       <h3 id="adminDashboardSheetTitle">${t("dashboard", "แดชบอร์ดแอดมิน")}</h3>
 
       <div style="text-align:center;color:#d93025;margin-top:32px">
-        ไม่สามารถโหลดข้อมูลแดชบอร์ดได้
+        ${t("dashboardLoadError", "ไม่สามารถโหลดข้อมูลแดชบอร์ดได้")}
       </div>
 
       <button class="btn btn-primary"
         style="width:100%;margin-top:16px"
         onclick="allowOpenOrders = true; openAdminDashboard('SUMMARY', true)">
-        🔄 ลองใหม่
+        ${t("retry", "ลองใหม่")}
       </button>
 
       <button class="btn btn-outline"
         style="width:100%;margin-top:8px"
         onclick="finishAdminAction({ refresh:false })">
-        ← กลับ
+        ${t("back", "กลับ")}
       </button>
     `;
   }
@@ -8048,7 +8217,7 @@ function renderAdminMenuInStockSheet() {
     </div>
 
     <div class="menu-group">
-      <div class="menu-section-label">ภาพรวม</div>
+      <div class="menu-section-label">${t("overview", "ภาพรวม")}</div>
       <button class="btn btn-primary"
         onclick="closeStockMenuSheetThen(handleOpenDashboard)">
         ${t("dashboardShort", "แดชบอร์ด")}
@@ -8056,12 +8225,12 @@ function renderAdminMenuInStockSheet() {
 
       <button class="btn btn-secondary"
         onclick="openStockTimelineInsideAdminMenu()">
-        ไทม์ไลน์สต๊อก
+        ${t("stockTimeline", "ไทม์ไลน์สต๊อก")}
       </button>
     </div>
 
     <div class="menu-group">
-      <div class="menu-section-label">คำสั่งซื้อ</div>
+      <div class="menu-section-label">${t("orders", "คำสั่งซื้อ")}</div>
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(handleOpenPendingOrders)">
         ${t("pendingOrders", "ออเดอร์รออนุมัติ")} ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
@@ -8069,7 +8238,7 @@ function renderAdminMenuInStockSheet() {
 
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(openPendingDeliverySheet)">
-        ค้างส่ง
+        ${t("pendingDelivery", "ค้างส่ง")}
       </button>
 
       ${
@@ -8077,7 +8246,7 @@ function renderAdminMenuInStockSheet() {
           ? `
               <button class="btn btn-secondary"
                 onclick="closeStockMenuSheetThen(reopenLastOrderSheet)">
-                บิลล่าสุด
+                ${t("latestBill", "บิลล่าสุด")}
               </button>
             `
           : ``
@@ -8085,43 +8254,43 @@ function renderAdminMenuInStockSheet() {
     </div>
 
     <div class="menu-group">
-      <div class="menu-section-label">สินค้า</div>
+      <div class="menu-section-label">${t("products", "สินค้า")}</div>
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(handleOpenAddProduct)">
-        เพิ่มสินค้าใหม่
+        ${t("addProduct", "เพิ่มสินค้าใหม่")}
       </button>
 
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(openMultiSizeProductSheet)">
-        เพิ่มสินค้าแบบหลายไซส์
+        ${t("addMultiSizeProduct", "เพิ่มสินค้าแบบหลายไซส์")}
       </button>
 
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(openVariantScanSheet)">
-        สแกนสินค้าเก่าเป็นกลุ่มไซส์
+        ${t("scanVariantGroups", "สแกนสินค้าเก่าเป็นกลุ่มไซส์")}
       </button>
 
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(openBulkProductImportSheet)">
-        นำเข้าสินค้าหลายรายการ
+        ${t("bulkImportProducts", "นำเข้าสินค้าหลายรายการ")}
       </button>
 
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(openBulkProductUpdateSheet)">
-        อัปเดตราคา/สถานะหลายรายการ
+        ${t("bulkUpdateProducts", "อัปเดตราคา/สถานะหลายรายการ")}
       </button>
     </div>
 
     <div class="menu-group">
-      <div class="menu-section-label">ระบบ</div>
+      <div class="menu-section-label">${t("system", "ระบบ")}</div>
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(leaveAdminMode)">
-        กลับสู่หน้าร้าน
+        ${t("backToViewer", "กลับสู่หน้าร้าน")}
       </button>
 
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(openChangePasswordSheet)">
-        เปลี่ยนรหัสผ่าน
+        ${t("changePassword", "เปลี่ยนรหัสผ่าน")}
       </button>
     </div>
 
@@ -8130,7 +8299,7 @@ function renderAdminMenuInStockSheet() {
     <div class="menu-group danger">
       <button class="btn btn-danger"
         onclick="closeStockMenuSheetThen(handleAdminLogout)">
-        Logout
+        ${t("logout", "ออกจากระบบ")}
       </button>
     </div>
   `;
@@ -8182,10 +8351,10 @@ function renderPartnerOrderSourceBadge(order, options = {}) {
   const compactClass = options.compact ? " compact" : "";
   return `
     <div class="partner-order-source-badge${compactClass}">
-      <div><strong>ที่มา:</strong> คำขอคู่ค้า</div>
-      <div><strong>คู่ค้า:</strong> ${esc(order.partnerNameSnapshot || "-")}</div>
-      <div><strong>รหัสคู่ค้า:</strong> ${esc(order.partnerId || "-")}</div>
-      <div><strong>เลขคำขอคู่ค้า:</strong> ${esc(order.partnerRequestId || "-")}</div>
+      <div><strong>${t("source", "ที่มา")}:</strong> ${t("sourcePartnerRequest", "คำขอคู่ค้า")}</div>
+      <div><strong>${t("partner", "คู่ค้า")}:</strong> ${esc(order.partnerNameSnapshot || "-")}</div>
+      <div><strong>Partner ID:</strong> ${esc(order.partnerId || "-")}</div>
+      <div><strong>${t("partnerRequestId", "เลขคำขอคู่ค้า")}:</strong> ${esc(order.partnerRequestId || "-")}</div>
     </div>
   `;
 }
@@ -8599,31 +8768,31 @@ function renderAdminOrderSummary(order) {
 
   return `
     <div class="admin-detail-section">
-      <div class="admin-detail-title">สรุปออเดอร์ / PO</div>
+      <div class="admin-detail-title">${t("adminOrderSummary", "สรุปออเดอร์ / PO")}</div>
       <div class="cart-summary" style="margin-top:0">
         <div class="summary-row">
           <span>PO</span>
           <strong>${esc(order?.poNumber || "-")}</strong>
         </div>
         <div class="summary-row">
-          <span>เลขออเดอร์</span>
+          <span>${t("orderNumber", "เลขออเดอร์")}</span>
           <strong>${esc(order?.orderId || "-")}</strong>
         </div>
         <div class="summary-row">
-          <span>สถานะ</span>
+          <span>${t("status", "สถานะ")}</span>
           <span class="status-badge ${getAdminOrderStatusClass(status)}">
-            ${esc(status || "-")}
+            ${esc(getAdminOrderStatusLabel(status))}
           </span>
         </div>
         <div class="summary-row">
-          <span>ที่มา</span>
-          <strong>${esc(getAdminOrderSourceLabel(order))}</strong>
+          <span>${t("source", "ที่มา")}</span>
+          <strong>${esc(getAdminOrderSourceDisplayLabel(order))}</strong>
         </div>
         ${
           partnerRequestId
             ? `
               <div class="summary-row">
-                <span>เลขคำขอคู่ค้า</span>
+                <span>${t("partnerRequestId", "เลขคำขอคู่ค้า")}</span>
                 <strong>${esc(partnerRequestId)}</strong>
               </div>
             `
@@ -8633,7 +8802,7 @@ function renderAdminOrderSummary(order) {
           partnerName
             ? `
               <div class="summary-row">
-                <span>Partner</span>
+                <span>${t("partner", "คู่ค้า")}</span>
                 <strong>${esc(partnerName)}</strong>
               </div>
             `
@@ -8643,7 +8812,7 @@ function renderAdminOrderSummary(order) {
           createdAt
             ? `
               <div class="summary-row">
-                <span>สร้างเมื่อ</span>
+                <span>${t("createdAt", "สร้างเมื่อ")}</span>
                 <strong>${esc(formatThaiDate(createdAt))}</strong>
               </div>
             `
@@ -8653,7 +8822,7 @@ function renderAdminOrderSummary(order) {
           approvedAt
             ? `
               <div class="summary-row">
-                <span>อนุมัติเมื่อ</span>
+                <span>${t("approvedAt", "อนุมัติเมื่อ")}</span>
                 <strong>${esc(formatThaiDate(approvedAt))}</strong>
               </div>
             `
@@ -8665,14 +8834,14 @@ function renderAdminOrderSummary(order) {
         type="button"
         style="margin-top:12px;width:100%"
         onclick="copyAdminPoSummary(${toInlineJsStringLiteral(order?.orderId || "")})">
-        คัดลอกสรุป PO
+        ${t("copyPoSummary", "คัดลอกสรุป PO")}
       </button>
       <button
         class="btn btn-primary"
         type="button"
         style="margin-top:8px;width:100%"
         onclick="printAdminPoOrder(${toInlineJsStringLiteral(order?.orderId || "")})">
-        พิมพ์ PO
+        ${t("printPo", "พิมพ์ PO")}
       </button>
     </div>
   `;
@@ -9144,14 +9313,14 @@ adminOrderSheet.innerHTML = `
   class="btn btn-primary"
   style="margin-bottom:16px"
   onclick="openBulkPendingDeliverySheet()">
-  📦 สร้างรายการค้างส่งทั้งหมด
+  ${t("createAllPendingDelivery", "สร้างรายการค้างส่งทั้งหมด")}
 </button>
    `
    : ""
  }
 
     <div class="admin-detail-section">
-      <div class="admin-detail-title">รายการสินค้า</div>
+      <div class="admin-detail-title">${t("itemList", "รายการสินค้า")}</div>
       <div class="admin-item-list">
     ${items.map(i => `
       <div class="cart-item cart-with-thumb">
@@ -9159,7 +9328,7 @@ adminOrderSheet.innerHTML = `
    <div class="cart-content">
      <div class="name">${esc(i.name)}</div>
      <div class="cart-meta">SKU: ${esc(i.productId || "-")}</div>
-     <div class="cart-qty">จำนวน ${Number(i.qty) || 0}</div>
+     <div class="cart-qty">${t("quantity", "จำนวน")} ${Number(i.qty) || 0}</div>
 
      ${
        order.status !== "PENDING" &&
@@ -9181,7 +9350,7 @@ adminOrderSheet.innerHTML = `
              ${Number(i.qty) || 0}
            )
          ">
-         📦 ค้างส่ง
+         ${t("pendingDeliveryShort", "ค้างส่ง")}
        </button>
        `
        : ""
@@ -9198,17 +9367,17 @@ adminOrderSheet.innerHTML = `
 
     <div class="cart-summary">
       <div class="summary-row">
-        <span>สถานะ</span>
+        <span>${t("status", "สถานะ")}</span>
         <span class="status-badge ${orderStatusClass}">
-          ${esc(order.status)}
+          ${esc(getAdminOrderStatusLabel(order.status))}
         </span>
       </div>
       <div class="summary-row">
-        <span>จำนวนรายการ</span>
+        <span>${t("totalItems", "จำนวนรายการ")}</span>
         <strong>${items.length}</strong>
       </div>
       <div class="summary-row">
-        <span>ยอดรวม</span>
+        <span>${t("total", "ยอดรวม")}</span>
         <strong>฿${Number(order.total) || 0}</strong>
       </div>
     </div>
@@ -9218,11 +9387,11 @@ adminOrderSheet.innerHTML = `
         ? `
           <div class="admin-action">
             <button class="btn btn-success" onclick="handleApprove()">
-              Approve
+              ${t("approve", "อนุมัติ")}
             </button>
 
             <button class="btn btn-danger" onclick="handleReject()">
-              Reject
+              ${t("reject", "ปฏิเสธ")}
             </button>
           </div>
         `
@@ -10946,8 +11115,8 @@ function openMainMenu(triggerEl){
   const hasLastOrder = !!(state.lastOrder && state.lastOrder.orderId);
   const pendingCount = getPendingOrdersCount();
   const themeToggleLabel = getCurrentTheme() === "cute"
-    ? "โหมดเข้ม"
-    : "โหมดน่ารัก";
+    ? t("darkMode", "โหมดเข้ม")
+    : t("cuteMode", "โหมดน่ารัก");
 
   // ✅ STEP 2: Main Menu v1 = Login only (ถ้ายังไม่อยู่ admin mode)
   mainMenuSheet.innerHTML = `
@@ -10963,7 +11132,7 @@ function openMainMenu(triggerEl){
           ? (state.mode === "admin")
             ? `
               <div class="menu-group">
-                <div class="menu-section-label">ภาพรวม</div>
+                <div class="menu-section-label">${t("overview", "ภาพรวม")}</div>
                 <button class="btn btn-primary"
                   onclick="closeMainMenu(); handleOpenDashboard();">
                   ${t("dashboardShort", "แดชบอร์ด")}
@@ -10971,12 +11140,12 @@ function openMainMenu(triggerEl){
 
                 <button class="btn btn-secondary"
                   onclick="openStockTimelineInsideAdminMenu();">
-                  ไทม์ไลน์สต๊อก
+                  ${t("stockTimeline", "ไทม์ไลน์สต๊อก")}
                 </button>
               </div>
 
               <div class="menu-group">
-                <div class="menu-section-label">คำสั่งซื้อ</div>
+                <div class="menu-section-label">${t("orders", "คำสั่งซื้อ")}</div>
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); handleOpenPendingOrders();">
                   ${t("pendingOrders", "ออเดอร์รออนุมัติ")} ${pendingCount > 0 ? `<span class="badge badge-count">${pendingCount}</span>` : ``}
@@ -10984,7 +11153,7 @@ function openMainMenu(triggerEl){
 
                  <button class="btn btn-secondary"
                    onclick="closeMainMenu(); openPendingDeliverySheet();">
-                   ค้างส่ง
+                   ${t("pendingDelivery", "ค้างส่ง")}
                  </button>
 
                 ${
@@ -10992,7 +11161,7 @@ function openMainMenu(triggerEl){
                     ? `
                         <button class="btn btn-secondary"
                           onclick="closeMainMenu(); reopenLastOrderSheet();">
-                          บิลล่าสุด
+                          ${t("latestBill", "บิลล่าสุด")}
                         </button>
                       `
                     : ``
@@ -11000,58 +11169,58 @@ function openMainMenu(triggerEl){
               </div>
 
               <div class="menu-group">
-                <div class="menu-section-label">สินค้า</div>
+                <div class="menu-section-label">${t("products", "สินค้า")}</div>
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); handleOpenAddProduct();">
-                  เพิ่มสินค้าใหม่
+                  ${t("addProduct", "เพิ่มสินค้าใหม่")}
                 </button>
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openMultiSizeProductSheet();">
-                  เพิ่มสินค้าแบบหลายไซส์
+                  ${t("addMultiSizeProduct", "เพิ่มสินค้าแบบหลายไซส์")}
                 </button>
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openVariantScanSheet();">
-                  สแกนสินค้าเก่าเป็นกลุ่มไซส์
+                  ${t("scanVariantGroups", "สแกนสินค้าเก่าเป็นกลุ่มไซส์")}
                 </button>
                 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openBulkProductImportSheet();">
-                  นำเข้าสินค้าหลายรายการ
+                  ${t("bulkImportProducts", "นำเข้าสินค้าหลายรายการ")}
                 </button>
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openBulkProductUpdateSheet();">
-                  อัปเดตราคา/สถานะหลายรายการ
+                  ${t("bulkUpdateProducts", "อัปเดตราคา/สถานะหลายรายการ")}
                 </button>
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openLandedCostSheet();">
-                  คำนวณต้นทุนนำเข้า
+                  ${t("landedCost", "คำนวณต้นทุนนำเข้า")}
                 </button>
               </div>
 
               <div class="menu-group">
-                <div class="menu-section-label">คู่ค้า</div>
+                <div class="menu-section-label">${t("partners", "คู่ค้า")}</div>
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openPartnerAdminSheet();">
-                  คู่ค้า
+                  ${t("partners", "คู่ค้า")}
                 </button>
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openPartnerCatalogSheet();">
-                  ลิงก์คู่ค้า
+                  ${t("partnerLinks", "ลิงก์คู่ค้า")}
                 </button>
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openPartnerRequestsSheet();">
-                  คำขอคู่ค้า
+                  ${t("partnerRequests", "คำขอคู่ค้า")}
                 </button>
               </div>
 
               <div class="menu-group">
-                <div class="menu-section-label">ระบบ</div>
+                <div class="menu-section-label">${t("system", "ระบบ")}</div>
                 <button class="btn btn-outline" type="button"
                   onclick="toggleTheme()">
                   ${themeToggleLabel}
@@ -11059,18 +11228,18 @@ function openMainMenu(triggerEl){
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); leaveAdminMode();">
-                  กลับสู่หน้าร้าน
+                  ${t("backToViewer", "กลับสู่หน้าร้าน")}
                 </button>
 
                 <button class="btn btn-secondary"
                   onclick="closeMainMenu(); openChangePasswordSheet();">
-                  เปลี่ยนรหัสผ่าน
+                  ${t("changePassword", "เปลี่ยนรหัสผ่าน")}
                 </button>
               </div>
               `
             : `
               <div class="menu-group">
-                <div class="menu-section-label">ระบบ</div>
+                <div class="menu-section-label">${t("system", "ระบบ")}</div>
                 <button class="btn btn-outline" type="button"
                   onclick="toggleTheme()">
                   ${themeToggleLabel}
@@ -11083,13 +11252,13 @@ function openMainMenu(triggerEl){
 
                 <button class="btn btn-secondary" disabled
                   style="opacity:.8; cursor:default;">
-                  อยู่ในหน้าร้าน
+                  ${t("sourceViewer", "หน้าร้าน")}
                 </button>
               </div>
               `
           : `
               <div class="menu-group">
-                <div class="menu-section-label">ระบบ</div>
+                <div class="menu-section-label">${t("system", "ระบบ")}</div>
                 <button class="btn btn-outline" type="button"
                   onclick="toggleTheme()">
                   ${themeToggleLabel}
@@ -11109,9 +11278,9 @@ function openMainMenu(triggerEl){
         ? `
           <hr>
           <div class="menu-group danger">
-            <button class="btn btn-danger"
+             <button class="btn btn-danger"
                onclick="closeMainMenu(); handleAdminLogout();">
-               Logout
+               ${t("logout", "ออกจากระบบ")}
              </button>
           </div>
         `
