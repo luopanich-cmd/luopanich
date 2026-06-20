@@ -12191,7 +12191,7 @@ function buildDeliveryNotePrintHtml(data) {
       <meta charset="UTF-8">
       <title>${esc(title)}</title>
       <style>
-        @page { size: A4; margin: 14mm; }
+        @page { size: A4; margin: 10mm; }
         * { box-sizing:border-box; }
         body {
           font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
@@ -12228,8 +12228,11 @@ function buildDeliveryNotePrintHtml(data) {
         }
         .doc-meta div:last-child { border-bottom:0; }
         .delivery-note-print-page {
-          min-height:269mm;
-          height:269mm;
+          width:186mm;
+          max-width:186mm;
+          min-height:244mm;
+          height:244mm;
+          margin:0 auto;
           display:flex;
           flex-direction:column;
           page-break-after:always;
@@ -12277,7 +12280,7 @@ function buildDeliveryNotePrintHtml(data) {
         .delivery-note-column-header,
         .delivery-note-print-row {
           display:grid;
-          grid-template-columns:30px 58px minmax(76px, 1fr) minmax(100px, 1.2fr) 68px minmax(82px, 1fr);
+          grid-template-columns:42px 56px minmax(74px, 1fr) minmax(94px, 1.2fr) 64px minmax(76px, 1fr);
           align-items:stretch;
           width:100%;
           break-inside:avoid-page;
@@ -12300,6 +12303,13 @@ function buildDeliveryNotePrintHtml(data) {
           vertical-align:top;
           word-break:break-word;
           overflow-wrap:anywhere;
+        }
+        .delivery-note-column-header > div:first-child,
+        .delivery-note-print-row > div:first-child {
+          white-space:nowrap;
+          word-break:normal;
+          overflow-wrap:normal;
+          text-align:center;
         }
         .delivery-note-column-header > div:last-child,
         .delivery-note-print-row > div:last-child {
@@ -12493,6 +12503,7 @@ function buildDeliveryNotePrintHtml(data) {
           var orders = Array.prototype.slice.call(sourceRoot.querySelectorAll(".delivery-note-source-order"));
           var current = null;
           var pageNumber = 0;
+          var maxRowsPerPage = 8;
 
           pagesRoot.innerHTML = "";
 
@@ -12511,7 +12522,11 @@ function buildDeliveryNotePrintHtml(data) {
               row.classList.add("delivery-note-page-row");
               current.body.appendChild(row);
 
-              if (current.body.scrollHeight > current.body.clientHeight && current.body.children.length > 1) {
+              if (
+                (current.body.scrollHeight > current.body.clientHeight ||
+                  current.body.children.length > maxRowsPerPage) &&
+                current.body.children.length > 1
+              ) {
                 row.remove();
                 pageNumber += 1;
                 current = buildDeliveryNotePage(orderEl, pageNumber);
