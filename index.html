@@ -3785,6 +3785,7 @@ textarea.input{
  <div id="adminBulkProductImportSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBulkProductImportSheetTitle" tabindex="-1"></div>
  <div id="adminBulkProductUpdateSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBulkProductUpdateSheetTitle" tabindex="-1"></div>
  <div id="adminLandedCostSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminLandedCostSheetTitle" tabindex="-1"></div>
+ <div id="adminDeliveryNoteSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminDeliveryNoteSheetTitle" tabindex="-1"></div>
  <div id="adminPartnersSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminPartnersSheetTitle" tabindex="-1"></div>
  <div id="adminPartnerCatalogSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminPartnerCatalogSheetTitle" tabindex="-1"></div>
  <div id="adminPartnerRequestsSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminPartnerRequestsSheetTitle" tabindex="-1"></div>
@@ -3830,6 +3831,8 @@ const adminBulkProductUpdateSheet =
   document.getElementById("adminBulkProductUpdateSheet");
 const adminLandedCostSheet =
   document.getElementById("adminLandedCostSheet");
+const adminDeliveryNoteSheet =
+  document.getElementById("adminDeliveryNoteSheet");
 const adminPartnersSheet =
   document.getElementById("adminPartnersSheet");
 const adminPartnerCatalogSheet =
@@ -3855,6 +3858,7 @@ const ADMIN_SHEETS = Object.freeze({
   bulkProductImport: adminBulkProductImportSheet,
   bulkProductUpdate: adminBulkProductUpdateSheet,
   landedCost: adminLandedCostSheet,
+  deliveryNote: adminDeliveryNoteSheet,
   partners: adminPartnersSheet,
   partnerCatalog: adminPartnerCatalogSheet,
   partnerRequests: adminPartnerRequestsSheet,
@@ -3969,6 +3973,10 @@ Object.assign(window, {
   backToAdminMenuFromBulkImport,
   openPendingDeliverySheet,
   closePendingDeliverySheet,
+  openDeliveryNoteSheet,
+  closeDeliveryNoteSheet,
+  renderDeliveryNoteSheet,
+  prepareDeliveryNoteSearch,
   openChangePasswordSheet,
   submitChangePassword,
   cancelAdminLogin,
@@ -4032,6 +4040,16 @@ const state = {
       dashboardTo: "",
       poQuery: "",
       poQueryDraft: ""
+    },
+    deliveryNote: {
+      poInput: "",
+      matchedOrders: [],
+      selectedItems: {},
+      itemQty: {},
+      itemNotes: {},
+      poNotes: {},
+      error: "",
+      isBuilding: false
     },
     bulkProductImport: {
       rawText: "",
@@ -4346,6 +4364,12 @@ const UI_TEXT = {
     totalProductLines: "ยอดรวมสินค้า",
     totalQty: "ยอดรวมจำนวนชิ้น",
     pendingDelivery: "ค้างส่ง",
+    deliveryNote: "ใบส่งของ",
+    deliveryNoteHelper: "สร้างใบส่งของจากเลข PO หนึ่งรายการหรือหลายรายการ เลือกสินค้าและจำนวนส่งในขั้นตอนถัดไป",
+    deliveryNotePoInput: "เลข PO สำหรับใบส่งของ",
+    deliveryNotePoPlaceholder: "PO-12436\nPO-12436, PO-12452\nหรือวางหลายบรรทัด",
+    deliveryNoteEmptyState: "กรอกเลข PO แล้วกดค้นหา เพื่อเตรียมรายการสำหรับใบส่งของ",
+    deliveryNoteNextStepHint: "ขั้นตอนถัดไปจะเพิ่มการค้นหา PO และเลือกสินค้าในใบส่งของ",
     latestBill: "บิลล่าสุด",
     addProduct: "เพิ่มสินค้าใหม่",
     addMultiSizeProduct: "เพิ่มสินค้าแบบหลายไซส์",
@@ -4991,6 +5015,12 @@ const UI_TEXT = {
     totalProductLines: "Total product lines",
     totalQty: "Total quantity",
     pendingDelivery: "Pending delivery",
+    deliveryNote: "Delivery Note",
+    deliveryNoteHelper: "Create a delivery note from one or multiple PO numbers. Product selection and delivery quantities come in the next step.",
+    deliveryNotePoInput: "PO numbers for delivery note",
+    deliveryNotePoPlaceholder: "PO-12436\nPO-12436, PO-12452\nor paste multiple lines",
+    deliveryNoteEmptyState: "Enter PO numbers and search to prepare delivery note items.",
+    deliveryNoteNextStepHint: "The next step will add PO matching and product selection for the delivery note.",
     latestBill: "Latest bill",
     addProduct: "Add product",
     addMultiSizeProduct: "Add multi-size product",
@@ -8196,6 +8226,7 @@ function closeTopSheet(){
     document.getElementById("adminBulkProductImportSheet"),
     document.getElementById("adminBulkProductUpdateSheet"),
     document.getElementById("adminLandedCostSheet"),
+    document.getElementById("adminDeliveryNoteSheet"),
     document.getElementById("adminPartnersSheet"),
     document.getElementById("adminPartnerCatalogSheet"),
     document.getElementById("adminPartnerRequestsSheet"),
@@ -9257,6 +9288,11 @@ function renderAdminMenuInStockSheet() {
       <button class="btn btn-secondary"
         onclick="closeStockMenuSheetThen(openPendingDeliverySheet)">
         ${t("pendingDelivery", "ค้างส่ง")}
+      </button>
+
+      <button class="btn btn-secondary"
+        onclick="closeStockMenuSheetThen(openDeliveryNoteSheet)">
+        ${t("deliveryNote", "ใบส่งของ")}
       </button>
 
       ${
@@ -11564,6 +11600,94 @@ async function refreshProductsWithFeedback({
   }
 }
 
+function getDeliveryNoteState() {
+  if (!state.admin.deliveryNote) {
+    state.admin.deliveryNote = {
+      poInput: "",
+      matchedOrders: [],
+      selectedItems: {},
+      itemQty: {},
+      itemNotes: {},
+      poNotes: {},
+      error: "",
+      isBuilding: false
+    };
+  }
+  return state.admin.deliveryNote;
+}
+
+function openDeliveryNoteSheet() {
+  if (
+    state.mode !== "admin" ||
+    !state.admin.loggedIn ||
+    !state.admin.token ||
+    isAdminSessionExpired()
+  ) {
+    exitAdmin();
+    return;
+  }
+
+  renderDeliveryNoteSheet();
+  openOverlay(adminDeliveryNoteSheet);
+}
+
+function closeDeliveryNoteSheet() {
+  closeOverlay(adminDeliveryNoteSheet);
+}
+
+function prepareDeliveryNoteSearch() {
+  const noteState = getDeliveryNoteState();
+  const input = document.getElementById("deliveryNotePoInput");
+  noteState.poInput = String(input?.value || noteState.poInput || "");
+  noteState.matchedOrders = [];
+  noteState.selectedItems = {};
+  noteState.itemQty = {};
+  noteState.itemNotes = {};
+  noteState.poNotes = {};
+  noteState.error = "";
+  noteState.isBuilding = false;
+  renderDeliveryNoteSheet();
+  showToast(t("deliveryNoteNextStepHint", "ขั้นตอนถัดไปจะเพิ่มการค้นหา PO และเลือกสินค้าในใบส่งของ"), "info");
+}
+
+function renderDeliveryNoteSheet() {
+  const noteState = getDeliveryNoteState();
+  adminDeliveryNoteSheet.innerHTML = `
+    <div class="admin-sheet-topbar">
+      <button class="btn btn-outline back-btn" type="button" onclick="closeDeliveryNoteSheet()">
+        ${t("back", "กลับ")}
+      </button>
+      <h3 id="adminDeliveryNoteSheetTitle">
+        <span class="dashboard-title-main">${t("deliveryNote", "ใบส่งของ")}</span>
+      </h3>
+    </div>
+
+    <div class="card">
+      <div class="helper-text">${t("deliveryNoteHelper", "สร้างใบส่งของจากเลข PO หนึ่งรายการหรือหลายรายการ เลือกสินค้าและจำนวนส่งในขั้นตอนถัดไป")}</div>
+      <div class="form-group" style="margin-top:12px">
+        <label for="deliveryNotePoInput">${t("deliveryNotePoInput", "เลข PO สำหรับใบส่งของ")}</label>
+        <textarea
+          id="deliveryNotePoInput"
+          rows="5"
+          placeholder="${escAttr(t("deliveryNotePoPlaceholder", "PO-12436\nPO-12436, PO-12452\nหรือวางหลายบรรทัด"))}"
+          oninput="state.admin.deliveryNote.poInput = this.value">${esc(noteState.poInput || "")}</textarea>
+      </div>
+      <button class="btn btn-primary" type="button" onclick="prepareDeliveryNoteSearch()">
+        ${t("searchPo", "ค้นหา PO")}
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="empty-state">
+        <strong>${t("deliveryNote", "ใบส่งของ")}</strong><br>
+        ${noteState.poInput
+          ? t("deliveryNoteNextStepHint", "ขั้นตอนถัดไปจะเพิ่มการค้นหา PO และเลือกสินค้าในใบส่งของ")
+          : t("deliveryNoteEmptyState", "กรอกเลข PO แล้วกดค้นหา เพื่อเตรียมรายการสำหรับใบส่งของ")}
+      </div>
+    </div>
+  `;
+}
+
 function openPendingDeliverySheet() {
   pendingDeliverySheet.innerHTML = `
     <div class="admin-sheet-topbar">
@@ -12188,6 +12312,11 @@ function openMainMenu(triggerEl){
                  <button class="btn btn-secondary"
                    onclick="closeMainMenu(); openPendingDeliverySheet();">
                    ${t("pendingDelivery", "ค้างส่ง")}
+                 </button>
+
+                 <button class="btn btn-secondary"
+                   onclick="closeMainMenu(); openDeliveryNoteSheet();">
+                   ${t("deliveryNote", "ใบส่งของ")}
                  </button>
 
                 ${
