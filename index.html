@@ -4132,6 +4132,7 @@ Object.assign(window, {
   buildDeliveryNoteFromPicker,
   printDeliveryNote,
   copyDeliveryNote,
+  prepareDeliveryNoteImageExport,
   toggleDeliveryNoteItem,
   updateDeliveryNoteItemQty,
   updateDeliveryNoteItemNote,
@@ -4212,6 +4213,10 @@ const state = {
       selectedPoNumbers: [],
       poPickerLoading: false,
       poPickerError: "",
+      imageExportLoading: false,
+      imageExportError: "",
+      imageExportPages: 0,
+      imageExportReady: false,
       error: "",
       isBuilding: false
     },
@@ -4562,6 +4567,12 @@ const UI_TEXT = {
     deliveryNoteInvalidQty: "จำนวนส่งของ {sku} ต้องเป็นจำนวนเต็ม 0 ถึง {max}",
     printDeliveryNote: "พิมพ์ใบส่งของ",
     copyDeliveryNote: "คัดลอกใบส่งของ",
+    exportDeliveryNoteImages: "ส่งออกเป็นรูปภาพ",
+    deliveryNoteImageExportPreparing: "กำลังเตรียมรูปภาพ...",
+    deliveryNoteImageExportReady: "เตรียมรูปภาพแล้ว {count} หน้า",
+    deliveryNoteImageExportNextStep: "จะเปิดใช้งานในขั้นถัดไป",
+    deliveryNoteImageExportFailed: "ไม่สามารถเตรียมรูปภาพได้",
+    deliveryNoteImagePage: "รูปหน้า {page}",
     deliveryNoteNoSelectedItems: "กรุณาเลือกรายการที่มีจำนวนส่งมากกว่า 0 อย่างน้อย 1 รายการ",
     deliveryNoteCopied: "คัดลอกใบส่งของแล้ว",
     deliveryNoteCopyFailed: "คัดลอกใบส่งของไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
@@ -5245,6 +5256,12 @@ const UI_TEXT = {
     deliveryNoteInvalidQty: "Delivery qty for {sku} must be an integer from 0 to {max}",
     printDeliveryNote: "Print Delivery Note",
     copyDeliveryNote: "Copy Delivery Note",
+    exportDeliveryNoteImages: "Export images",
+    deliveryNoteImageExportPreparing: "Preparing images...",
+    deliveryNoteImageExportReady: "Prepared {count} image pages",
+    deliveryNoteImageExportNextStep: "Enabled in next step",
+    deliveryNoteImageExportFailed: "Could not prepare images",
+    deliveryNoteImagePage: "Image page {page}",
     deliveryNoteNoSelectedItems: "Select at least one item with delivery qty greater than 0",
     deliveryNoteCopied: "Delivery note copied",
     deliveryNoteCopyFailed: "Could not copy delivery note. Please try again",
@@ -11852,6 +11869,10 @@ function getDeliveryNoteState() {
   if (noteState.poPickerQuery === undefined) noteState.poPickerQuery = "";
   if (noteState.poPickerLoading === undefined) noteState.poPickerLoading = false;
   if (noteState.poPickerError === undefined) noteState.poPickerError = "";
+  if (noteState.imageExportLoading === undefined) noteState.imageExportLoading = false;
+  if (noteState.imageExportError === undefined) noteState.imageExportError = "";
+  if (noteState.imageExportPages === undefined) noteState.imageExportPages = 0;
+  if (noteState.imageExportReady === undefined) noteState.imageExportReady = false;
   return state.admin.deliveryNote;
 }
 
@@ -12284,7 +12305,8 @@ function renderDeliveryNotePrintImage(imageUrl, altText) {
   return `<img class="delivery-note-thumb" src="${escAttr(cleanImageUrl)}" alt="${escAttr(altText || "")}" onerror="this.replaceWith(document.createTextNode('-'));">`;
 }
 
-function buildDeliveryNotePrintHtml(data) {
+function buildDeliveryNotePrintHtml(data, options = {}) {
+  const autoPrint = options.autoPrint !== false;
   const printDateTime = new Date().toLocaleString("th-TH");
   const title = t("deliveryNote", "ใบส่งของ");
   const shopName = t("shopTitle", "ร้านค้า Luopanich");
@@ -12572,7 +12594,8 @@ function buildDeliveryNotePrintHtml(data) {
           checkedBy: ${toInlineJsStringLiteral(t("checkedBy", "ผู้ตรวจสอบ"))},
           receiverPacker: ${toInlineJsStringLiteral(t("receiverPacker", "ผู้รับสินค้า / ผู้แพ็กของ"))},
           pageLabel: ${toInlineJsStringLiteral(getCurrentLang() === "en" ? "Page" : "หน้า")},
-          ofLabel: ${toInlineJsStringLiteral(getCurrentLang() === "en" ? "of" : "จาก")}
+          ofLabel: ${toInlineJsStringLiteral(getCurrentLang() === "en" ? "of" : "จาก")},
+          autoPrint: ${autoPrint ? "true" : "false"}
         };
 
         function closePrintPage() {
@@ -12685,9 +12708,11 @@ function buildDeliveryNotePrintHtml(data) {
 
         window.onload = function() {
           paginateDeliveryNotePrint();
-          requestAnimationFrame(function() {
-            window.print();
-          });
+          if (DELIVERY_NOTE_PRINT.autoPrint) {
+            requestAnimationFrame(function() {
+              window.print();
+            });
+          }
         };
       <\/script>
     </body>
@@ -12742,6 +12767,94 @@ function copyDeliveryNote() {
     t("deliveryNoteCopied", "คัดลอกใบส่งของแล้ว"),
     t("deliveryNoteCopyFailed", "คัดลอกใบส่งของไม่สำเร็จ กรุณาลองใหม่อีกครั้ง")
   );
+}
+
+function prepareDeliveryNoteImageExport() {
+  const data = getValidatedDeliveryNoteData();
+  if (!data) return;
+
+  const noteState = getDeliveryNoteState();
+  noteState.imageExportLoading = true;
+  noteState.imageExportError = "";
+  noteState.imageExportPages = 0;
+  noteState.imageExportReady = false;
+  renderDeliveryNoteSheet();
+
+  const frame = document.createElement("iframe");
+  frame.title = "Delivery Note image export preview";
+  frame.setAttribute("aria-hidden", "true");
+  frame.style.position = "fixed";
+  frame.style.left = "-10000px";
+  frame.style.top = "0";
+  frame.style.width = "820px";
+  frame.style.height = "1180px";
+  frame.style.opacity = "0";
+  frame.style.pointerEvents = "none";
+  frame.style.border = "0";
+
+  const cleanup = () => {
+    if (frame.parentNode) frame.parentNode.removeChild(frame);
+  };
+
+  frame.onload = () => {
+    window.setTimeout(() => {
+      try {
+        const doc = frame.contentDocument || frame.contentWindow?.document;
+        const pages = doc
+          ? doc.querySelectorAll(".delivery-note-print-page").length
+          : 0;
+
+        noteState.imageExportPages = pages;
+        noteState.imageExportReady = pages > 0;
+        noteState.imageExportError = pages
+          ? ""
+          : t("deliveryNoteImageExportFailed", "ไม่สามารถเตรียมรูปภาพได้");
+      } catch (err) {
+        console.error("delivery note image export prepare failed:", err);
+        noteState.imageExportError = err.message || t("deliveryNoteImageExportFailed", "ไม่สามารถเตรียมรูปภาพได้");
+        noteState.imageExportReady = false;
+        noteState.imageExportPages = 0;
+      } finally {
+        noteState.imageExportLoading = false;
+        cleanup();
+        renderDeliveryNoteSheet();
+      }
+    }, 250);
+  };
+
+  frame.srcdoc = buildDeliveryNotePrintHtml(data, { autoPrint: false });
+  document.body.appendChild(frame);
+}
+
+function renderDeliveryNoteImageExportStatus() {
+  const noteState = getDeliveryNoteState();
+
+  if (noteState.imageExportLoading) {
+    return `<div class="helper-text" style="margin-top:10px">${t("deliveryNoteImageExportPreparing", "กำลังเตรียมรูปภาพ...")}</div>`;
+  }
+
+  if (noteState.imageExportError) {
+    return `<div class="error-text" style="margin-top:10px">${esc(noteState.imageExportError)}</div>`;
+  }
+
+  if (!noteState.imageExportReady || !noteState.imageExportPages) {
+    return "";
+  }
+
+  const pageButtons = Array.from({ length: noteState.imageExportPages }, (_, index) => `
+    <button class="btn btn-outline" type="button" disabled
+      title="${escAttr(t("deliveryNoteImageExportNextStep", "จะเปิดใช้งานในขั้นถัดไป"))}">
+      ${formatUiText("deliveryNoteImagePage", { page: index + 1 }, "รูปหน้า {page}")}
+    </button>
+  `).join("");
+
+  return `
+    <div class="card compact-card" style="margin-top:12px">
+      <strong>${formatUiText("deliveryNoteImageExportReady", { count: noteState.imageExportPages }, "เตรียมรูปภาพแล้ว {count} หน้า")}</strong>
+      <div class="helper-text" style="margin-top:6px">${t("deliveryNoteImageExportNextStep", "จะเปิดใช้งานในขั้นถัดไป")}</div>
+      <div class="action-row" style="margin-top:10px;gap:8px;flex-wrap:wrap">${pageButtons}</div>
+    </div>
+  `;
 }
 
 function renderDeliveryNotePoPicker() {
@@ -12868,7 +12981,11 @@ function renderDeliveryNoteMatchedOrders() {
       <button class="btn btn-outline" type="button" onclick="copyDeliveryNote()">
         ${t("copyDeliveryNote", "คัดลอกใบส่งของ")}
       </button>
+      <button class="btn btn-outline" type="button" onclick="prepareDeliveryNoteImageExport()">
+        ${noteState.imageExportLoading ? t("deliveryNoteImageExportPreparing", "กำลังเตรียมรูปภาพ...") : t("exportDeliveryNoteImages", "ส่งออกเป็นรูปภาพ")}
+      </button>
     </div>
+    ${renderDeliveryNoteImageExportStatus()}
     ${orders.map(order => {
       const items = Array.isArray(order?.items) ? order.items : [];
       const orderId = String(order?.orderId || "").trim();
