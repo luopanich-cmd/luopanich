@@ -4530,6 +4530,169 @@ const UI_TEXT = {
     bulkUpdateFailedRetry: "อัปเดตสินค้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
     variantScanApplyConfirm: "ยืนยันบันทึกข้อมูลกลุ่มไซส์ {groups} กลุ่ม ({skus} SKU)?\n\nการบันทึกนี้จะแก้ข้อมูล Products จริง แต่จะไม่เปลี่ยน stock/ราคา/order",
     landedCostApplyConfirm: "ยืนยันบันทึกราคาทุน/ราคาขายจริง {count} รายการ?\n\nระบบจะอัปเดต costPrice และ price ใน Products จริง\nกรุณาตรวจสอบก่อนบันทึกจริง",
+    bulkTemplateAria: "แม่แบบ TSV",
+    bulkImportCloseAria: "ปิดหน้าต่างนำเข้าสินค้า",
+    bulkImportHelp: "ใช้ไฟล์ .tsv หรือคัดลอกจาก Google Sheets แล้ววางในช่องนี้ ระบบจะตรวจสอบข้อมูลก่อนนำเข้า และเวอร์ชันนี้ยังไม่รองรับไฟล์ .xlsx โดยตรง",
+    uploadTsvFile: "อัปโหลดไฟล์ TSV",
+    tsvOnlyHelp: "รองรับไฟล์ .tsv หรือ .txt เท่านั้น ยังไม่รองรับไฟล์ .xlsx โดยตรง",
+    pasteFromSheets: "วางข้อมูลจาก Excel / Google Sheets",
+    pasteFromClipboard: "วางจากคลิปบอร์ด",
+    clearData: "ล้างข้อมูล",
+    editRawText: "แก้ไขข้อความต้นฉบับ",
+    rawTsvText: "ข้อความ TSV ต้นฉบับ",
+    validateData: "ตรวจสอบข้อมูล",
+    importingProducts: "กำลังนำเข้า...",
+    importProducts: "นำเข้าสินค้า",
+    backAdminMenu: "กลับเมนูแอดมิน",
+    readyItems: "รายการพร้อมนำเข้า",
+    errorCount: "ข้อผิดพลาด",
+    bulkDataPreviewAria: "ตัวอย่างข้อมูลที่นำเข้า",
+    errorFound: "พบข้อผิดพลาด",
+    readyToImport: "พร้อมนำเข้า",
+    previewUploadPrompt: "วาง/อัปโหลดข้อมูลเพื่อแสดงตัวอย่าง",
+    previewTsvPrompt: "วางข้อมูล TSV หรืออัปโหลดไฟล์ แล้วกดตรวจสอบข้อมูล",
+    missingProductId: "(ยังไม่มีรหัสสินค้า)",
+    missingProductName: "(ยังไม่มีชื่อสินค้า)",
+    bulkImportLoading: "กำลังนำเข้าสินค้า...",
+    bulkImportLoadingDetail: "กรุณารอสักครู่ ระบบกำลังส่งข้อมูลไปยังหลังบ้าน",
+    bulkImportSuccess: "นำเข้าสินค้าสำเร็จ",
+    bulkImportSuccessCount: "นำเข้าสำเร็จ {count} รายการ",
+    bulkImportErrorCount: "พบข้อผิดพลาด {count} รายการ",
+    bulkImportErrorDetail: "กรุณาตรวจสอบรายการที่มีปัญหาก่อนนำเข้า",
+    bulkImportReady: "พร้อมนำเข้า {count} รายการ",
+    bulkImportReadyDetail: "ตรวจสอบแล้ว {count} รายการ พร้อมนำเข้าสู่ระบบ",
+    bulkImportIdle: "ยังไม่ได้ตรวจสอบข้อมูล",
+    bulkImportIdleDetail: "วางข้อมูลหรืออัปโหลดไฟล์ แล้วกดตรวจสอบข้อมูล",
+    bulkImportValidationFailed: "ตรวจสอบข้อมูลนำเข้าไม่ผ่าน",
+    bulkImportMaxRows: "นำเข้าได้สูงสุด 100 รายการต่อครั้ง",
+    bulkImportNeedOneRow: "กรุณาเพิ่มข้อมูลสินค้าอย่างน้อย 1 รายการ",
+    bulkImportSkuRequired: "กรุณากรอกรหัสสินค้า",
+    bulkImportDuplicateSku: "รหัสสินค้าซ้ำในข้อมูลที่วาง",
+    bulkImportNameRequired: "กรุณากรอกชื่อสินค้า",
+    bulkImportPriceInvalid: "ราคาต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป",
+    bulkImportCostInvalid: "ต้นทุนต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป",
+    bulkImportStockInvalid: "จำนวนสต๊อกต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป",
+    bulkImportStatusInvalid: "สถานะสินค้าไม่ถูกต้อง",
+    bulkImportActiveInvalid: "active ต้องเป็น true/false/1/0 หรือเว้นว่าง",
+    bulkImportSortOrderInvalid: "ลำดับไซส์ต้องเป็นตัวเลขจำนวนเต็ม",
+    imageUrlInvalid: "รูปภาพต้องเป็น URL แบบ http/https",
+    compareImageUrlInvalid: "รูปภาพเปรียบเทียบต้องเป็น URL แบบ http/https",
+    noteTooLong: "หมายเหตุยาวเกินไป",
+    detailsTextTooLong: "รายละเอียดสินค้ายาวเกินไป",
+    bulkInvalidFallback: "{field} ไม่ถูกต้อง กรุณาตรวจสอบข้อมูลอีกครั้ง",
+    bulkUpdateCloseAria: "ปิดหน้าต่างอัปเดตสินค้า",
+    bulkUpdateHelp: "ใช้สำหรับอัปเดตราคาขาย ต้นทุน สถานะสินค้า หรือเปิด/ปิดการขายหลายรายการพร้อมกัน โดยไม่เปลี่ยน SKU และไม่เปลี่ยนจำนวนสต็อก",
+    bulkUpdateManualSkuList: "รายการ SKU แบบพิมพ์เอง",
+    bulkUpdateSkuPlaceholder: "เช่น BN007, BN008 หรือวางหนึ่ง SKU ต่อบรรทัด",
+    bulkUpdateSkuHelp: "รองรับการคั่นด้วยบรรทัดใหม่ เครื่องหมายจุลภาค หรือช่องว่าง สูงสุด 100 รายการ",
+    bulkUpdateField: "ข้อมูลที่ต้องการอัปเดต",
+    bulkUpdateNewValue: "ค่าใหม่",
+    bulkUpdateValuePlaceholder: "ระบุ{field}",
+    bulkUpdateLoading: "กำลังอัปเดตสินค้า...",
+    bulkUpdateLoadingDetail: "กรุณารอสักครู่ ระบบกำลังส่งข้อมูลไปยังหลังบ้าน",
+    bulkUpdateSuccess: "อัปเดตสินค้าสำเร็จ",
+    bulkUpdateSuccessCount: "อัปเดตสำเร็จ {count} รายการ",
+    bulkUpdateErrorDetail: "กรุณาตรวจสอบ SKU และค่าใหม่ก่อนอัปเดต",
+    bulkUpdateReady: "พร้อมอัปเดต {count} รายการ",
+    bulkUpdateReadyDetail: "ตรวจสอบแล้ว {count} รายการ พร้อมส่งไปอัปเดต",
+    bulkUpdateIdleDetail: "ระบุ SKU เลือกข้อมูลที่ต้องการแก้ไข แล้วกดตรวจสอบข้อมูล",
+    bulkUpdatePickerTitle: "เลือกสินค้าจากรายการ",
+    bulkUpdatePickerHelp: "เลือกสินค้าด้วย checkbox หรือใช้ช่อง SKU ด้านล่างแบบเดิมก็ได้ เลือกแล้ว {count} รายการ",
+    bulkUpdatePreviewEmpty: "ระบุ SKU แล้วกดตรวจสอบข้อมูล เพื่อดูค่าเดิมและค่าใหม่ก่อนบันทึก",
+    bulkUpdateTarget: "อัปเดต",
+    oldValue: "ค่าเดิม",
+    newValue: "ค่าใหม่",
+    readyToUpdate: "พร้อมอัปเดต",
+    updatingProducts: "กำลังอัปเดต...",
+    updateProducts: "อัปเดตสินค้า",
+    setSalePrice: "ตั้งราคาขาย",
+    setCost: "ตั้งต้นทุน",
+    changeProductStatus: "เปลี่ยนสถานะ",
+    changeSaleStatus: "เปิด/ปิดการขาย",
+    bulkUpdateValueRequired: "กรุณาระบุค่าใหม่",
+    bulkUpdateFieldNumberInvalid: "{field}ต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป",
+    bulkUpdateActiveInvalid: "สถานะการขายต้องเป็น เปิดขาย/ปิดขาย หรือ true/false",
+    bulkUpdateTypeInvalid: "ประเภทการอัปเดตไม่ถูกต้อง",
+    bulkUpdateSkuRequired: "กรุณาระบุ SKU",
+    bulkUpdateSkuRequiredOne: "กรุณาระบุ SKU อย่างน้อย 1 รายการ",
+    bulkUpdateMaxRows: "อัปเดตได้สูงสุด 100 รายการต่อครั้ง",
+    bulkUpdateDuplicateSku: "SKU ซ้ำในรายการที่เลือก",
+    bulkUpdateProductNotFound: "ไม่พบสินค้าในรายการปัจจุบัน",
+    bulkUpdateValidationFailed: "ตรวจสอบข้อมูลอัปเดตไม่ผ่าน",
+    bulkUpdateStockNotAllowed: "ไม่สามารถอัปเดตสต็อกในหน้าจอนี้ได้",
+    bulkUpdateAllowedFieldRequired: "กรุณาเลือกข้อมูลที่ต้องการอัปเดต",
+    landedCostCloseAria: "ปิดหน้าต่างคำนวณต้นทุนนำเข้า",
+    importBatch: "รอบนำเข้า",
+    landedCostBatchHelp: "รอบนี้เป็นการคำนวณตัวอย่าง ยังไม่บันทึกเข้า Products",
+    batchName: "ชื่อรอบ",
+    batchNamePlaceholder: "รอบจีน 2026-06-17",
+    otherFees: "ค่าใช้จ่ายอื่น ๆ",
+    targetProfitPercent: "% กำไรที่ต้องการ",
+    targetProfitPlaceholder: "เช่น 30",
+    roundingMethod: "วิธีปัดเศษ",
+    roundCeil: "ปัดขึ้น (ceil)",
+    roundNearest: "ปัดใกล้สุด (round)",
+    roundFloor: "ปัดลง (floor)",
+    landedCostRowsHelp: "เพิ่ม SKU, จำนวน และต้นทุนจีนต่อชิ้น ระบบจะเฉลี่ยค่าใช้จ่ายตามมูลค่าสินค้า",
+    addProductRow: "เพิ่มแถวสินค้า",
+    calculationResult: "ผลคำนวณ",
+    calculate: "คำนวณ",
+    resetData: "ล้างข้อมูล",
+    selectProducts: "เลือกสินค้า",
+    landedCostPickerHelp: "เลือกสินค้าจากรายการที่โหลดอยู่ ระบบจะเติม SKU ให้อัตโนมัติ ตั้งจำนวนเริ่มต้นเป็น 1 และใช้ต้นทุนปัจจุบันเป็นค่าเริ่มต้น",
+    hideOptions: "ซ่อนตัวเลือก",
+    addToCalculationBatch: "เพิ่มเข้ารอบคำนวณ ({count})",
+    alreadyInList: "อยู่ในรายการแล้ว",
+    noMatchingProducts: "ไม่พบสินค้าตามเงื่อนไขที่ค้นหา",
+    productCurrentMeta: "ต้นทุน: {cost} | ราคาขาย: {price} | สต๊อก: {stock}",
+    chinaUnitCost: "ต้นทุนจีน/ชิ้น",
+    removeRow: "ลบแถว",
+    landedCostEmptyResult: "กรอกต้นทุนและกดคำนวณ เพื่อดูต้นทุนจริงต่อชิ้นและราคาขายแนะนำ",
+    batchBaseCost: "ต้นทุนสินค้ารวม",
+    totalFees: "ค่าใช้จ่ายรวม",
+    totalLandedCost: "ต้นทุนรวมหลังลงค่าใช้จ่าย",
+    itemBaseCost: "ต้นทุนสินค้า",
+    allocatedFee: "ค่าใช้จ่ายที่เฉลี่ย",
+    landedCostPerUnit: "ต้นทุนจริง/ชิ้น",
+    suggestedCostPrice: "ต้นทุนใหม่ที่แนะนำ",
+    suggestedSalePrice: "ราคาขายใหม่ที่แนะนำ",
+    prepareUpdateList: "เตรียมรายการอัปเดต",
+    reviewBeforeSave: "ตรวจสอบรายการก่อนบันทึก",
+    landedCostApplyHelp: "ขั้นตอนนี้ยังไม่อัปเดตสินค้า เป็นเพียงการตรวจสอบก่อนบันทึกจริง",
+    selectedItems: "รายการที่เลือก",
+    currentStockCost: "ต้นทุนสต็อกเดิมโดยประมาณ",
+    newStockCost: "ต้นทุนสต็อกใหม่โดยประมาณ",
+    currentCost: "ต้นทุนเดิม",
+    currentSalePrice: "ราคาขายเดิม",
+    difference: "ส่วนต่าง",
+    quantityInBatch: "จำนวนในรอบ",
+    confirmBeforeLandedCostApply: "ยืนยันก่อนบันทึกจริง ระบบจะอัปเดตต้นทุนและราคาขายใน Products เฉพาะรายการที่เลือก",
+    saving: "กำลังบันทึก...",
+    saveCostSalePrices: "บันทึกราคาทุน/ราคาขาย",
+    fieldNonNegative: "{field} ต้องเป็นตัวเลข 0 ขึ้นไป",
+    landedCostProfitInvalid: "% กำไรที่ต้องการต้องเป็นตัวเลข 0 ขึ้นไป",
+    landedCostRowQtyInvalid: "แถว {row}: จำนวนต้องเป็นจำนวนเต็มมากกว่า 0",
+    landedCostRowChinaCostInvalid: "แถว {row}: ต้นทุนจีน/ชิ้นต้องเป็นตัวเลข 0 ขึ้นไป",
+    landedCostNeedOneRow: "กรุณาเพิ่มสินค้าอย่างน้อย 1 แถว",
+    landedCostBaseCostPositive: "มูลค่าสินค้ารวมต้องมากกว่า 0 ก่อนคำนวณ",
+    calculateCostFirst: "กรุณาคำนวณต้นทุนก่อนเตรียมรายการอัปเดต",
+    noReadyUpdateRows: "ไม่มีรายการที่พร้อมอัปเดต กรุณาตรวจสอบ SKU ในรอบคำนวณ",
+    preparedUpdateRows: "เตรียมรายการอัปเดตแล้ว {count} รายการ",
+    skippedMissingProducts: "ข้าม {count} รายการที่ไม่พบสินค้าในระบบ",
+    addedToLandedCostBatch: "เพิ่มสินค้าเข้ารอบคำนวณแล้ว {count} รายการ",
+    skippedDuplicateRows: "ข้ามรายการซ้ำ {count} รายการ",
+    productAlreadyInBatch: "สินค้านี้อยู่ในรายการแล้ว",
+    chooseAtLeastOneProduct: "กรุณาเลือกสินค้าอย่างน้อย 1 รายการ",
+    landedCostMissingSku: "พบรายการที่ไม่มี SKU / Product ID",
+    landedCostDuplicateSku: "SKU {sku} ซ้ำในรายการที่จะบันทึก",
+    landedCostProductMissing: "ไม่พบสินค้า {sku} ในระบบ จึงไม่สามารถบันทึกได้",
+    landedCostNewCostInvalid: "ต้นทุนใหม่ของ {sku} ต้องเป็นจำนวนเต็ม 0 ขึ้นไป",
+    landedCostNewPriceInvalid: "ราคาขายใหม่ของ {sku} ต้องเป็นจำนวนเต็ม 0 ขึ้นไป",
+    selectAtLeastOneBeforeSave: "กรุณาเลือกรายการอย่างน้อย 1 รายการก่อนบันทึก",
+    savingCostSalePrices: "กำลังบันทึกราคาทุน/ราคาขาย...",
+    landedCostSaveSuccess: "บันทึกสำเร็จ {count} รายการ",
+    landedCostSaveFailed: "บันทึกราคาทุน/ราคาขายไม่สำเร็จ",
+    landedCostSaveFailedRetry: "บันทึกราคาทุน/ราคาขายไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
     noPendingDeliveries: "ไม่มีรายการค้างส่ง",
     totalStatus: "สถานะรวม",
     allEntries: "รายการทั้งหมด",
@@ -5012,6 +5175,169 @@ const UI_TEXT = {
     bulkUpdateFailedRetry: "Could not update products. Please try again.",
     variantScanApplyConfirm: "Confirm saving {groups} size groups ({skus} SKU)?\n\nThis will update real Products data, but will not change stock/price/order.",
     landedCostApplyConfirm: "Confirm saving real cost/sell prices for {count} items?\n\nThe system will update costPrice and price in Products.\nPlease review before saving.",
+    bulkTemplateAria: "TSV template",
+    bulkImportCloseAria: "Close product import",
+    bulkImportHelp: "Use a .tsv file or copy from Google Sheets and paste here. The system will validate before importing. This version does not support .xlsx directly.",
+    uploadTsvFile: "Upload TSV file",
+    tsvOnlyHelp: "Only .tsv or .txt files are supported. .xlsx files are not supported directly.",
+    pasteFromSheets: "Paste from Excel / Google Sheets",
+    pasteFromClipboard: "Paste from clipboard",
+    clearData: "Clear data",
+    editRawText: "Edit raw text",
+    rawTsvText: "Raw TSV text",
+    validateData: "Validate data",
+    importingProducts: "Importing...",
+    importProducts: "Import products",
+    backAdminMenu: "Back to admin menu",
+    readyItems: "Ready to import",
+    errorCount: "Errors",
+    bulkDataPreviewAria: "Imported data preview",
+    errorFound: "Error found",
+    readyToImport: "Ready to import",
+    previewUploadPrompt: "Paste/upload data to show a preview",
+    previewTsvPrompt: "Paste TSV data or upload a file, then validate data",
+    missingProductId: "(No product code yet)",
+    missingProductName: "(No product name yet)",
+    bulkImportLoading: "Importing products...",
+    bulkImportLoadingDetail: "Please wait while the system sends data to the backend",
+    bulkImportSuccess: "Products imported",
+    bulkImportSuccessCount: "Imported {count} items",
+    bulkImportErrorCount: "{count} errors found",
+    bulkImportErrorDetail: "Please review problematic rows before importing",
+    bulkImportReady: "Ready to import {count} items",
+    bulkImportReadyDetail: "{count} items checked and ready to import",
+    bulkImportIdle: "Data not checked yet",
+    bulkImportIdleDetail: "Paste data or upload a file, then validate data",
+    bulkImportValidationFailed: "Import validation failed",
+    bulkImportMaxRows: "A maximum of 100 rows can be imported at once",
+    bulkImportNeedOneRow: "Please add at least 1 product row",
+    bulkImportSkuRequired: "Please enter product code",
+    bulkImportDuplicateSku: "Duplicate SKU in pasted data",
+    bulkImportNameRequired: "Please enter product name",
+    bulkImportPriceInvalid: "Price must be an integer 0 or higher",
+    bulkImportCostInvalid: "Cost must be an integer 0 or higher",
+    bulkImportStockInvalid: "Stock must be an integer 0 or higher",
+    bulkImportStatusInvalid: "Invalid product status",
+    bulkImportActiveInvalid: "active must be true/false/1/0 or blank",
+    bulkImportSortOrderInvalid: "Size sort order must be an integer",
+    imageUrlInvalid: "Image must be an http/https URL",
+    compareImageUrlInvalid: "Compare image must be an http/https URL",
+    noteTooLong: "Note is too long",
+    detailsTextTooLong: "Product details are too long",
+    bulkInvalidFallback: "{field} is invalid. Please check the data again.",
+    bulkUpdateCloseAria: "Close product update",
+    bulkUpdateHelp: "Use this to update selling price, cost, product status, or sale availability for many products at once without changing SKU or stock quantity.",
+    bulkUpdateManualSkuList: "Manual SKU list",
+    bulkUpdateSkuPlaceholder: "For example BN007, BN008 or one SKU per line",
+    bulkUpdateSkuHelp: "Supports new lines, commas, or spaces. Maximum 100 items.",
+    bulkUpdateField: "Field to update",
+    bulkUpdateNewValue: "New value",
+    bulkUpdateValuePlaceholder: "Enter {field}",
+    bulkUpdateLoading: "Updating products...",
+    bulkUpdateLoadingDetail: "Please wait while the system sends data to the backend",
+    bulkUpdateSuccess: "Products updated",
+    bulkUpdateSuccessCount: "Updated {count} items",
+    bulkUpdateErrorDetail: "Please check SKU and the new value before updating",
+    bulkUpdateReady: "Ready to update {count} items",
+    bulkUpdateReadyDetail: "{count} items checked and ready to update",
+    bulkUpdateIdleDetail: "Enter SKU, choose the field to edit, then validate data",
+    bulkUpdatePickerTitle: "Select products from list",
+    bulkUpdatePickerHelp: "Select products with checkboxes or use the SKU field below. Selected {count} items",
+    bulkUpdatePreviewEmpty: "Enter SKU and validate data to see old and new values before saving",
+    bulkUpdateTarget: "Update",
+    oldValue: "Old value",
+    newValue: "New value",
+    readyToUpdate: "Ready to update",
+    updatingProducts: "Updating...",
+    updateProducts: "Update products",
+    setSalePrice: "Set sale price",
+    setCost: "Set cost",
+    changeProductStatus: "Change status",
+    changeSaleStatus: "Enable/disable selling",
+    bulkUpdateValueRequired: "Please enter a new value",
+    bulkUpdateFieldNumberInvalid: "{field} must be an integer 0 or higher",
+    bulkUpdateActiveInvalid: "Sale status must be open/closed or true/false",
+    bulkUpdateTypeInvalid: "Invalid update type",
+    bulkUpdateSkuRequired: "Please enter SKU",
+    bulkUpdateSkuRequiredOne: "Please enter at least 1 SKU",
+    bulkUpdateMaxRows: "A maximum of 100 rows can be updated at once",
+    bulkUpdateDuplicateSku: "Duplicate SKU in selected list",
+    bulkUpdateProductNotFound: "Product not found in the current list",
+    bulkUpdateValidationFailed: "Update validation failed",
+    bulkUpdateStockNotAllowed: "Stock cannot be updated from this screen",
+    bulkUpdateAllowedFieldRequired: "Please choose a field to update",
+    landedCostCloseAria: "Close import cost calculator",
+    importBatch: "Import batch",
+    landedCostBatchHelp: "This is a sample calculation and will not save to Products yet",
+    batchName: "Batch name",
+    batchNamePlaceholder: "China batch 2026-06-17",
+    otherFees: "Other fees",
+    targetProfitPercent: "Target profit %",
+    targetProfitPlaceholder: "Example: 30",
+    roundingMethod: "Rounding method",
+    roundCeil: "Round up (ceil)",
+    roundNearest: "Nearest (round)",
+    roundFloor: "Round down (floor)",
+    landedCostRowsHelp: "Add SKU, quantity, and China unit cost. Fees will be allocated by product value.",
+    addProductRow: "Add product row",
+    calculationResult: "Calculation result",
+    calculate: "Calculate",
+    resetData: "Clear data",
+    selectProducts: "Select products",
+    landedCostPickerHelp: "Select products from the loaded list. The system will fill SKU automatically, set quantity to 1, and use current cost as the default.",
+    hideOptions: "Hide options",
+    addToCalculationBatch: "Add to calculation batch ({count})",
+    alreadyInList: "Already in list",
+    noMatchingProducts: "No products match the search/filter",
+    productCurrentMeta: "Cost: {cost} | Sale price: {price} | Stock: {stock}",
+    chinaUnitCost: "China unit cost",
+    removeRow: "Remove row",
+    landedCostEmptyResult: "Enter costs and calculate to see landed cost per item and recommended sale price",
+    batchBaseCost: "Product subtotal",
+    totalFees: "Total fees",
+    totalLandedCost: "Total landed cost after fees",
+    itemBaseCost: "Product cost",
+    allocatedFee: "Allocated fees",
+    landedCostPerUnit: "Landed cost/unit",
+    suggestedCostPrice: "Recommended new cost",
+    suggestedSalePrice: "Recommended new sale price",
+    prepareUpdateList: "Prepare update list",
+    reviewBeforeSave: "Review before saving",
+    landedCostApplyHelp: "This step does not update products yet. It is only a review before saving.",
+    selectedItems: "Selected items",
+    currentStockCost: "Estimated current stock cost",
+    newStockCost: "Estimated new stock cost",
+    currentCost: "Current cost",
+    currentSalePrice: "Current sale price",
+    difference: "Difference",
+    quantityInBatch: "Qty in batch",
+    confirmBeforeLandedCostApply: "Confirm before saving. The system will update cost and sale price in Products only for selected items.",
+    saving: "Saving...",
+    saveCostSalePrices: "Save cost/sale prices",
+    fieldNonNegative: "{field} must be a number 0 or higher",
+    landedCostProfitInvalid: "Target profit % must be a number 0 or higher",
+    landedCostRowQtyInvalid: "Row {row}: qty must be a whole number greater than 0",
+    landedCostRowChinaCostInvalid: "Row {row}: China unit cost must be a number 0 or higher",
+    landedCostNeedOneRow: "Please add at least 1 product row",
+    landedCostBaseCostPositive: "Product subtotal must be greater than 0 before calculating",
+    calculateCostFirst: "Please calculate cost before preparing the update list",
+    noReadyUpdateRows: "No rows are ready to update. Please check SKU in the calculation batch.",
+    preparedUpdateRows: "Prepared {count} update rows",
+    skippedMissingProducts: "Skipped {count} rows not found in Products",
+    addedToLandedCostBatch: "Added {count} products to the calculation batch",
+    skippedDuplicateRows: "Skipped {count} duplicate rows",
+    productAlreadyInBatch: "This product is already in the list",
+    chooseAtLeastOneProduct: "Please select at least 1 product",
+    landedCostMissingSku: "Found a row without SKU / Product ID",
+    landedCostDuplicateSku: "SKU {sku} is duplicated in the save list",
+    landedCostProductMissing: "Product {sku} was not found, so it cannot be saved",
+    landedCostNewCostInvalid: "New cost for {sku} must be an integer 0 or higher",
+    landedCostNewPriceInvalid: "New sale price for {sku} must be an integer 0 or higher",
+    selectAtLeastOneBeforeSave: "Please select at least 1 row before saving",
+    savingCostSalePrices: "Saving cost/sale prices...",
+    landedCostSaveSuccess: "Saved {count} items",
+    landedCostSaveFailed: "Could not save cost/sale prices",
+    landedCostSaveFailedRetry: "Could not save cost/sale prices. Please try again.",
     noPendingDeliveries: "No pending delivery items",
     totalStatus: "Overall status",
     allEntries: "Total entries",
@@ -14611,7 +14937,7 @@ function renderBulkProductTemplateTable() {
   const headers = rows[0] || BULK_PRODUCT_COLUMNS;
   const samples = rows.slice(1);
   return `
-    <div class="bulk-template-table" aria-label="แม่แบบ TSV">
+    <div class="bulk-template-table" aria-label="${t("bulkTemplateAria", "แม่แบบ TSV")}">
       <table>
         <thead>
           <tr>${headers.map(header => `<th>${esc(header)}</th>`).join("")}</tr>
@@ -14631,35 +14957,35 @@ function renderBulkProductTemplateTable() {
 function getBulkProductImportStatus(items, errors) {
   if (state.admin.isSubmitting) {
     return {
-      label: "กำลังนำเข้าสินค้า...",
-      detail: "กรุณารอสักครู่ ระบบกำลังส่งข้อมูลไปยังหลังบ้าน",
+      label: t("bulkImportLoading", "กำลังนำเข้าสินค้า..."),
+      detail: t("bulkImportLoadingDetail", "กรุณารอสักครู่ ระบบกำลังส่งข้อมูลไปยังหลังบ้าน"),
       type: "loading"
     };
   }
   if (state.admin.bulkProductImport.summary) {
     return {
-      label: "นำเข้าสินค้าสำเร็จ",
+      label: t("bulkImportSuccess", "นำเข้าสินค้าสำเร็จ"),
       detail: state.admin.bulkProductImport.summary,
       type: "success"
     };
   }
   if (errors.length > 0) {
     return {
-      label: `พบข้อผิดพลาด ${errors.length} รายการ`,
-      detail: "กรุณาตรวจสอบรายการที่มีปัญหาก่อนนำเข้า",
+      label: formatUiText("bulkImportErrorCount", { count: errors.length }, "พบข้อผิดพลาด {count} รายการ"),
+      detail: t("bulkImportErrorDetail", "กรุณาตรวจสอบรายการที่มีปัญหาก่อนนำเข้า"),
       type: "error"
     };
   }
   if (items.length > 0) {
     return {
-      label: `พร้อมนำเข้า ${items.length} รายการ`,
-      detail: `ตรวจสอบแล้ว ${items.length} รายการ พร้อมนำเข้าสู่ระบบ`,
+      label: formatUiText("bulkImportReady", { count: items.length }, "พร้อมนำเข้า {count} รายการ"),
+      detail: formatUiText("bulkImportReadyDetail", { count: items.length }, "ตรวจสอบแล้ว {count} รายการ พร้อมนำเข้าสู่ระบบ"),
       type: "ready"
     };
   }
   return {
-    label: "ยังไม่ได้ตรวจสอบข้อมูล",
-    detail: "วางข้อมูลหรืออัปโหลดไฟล์ แล้วกดตรวจสอบข้อมูล",
+    label: t("bulkImportIdle", "ยังไม่ได้ตรวจสอบข้อมูล"),
+    detail: t("bulkImportIdleDetail", "วางข้อมูลหรืออัปโหลดไฟล์ แล้วกดตรวจสอบข้อมูล"),
     type: "idle"
   };
 }
@@ -14684,11 +15010,11 @@ function renderBulkProductImportSuccessCard() {
   if (!state.admin.bulkProductImport.summary) return "";
   return `
     <div class="bulk-import-success-card" role="status" aria-live="polite">
-      <strong>นำเข้าสินค้าสำเร็จ</strong>
-      <div>นำเข้าสำเร็จ ${imported} รายการ</div>
+      <strong>${t("bulkImportSuccess", "นำเข้าสินค้าสำเร็จ")}</strong>
+      <div>${formatUiText("bulkImportSuccessCount", { count: imported }, "นำเข้าสำเร็จ {count} รายการ")}</div>
       <div class="bulk-import-success-actions">
         <button class="btn btn-secondary" type="button" onclick="backToAdminMenuFromBulkImport()">
-          กลับเมนูแอดมิน
+          ${t("backAdminMenu", "กลับเมนูแอดมิน")}
         </button>
       </div>
     </div>
@@ -14723,14 +15049,13 @@ function renderBulkProductImportSheet() {
     <div class="sheet-topbar">
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closeBulkProductImportSheet()"
-        aria-label="ปิดหน้าต่างนำเข้าสินค้า">×</button>
-      <h3 id="adminBulkProductImportSheetTitle">นำเข้าสินค้าหลายรายการ</h3>
+        aria-label="${t("bulkImportCloseAria", "ปิดหน้าต่างนำเข้าสินค้า")}">×</button>
+      <h3 id="adminBulkProductImportSheetTitle">${t("bulkImportProducts", "นำเข้าสินค้าหลายรายการ")}</h3>
       <div aria-hidden="true"></div>
     </div>
 
     <div class="helper-text" style="margin-bottom:10px">
-      ใช้ไฟล์ .tsv หรือคัดลอกจาก Google Sheets แล้ววางในช่องนี้
-      ระบบจะตรวจสอบข้อมูลก่อนนำเข้า และเวอร์ชันนี้ยังไม่รองรับไฟล์ .xlsx โดยตรง
+      ${t("bulkImportHelp", "ใช้ไฟล์ .tsv หรือคัดลอกจาก Google Sheets แล้ววางในช่องนี้ ระบบจะตรวจสอบข้อมูลก่อนนำเข้า และเวอร์ชันนี้ยังไม่รองรับไฟล์ .xlsx โดยตรง")}
     </div>
 
     <div class="bulk-import-actions">
@@ -14744,27 +15069,27 @@ function renderBulkProductImportSheet() {
         ${t("copySampleTemplate", "คัดลอกแม่แบบตัวอย่าง")}
       </button>
       <div class="form-group">
-        <label for="bulkProductImportFile">อัปโหลดไฟล์ TSV</label>
+        <label for="bulkProductImportFile">${t("uploadTsvFile", "อัปโหลดไฟล์ TSV")}</label>
         <input
           id="bulkProductImportFile"
           class="input bulk-import-file-input"
           type="file"
           accept=".tsv,.txt"
           onchange="handleBulkProductFileUpload(event)">
-        <div class="helper-text">รองรับไฟล์ .tsv หรือ .txt เท่านั้น ยังไม่รองรับไฟล์ .xlsx โดยตรง</div>
+        <div class="helper-text">${t("tsvOnlyHelp", "รองรับไฟล์ .tsv หรือ .txt เท่านั้น ยังไม่รองรับไฟล์ .xlsx โดยตรง")}</div>
       </div>
     </div>
 
     ${renderBulkProductTemplateTable()}
 
     <div class="form-group">
-      <label>วางข้อมูลจาก Excel / Google Sheets</label>
+      <label>${t("pasteFromSheets", "วางข้อมูลจาก Excel / Google Sheets")}</label>
       <div class="bulk-paste-actions">
         <button class="btn btn-outline" type="button" onclick="pasteBulkProductImportFromClipboard()">
-          วางจากคลิปบอร์ด
+          ${t("pasteFromClipboard", "วางจากคลิปบอร์ด")}
         </button>
         <button class="btn btn-outline" type="button" onclick="resetBulkProductImport()">
-          ล้างข้อมูล
+          ${t("clearData", "ล้างข้อมูล")}
         </button>
       </div>
     </div>
@@ -14774,9 +15099,9 @@ function renderBulkProductImportSheet() {
     ${hasImportSuccess ? "" : renderBulkProductImportPreview(parsed.items, allErrors)}
 
     <details class="bulk-raw-input">
-      <summary>แก้ไขข้อความต้นฉบับ</summary>
+      <summary>${t("editRawText", "แก้ไขข้อความต้นฉบับ")}</summary>
       <div class="form-group">
-        <label for="bulkProductImportText">ข้อความ TSV ต้นฉบับ</label>
+        <label for="bulkProductImportText">${t("rawTsvText", "ข้อความ TSV ต้นฉบับ")}</label>
         <textarea
           id="bulkProductImportText"
           class="input bulk-import-textarea"
@@ -14786,17 +15111,17 @@ function renderBulkProductImportSheet() {
     </details>
 
     <button class="btn btn-outline" onclick="previewBulkProductImport()">
-      ตรวจสอบข้อมูล
+      ${t("validateData", "ตรวจสอบข้อมูล")}
     </button>
 
     <div class="sheet-action-footer">
       <button class="btn btn-primary"
         ${canSubmit && !state.admin.isSubmitting && !hasImportSuccess ? "" : "disabled"}
         onclick="submitBulkProductImport(this)">
-        ${state.admin.isSubmitting ? "กำลังนำเข้า..." : "นำเข้าสินค้า"}
+        ${state.admin.isSubmitting ? t("importingProducts", "กำลังนำเข้า...") : t("importProducts", "นำเข้าสินค้า")}
       </button>
       <button class="btn btn-outline" onclick="closeBulkProductImportSheet()">
-        ยกเลิก
+        ${t("cancel", "ยกเลิก")}
       </button>
     </div>
   `;
@@ -14837,7 +15162,7 @@ function parseBulkProductImportText(rawText) {
   const seenSkus = new Set();
 
   if (dataLines.length > 100) {
-    errors.push(bulkImportError(0, "", "items", "นำเข้าได้สูงสุด 100 รายการต่อครั้ง"));
+    errors.push(bulkImportError(0, "", "items", t("bulkImportMaxRows", "นำเข้าได้สูงสุด 100 รายการต่อครั้ง")));
     return { items, errors };
   }
 
@@ -14857,7 +15182,7 @@ function parseBulkProductImportText(rawText) {
   });
 
   if (items.length === 0) {
-    errors.push(bulkImportError(1, "", "items", "กรุณาเพิ่มข้อมูลสินค้าอย่างน้อย 1 รายการ"));
+    errors.push(bulkImportError(1, "", "items", t("bulkImportNeedOneRow", "กรุณาเพิ่มข้อมูลสินค้าอย่างน้อย 1 รายการ")));
   }
 
   return { items, errors };
@@ -14940,9 +15265,9 @@ function validateBulkProductImportRow(item, rowNumber, seenSkus, errors) {
   const stock = Number(item.stock);
 
   if (!productId) {
-    errors.push(bulkImportError(rowNumber, productId, "productId", "กรุณากรอกรหัสสินค้า"));
+    errors.push(bulkImportError(rowNumber, productId, "productId", t("bulkImportSkuRequired", "กรุณากรอกรหัสสินค้า")));
   } else if (seenSkus.has(productId)) {
-    errors.push(bulkImportError(rowNumber, productId, "productId", "รหัสสินค้าซ้ำในข้อมูลที่วาง"));
+    errors.push(bulkImportError(rowNumber, productId, "productId", t("bulkImportDuplicateSku", "รหัสสินค้าซ้ำในข้อมูลที่วาง")));
   }
 
   if (productId) {
@@ -14950,36 +15275,36 @@ function validateBulkProductImportRow(item, rowNumber, seenSkus, errors) {
   }
 
   if (!item.name) {
-    errors.push(bulkImportError(rowNumber, productId, "name", "กรุณากรอกชื่อสินค้า"));
+    errors.push(bulkImportError(rowNumber, productId, "name", t("bulkImportNameRequired", "กรุณากรอกชื่อสินค้า")));
   }
 
   if (item.price === "" || !Number.isInteger(price) || price < 0) {
-    errors.push(bulkImportError(rowNumber, productId, "price", "ราคาต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป"));
+    errors.push(bulkImportError(rowNumber, productId, "price", t("bulkImportPriceInvalid", "ราคาต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป")));
   }
 
   if (item.costPrice === "" || !Number.isInteger(costPrice) || costPrice < 0) {
-    errors.push(bulkImportError(rowNumber, productId, "costPrice", "ต้นทุนต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป"));
+    errors.push(bulkImportError(rowNumber, productId, "costPrice", t("bulkImportCostInvalid", "ต้นทุนต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป")));
   }
 
   if (item.stock === "" || !Number.isInteger(stock) || stock < 0) {
-    errors.push(bulkImportError(rowNumber, productId, "stock", "จำนวนสต๊อกต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป"));
+    errors.push(bulkImportError(rowNumber, productId, "stock", t("bulkImportStockInvalid", "จำนวนสต๊อกต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป")));
   }
 
   if (!item.status || !allowedStatuses.includes(item.status)) {
-    errors.push(bulkImportError(rowNumber, productId, "status", "สถานะสินค้าไม่ถูกต้อง"));
+    errors.push(bulkImportError(rowNumber, productId, "status", t("bulkImportStatusInvalid", "สถานะสินค้าไม่ถูกต้อง")));
   }
 
   if (
     item.active &&
     !["true", "false", "1", "0"].includes(item.active.toLowerCase())
   ) {
-    errors.push(bulkImportError(rowNumber, productId, "active", "active ต้องเป็น true/false/1/0 หรือเว้นว่าง"));
+    errors.push(bulkImportError(rowNumber, productId, "active", t("bulkImportActiveInvalid", "active ต้องเป็น true/false/1/0 หรือเว้นว่าง")));
   }
   if (
     item.variantSortOrder !== "" &&
     !Number.isInteger(Number(item.variantSortOrder))
   ) {
-    errors.push(bulkImportError(rowNumber, productId, "variantSortOrder", "ลำดับไซส์ต้องเป็นตัวเลขจำนวนเต็ม"));
+    errors.push(bulkImportError(rowNumber, productId, "variantSortOrder", t("bulkImportSortOrderInvalid", "ลำดับไซส์ต้องเป็นตัวเลขจำนวนเต็ม")));
   }
 }
 
@@ -14991,38 +15316,38 @@ function getBulkImportErrorMessage(error) {
   const message = String(error?.message || "").trim();
   const field = String(error?.field || "").trim();
   const knownMessages = {
-    "Bulk import validation failed": "ตรวจสอบข้อมูลนำเข้าไม่ผ่าน",
-    "Maximum 100 product rows allowed": "นำเข้าได้สูงสุด 100 รายการต่อครั้ง",
-    "At least one product row is required": "กรุณาเพิ่มข้อมูลสินค้าอย่างน้อย 1 รายการ",
-    "SKU is required": "กรุณากรอกรหัสสินค้า",
-    "Duplicate SKU inside batch": "รหัสสินค้าซ้ำในชุดข้อมูล",
-    "Duplicate SKU inside pasted rows": "รหัสสินค้าซ้ำในข้อมูลที่วาง",
-    "Product already exists": "รหัสสินค้านี้มีอยู่แล้ว",
-    "Name is required": "กรุณากรอกชื่อสินค้า",
-    "Price must be an integer >= 0": "ราคาต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป",
-    "Cost price must be an integer >= 0": "ต้นทุนต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป",
-    "Stock must be an integer >= 0": "จำนวนสต๊อกต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป",
-    "Invalid product status": "สถานะสินค้าไม่ถูกต้อง",
-    "Invalid status": "สถานะสินค้าไม่ถูกต้อง",
-    "Active must be true/false/1/0": "active ต้องเป็น true/false/1/0 หรือเว้นว่าง",
-    "Active must be true/false/1/0 or blank": "active ต้องเป็น true/false/1/0 หรือเว้นว่าง",
-    "Image must be an http/https URL": "รูปภาพต้องเป็น URL แบบ http/https",
-    "Compare image must be an http/https URL": "รูปภาพเปรียบเทียบต้องเป็น URL แบบ http/https",
-    "Note is too long": "หมายเหตุยาวเกินไป",
-    "Details text is too long": "รายละเอียดสินค้ายาวเกินไป"
+    "Bulk import validation failed": t("bulkImportValidationFailed", "ตรวจสอบข้อมูลนำเข้าไม่ผ่าน"),
+    "Maximum 100 product rows allowed": t("bulkImportMaxRows", "นำเข้าได้สูงสุด 100 รายการต่อครั้ง"),
+    "At least one product row is required": t("bulkImportNeedOneRow", "กรุณาเพิ่มข้อมูลสินค้าอย่างน้อย 1 รายการ"),
+    "SKU is required": t("bulkImportSkuRequired", "กรุณากรอกรหัสสินค้า"),
+    "Duplicate SKU inside batch": t("bulkImportDuplicateSku", "รหัสสินค้าซ้ำในชุดข้อมูล"),
+    "Duplicate SKU inside pasted rows": t("bulkImportDuplicateSku", "รหัสสินค้าซ้ำในข้อมูลที่วาง"),
+    "Product already exists": t("duplicateProductIdError", "รหัสสินค้านี้มีอยู่แล้ว"),
+    "Name is required": t("bulkImportNameRequired", "กรุณากรอกชื่อสินค้า"),
+    "Price must be an integer >= 0": t("bulkImportPriceInvalid", "ราคาต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป"),
+    "Cost price must be an integer >= 0": t("bulkImportCostInvalid", "ต้นทุนต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป"),
+    "Stock must be an integer >= 0": t("bulkImportStockInvalid", "จำนวนสต๊อกต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป"),
+    "Invalid product status": t("bulkImportStatusInvalid", "สถานะสินค้าไม่ถูกต้อง"),
+    "Invalid status": t("bulkImportStatusInvalid", "สถานะสินค้าไม่ถูกต้อง"),
+    "Active must be true/false/1/0": t("bulkImportActiveInvalid", "active ต้องเป็น true/false/1/0 หรือเว้นว่าง"),
+    "Active must be true/false/1/0 or blank": t("bulkImportActiveInvalid", "active ต้องเป็น true/false/1/0 หรือเว้นว่าง"),
+    "Image must be an http/https URL": t("imageUrlInvalid", "รูปภาพต้องเป็น URL แบบ http/https"),
+    "Compare image must be an http/https URL": t("compareImageUrlInvalid", "รูปภาพเปรียบเทียบต้องเป็น URL แบบ http/https"),
+    "Note is too long": t("noteTooLong", "หมายเหตุยาวเกินไป"),
+    "Details text is too long": t("detailsTextTooLong", "รายละเอียดสินค้ายาวเกินไป")
   };
-  return knownMessages[message] || `${field || "items"} ไม่ถูกต้อง กรุณาตรวจสอบข้อมูลอีกครั้ง`;
+  return knownMessages[message] || formatUiText("bulkInvalidFallback", { field: field || "items" }, "{field} ไม่ถูกต้อง กรุณาตรวจสอบข้อมูลอีกครั้ง");
 }
 
 function renderBulkProductImportSummary(items, errors) {
   return `
     <div class="cart-summary">
       <div class="summary-row">
-        <span>รายการพร้อมนำเข้า</span>
+        <span>${t("readyItems", "รายการพร้อมนำเข้า")}</span>
         <strong>${items.length}</strong>
       </div>
       <div class="summary-row">
-        <span>ข้อผิดพลาด</span>
+        <span>${t("errorCount", "ข้อผิดพลาด")}</span>
         <strong>${errors.length}</strong>
       </div>
     </div>
@@ -15032,10 +15357,10 @@ function renderBulkProductImportSummary(items, errors) {
 function renderBulkProductDataPreviewTable(items, errorsByRow) {
   const columns = BULK_PRODUCT_COLUMNS;
   return `
-    <div class="bulk-template-table bulk-data-preview-table" aria-label="ตัวอย่างข้อมูลที่นำเข้า">
+    <div class="bulk-template-table bulk-data-preview-table" aria-label="${t("bulkDataPreviewAria", "ตัวอย่างข้อมูลที่นำเข้า")}">
       <table>
         <thead>
-          <tr>${columns.map(column => `<th>${esc(column)}</th>`).join("")}<th>สถานะ</th></tr>
+          <tr>${columns.map(column => `<th>${esc(column)}</th>`).join("")}<th>${t("status", "สถานะ")}</th></tr>
         </thead>
         <tbody>
           ${
@@ -15048,7 +15373,7 @@ function renderBulkProductDataPreviewTable(items, errorsByRow) {
                       ${columns.map(column => `<td>${esc(item[column] || "-")}</td>`).join("")}
                       <td>
                         <span class="status-badge ${rowErrors.length ? "status-rejected" : "status-approved"} compact">
-                          ${rowErrors.length ? "พบข้อผิดพลาด" : "พร้อมนำเข้า"}
+                          ${rowErrors.length ? t("errorFound", "พบข้อผิดพลาด") : t("readyToImport", "พร้อมนำเข้า")}
                         </span>
                       </td>
                     </tr>
@@ -15056,7 +15381,7 @@ function renderBulkProductDataPreviewTable(items, errorsByRow) {
                 }).join("")
               : `
                 <tr class="placeholder-row">
-                  <td colspan="${columns.length + 1}">วาง/อัปโหลดข้อมูลเพื่อแสดงตัวอย่าง</td>
+                  <td colspan="${columns.length + 1}">${t("previewUploadPrompt", "วาง/อัปโหลดข้อมูลเพื่อแสดงตัวอย่าง")}</td>
                 </tr>
               `
           }
@@ -15071,7 +15396,7 @@ function renderBulkProductImportPreview(items, errors) {
     return `
       ${renderBulkProductDataPreviewTable(items, new Map())}
       <div class="empty-state">
-        วางข้อมูล TSV หรืออัปโหลดไฟล์ แล้วกดตรวจสอบข้อมูล
+        ${t("previewTsvPrompt", "วางข้อมูล TSV หรืออัปโหลดไฟล์ แล้วกดตรวจสอบข้อมูล")}
       </div>
     `;
   }
@@ -15088,15 +15413,15 @@ function renderBulkProductImportPreview(items, errors) {
     const rowErrors = errorsByRow.get(rowNumber) || [];
     return `
       <div class="bulk-preview-card ${rowErrors.length ? "has-error" : ""}">
-        <div class="name">${esc(item.productId || "(ยังไม่มีรหัสสินค้า)")}</div>
+        <div class="name">${esc(item.productId || t("missingProductId", "(ยังไม่มีรหัสสินค้า)"))}</div>
         <div class="bulk-preview-meta">
-          ${esc(item.name || "(ยังไม่มีชื่อสินค้า)")}<br>
-          ราคา: ${esc(item.price)} | ต้นทุน: ${esc(item.costPrice)} | สต๊อก: ${esc(item.stock)} | สถานะ: ${esc(item.status || "-")}
+          ${esc(item.name || t("missingProductName", "(ยังไม่มีชื่อสินค้า)"))}<br>
+          ${t("price", "ราคา")}: ${esc(item.price)} | ${t("bulkFieldCostPrice", "ต้นทุน")}: ${esc(item.costPrice)} | ${t("stock", "สต๊อก")}: ${esc(item.stock)} | ${t("status", "สถานะ")}: ${esc(item.status || "-")}
         </div>
         ${
           rowErrors.length
             ? `<ul class="bulk-error-list">${rowErrors.map(error => `<li>${esc(error.field)}: ${esc(getBulkImportErrorMessage(error))}</li>`).join("")}</ul>`
-            : `<div class="status-badge status-approved compact" style="margin-top:8px">พร้อมนำเข้า</div>`
+            : `<div class="status-badge status-approved compact" style="margin-top:8px">${t("readyToImport", "พร้อมนำเข้า")}</div>`
         }
       </div>
     `;
@@ -15131,7 +15456,7 @@ async function submitBulkProductImport(btn) {
   renderBulkProductImportSheet();
 
   try {
-    showLoading("กำลังนำเข้าสินค้า...");
+    showLoading(t("bulkImportLoading", "กำลังนำเข้าสินค้า..."));
     const form = new URLSearchParams();
     form.append("action", "bulkAddProducts");
     form.append("token", state.admin.token);
@@ -15147,7 +15472,7 @@ async function submitBulkProductImport(btn) {
       const imported = Number(json.imported || json.data?.imported || 0);
       bulkState.backendErrors = [];
       bulkState.importedCount = imported;
-      bulkState.summary = `นำเข้าสินค้าสำเร็จ ${imported} รายการ`;
+      bulkState.summary = formatUiText("bulkImportSuccessCount", { count: imported }, "นำเข้าสำเร็จ {count} รายการ");
       showToast(bulkState.summary, "success");
       clearBulkProductImportWorkingState({ keepSuccess: true });
       await refreshProducts();
@@ -15166,7 +15491,7 @@ async function submitBulkProductImport(btn) {
       exitAdmin({ silent: true });
       return;
     }
-    showToast(getBulkImportErrorMessage({ message: json?.error }) || "นำเข้าสินค้าไม่สำเร็จ", "error");
+    showToast(getBulkImportErrorMessage({ message: json?.error }) || t("bulkImportFailedRetry", "นำเข้าสินค้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"), "error");
   } catch (err) {
     console.error(err);
     showToast(t("bulkImportFailedRetry", "นำเข้าสินค้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"), "error");
@@ -15420,7 +15745,7 @@ function parseBulkProductUpdateValue(field, rawValue) {
     return {
       valid: false,
       value: null,
-      message: "กรุณาระบุค่าใหม่"
+      message: t("bulkUpdateValueRequired", "กรุณาระบุค่าใหม่")
     };
   }
 
@@ -15430,7 +15755,7 @@ function parseBulkProductUpdateValue(field, rawValue) {
       return {
         valid: false,
         value: null,
-        message: `${getBulkProductUpdateFieldLabel(field)}ต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป`
+        message: formatUiText("bulkUpdateFieldNumberInvalid", { field: getBulkProductUpdateFieldLabel(field) }, "{field}ต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป")
       };
     }
     return { valid: true, value };
@@ -15443,7 +15768,7 @@ function parseBulkProductUpdateValue(field, rawValue) {
       return {
         valid: false,
         value: null,
-        message: "สถานะสินค้าไม่ถูกต้อง"
+        message: t("bulkImportStatusInvalid", "สถานะสินค้าไม่ถูกต้อง")
       };
     }
     return { valid: true, value: status };
@@ -15455,7 +15780,7 @@ function parseBulkProductUpdateValue(field, rawValue) {
       return {
         valid: false,
         value: null,
-        message: "สถานะการขายต้องเป็น เปิดขาย/ปิดขาย หรือ true/false"
+        message: t("bulkUpdateActiveInvalid", "สถานะการขายต้องเป็น เปิดขาย/ปิดขาย หรือ true/false")
       };
     }
     return active;
@@ -15464,7 +15789,7 @@ function parseBulkProductUpdateValue(field, rawValue) {
   return {
     valid: false,
     value: null,
-    message: "ประเภทการอัปเดตไม่ถูกต้อง"
+    message: t("bulkUpdateTypeInvalid", "ประเภทการอัปเดตไม่ถูกต้อง")
   };
 }
 
@@ -15489,12 +15814,12 @@ function parseBulkProductUpdateInput() {
   }
 
   if (!skus.length) {
-    errors.push(bulkImportError(1, "", "productId", "กรุณาระบุ SKU อย่างน้อย 1 รายการ"));
+    errors.push(bulkImportError(1, "", "productId", t("bulkUpdateSkuRequiredOne", "กรุณาระบุ SKU อย่างน้อย 1 รายการ")));
     return { items, errors };
   }
 
   if (skus.length > 100) {
-    errors.push(bulkImportError(0, "", "items", "อัปเดตได้สูงสุด 100 รายการต่อครั้ง"));
+    errors.push(bulkImportError(0, "", "items", t("bulkUpdateMaxRows", "อัปเดตได้สูงสุด 100 รายการต่อครั้ง")));
     return { items, errors };
   }
 
@@ -15511,9 +15836,9 @@ function parseBulkProductUpdateInput() {
     };
 
     if (!productId) {
-      errors.push(bulkImportError(rowNumber, productId, "productId", "กรุณาระบุ SKU"));
+      errors.push(bulkImportError(rowNumber, productId, "productId", t("bulkUpdateSkuRequired", "กรุณาระบุ SKU")));
     } else if (seenSkus.has(productId)) {
-      errors.push(bulkImportError(rowNumber, productId, "productId", "SKU ซ้ำในรายการที่เลือก"));
+      errors.push(bulkImportError(rowNumber, productId, "productId", t("bulkUpdateDuplicateSku", "SKU ซ้ำในรายการที่เลือก")));
     }
 
     if (productId) {
@@ -15521,7 +15846,7 @@ function parseBulkProductUpdateInput() {
     }
 
     if (products.length && !product) {
-      errors.push(bulkImportError(rowNumber, productId, "productId", "ไม่พบสินค้าในรายการปัจจุบัน"));
+      errors.push(bulkImportError(rowNumber, productId, "productId", t("bulkUpdateProductNotFound", "ไม่พบสินค้าในรายการปัจจุบัน")));
     }
 
     if (!valueResult.valid) {
@@ -15532,7 +15857,7 @@ function parseBulkProductUpdateInput() {
   });
 
   if (!items.length) {
-    errors.push(bulkImportError(1, "", "productId", "กรุณาระบุ SKU อย่างน้อย 1 รายการ"));
+    errors.push(bulkImportError(1, "", "productId", t("bulkUpdateSkuRequiredOne", "กรุณาระบุ SKU อย่างน้อย 1 รายการ")));
   }
 
   return { items, errors };
@@ -15541,58 +15866,58 @@ function parseBulkProductUpdateInput() {
 function getBulkProductUpdateBackendErrorMessage(error) {
   const message = String(error?.message || "").trim();
   const known = {
-    "Bulk update validation failed": "ตรวจสอบข้อมูลอัปเดตไม่ผ่าน",
-    "Items must be valid JSON": "รูปแบบข้อมูลไม่ถูกต้อง",
-    "Items must be an array": "รูปแบบข้อมูลไม่ถูกต้อง",
-    "At least one product update is required": "กรุณาระบุสินค้าอย่างน้อย 1 รายการ",
-    "Batch size limit is 100 rows": "อัปเดตได้สูงสุด 100 รายการต่อครั้ง",
-    "Item must be an object": "ข้อมูลรายการไม่ถูกต้อง",
-    "SKU is required": "กรุณาระบุ SKU",
-    "Duplicate SKU inside update batch": "SKU ซ้ำในรายการอัปเดต",
-    "Product not found": "ไม่พบสินค้า",
-    "Unknown field is not allowed": "มีฟิลด์ที่ไม่อนุญาตให้อัปเดต",
-    "Stock cannot be updated by bulkUpdateProducts": "ไม่สามารถอัปเดตสต็อกในหน้าจอนี้ได้",
-    "At least one allowed field is required": "กรุณาเลือกข้อมูลที่ต้องการอัปเดต",
-    "Price must be an integer >= 0": "ราคาขายต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป",
-    "Cost price must be an integer >= 0": "ต้นทุนต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป",
-    "Invalid product status": "สถานะสินค้าไม่ถูกต้อง",
-    "Active must be true/false or 1/0": "สถานะการขายต้องเป็น true/false หรือ 1/0"
+    "Bulk update validation failed": t("bulkUpdateValidationFailed", "ตรวจสอบข้อมูลอัปเดตไม่ผ่าน"),
+    "Items must be valid JSON": t("invalidData", "ข้อมูลไม่ถูกต้อง"),
+    "Items must be an array": t("invalidData", "ข้อมูลไม่ถูกต้อง"),
+    "At least one product update is required": t("bulkUpdateSkuRequiredOne", "กรุณาระบุสินค้าอย่างน้อย 1 รายการ"),
+    "Batch size limit is 100 rows": t("bulkUpdateMaxRows", "อัปเดตได้สูงสุด 100 รายการต่อครั้ง"),
+    "Item must be an object": t("invalidData", "ข้อมูลรายการไม่ถูกต้อง"),
+    "SKU is required": t("bulkUpdateSkuRequired", "กรุณาระบุ SKU"),
+    "Duplicate SKU inside update batch": t("bulkUpdateDuplicateSku", "SKU ซ้ำในรายการอัปเดต"),
+    "Product not found": t("bulkUpdateProductNotFound", "ไม่พบสินค้า"),
+    "Unknown field is not allowed": t("bulkUpdateTypeInvalid", "มีฟิลด์ที่ไม่อนุญาตให้อัปเดต"),
+    "Stock cannot be updated by bulkUpdateProducts": t("bulkUpdateStockNotAllowed", "ไม่สามารถอัปเดตสต็อกในหน้าจอนี้ได้"),
+    "At least one allowed field is required": t("bulkUpdateAllowedFieldRequired", "กรุณาเลือกข้อมูลที่ต้องการอัปเดต"),
+    "Price must be an integer >= 0": t("bulkImportPriceInvalid", "ราคาขายต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป"),
+    "Cost price must be an integer >= 0": t("bulkImportCostInvalid", "ต้นทุนต้องเป็นตัวเลขจำนวนเต็ม 0 ขึ้นไป"),
+    "Invalid product status": t("bulkImportStatusInvalid", "สถานะสินค้าไม่ถูกต้อง"),
+    "Active must be true/false or 1/0": t("bulkUpdateActiveInvalid", "สถานะการขายต้องเป็น true/false หรือ 1/0")
   };
-  return known[message] || message || "ข้อมูลไม่ถูกต้อง";
+  return known[message] || message || t("invalidData", "ข้อมูลไม่ถูกต้อง");
 }
 
 function getBulkProductUpdateStatus(items, errors) {
   if (state.admin.isSubmitting) {
     return {
-      label: "กำลังอัปเดตสินค้า...",
-      detail: "กรุณารอสักครู่ ระบบกำลังส่งข้อมูลไปยังหลังบ้าน",
+      label: t("bulkUpdateLoading", "กำลังอัปเดตสินค้า..."),
+      detail: t("bulkUpdateLoadingDetail", "กรุณารอสักครู่ ระบบกำลังส่งข้อมูลไปยังหลังบ้าน"),
       type: "loading"
     };
   }
   if (state.admin.bulkProductUpdate.summary) {
     return {
-      label: "อัปเดตสินค้าสำเร็จ",
+      label: t("bulkUpdateSuccess", "อัปเดตสินค้าสำเร็จ"),
       detail: state.admin.bulkProductUpdate.summary,
       type: "success"
     };
   }
   if (errors.length) {
     return {
-      label: `พบข้อผิดพลาด ${errors.length} รายการ`,
-      detail: "กรุณาตรวจสอบ SKU และค่าใหม่ก่อนอัปเดต",
+      label: formatUiText("bulkImportErrorCount", { count: errors.length }, "พบข้อผิดพลาด {count} รายการ"),
+      detail: t("bulkUpdateErrorDetail", "กรุณาตรวจสอบ SKU และค่าใหม่ก่อนอัปเดต"),
       type: "error"
     };
   }
   if (items.length) {
     return {
-      label: `พร้อมอัปเดต ${items.length} รายการ`,
-      detail: `ตรวจสอบแล้ว ${items.length} รายการ พร้อมส่งไปอัปเดต`,
+      label: formatUiText("bulkUpdateReady", { count: items.length }, "พร้อมอัปเดต {count} รายการ"),
+      detail: formatUiText("bulkUpdateReadyDetail", { count: items.length }, "ตรวจสอบแล้ว {count} รายการ พร้อมส่งไปอัปเดต"),
       type: "ready"
     };
   }
   return {
-    label: "ยังไม่ได้ตรวจสอบข้อมูล",
-    detail: "ระบุ SKU เลือกข้อมูลที่ต้องการแก้ไข แล้วกดตรวจสอบข้อมูล",
+    label: t("bulkImportIdle", "ยังไม่ได้ตรวจสอบข้อมูล"),
+    detail: t("bulkUpdateIdleDetail", "ระบุ SKU เลือกข้อมูลที่ต้องการแก้ไข แล้วกดตรวจสอบข้อมูล"),
     type: "idle"
   };
 }
@@ -15617,11 +15942,11 @@ function renderBulkProductUpdateSuccessCard() {
   if (!state.admin.bulkProductUpdate.summary) return "";
   return `
     <div class="bulk-import-success-card" role="status" aria-live="polite">
-      <strong>อัปเดตสินค้าสำเร็จ</strong>
-      <div>อัปเดตสำเร็จ ${updated} รายการ</div>
+      <strong>${t("bulkUpdateSuccess", "อัปเดตสินค้าสำเร็จ")}</strong>
+      <div>${formatUiText("bulkUpdateSuccessCount", { count: updated }, "อัปเดตสำเร็จ {count} รายการ")}</div>
       <div class="bulk-import-success-actions">
         <button class="btn btn-secondary" type="button" onclick="backToAdminMenuFromBulkProductUpdate()">
-          กลับเมนูแอดมิน
+          ${t("backAdminMenu", "กลับเมนูแอดมิน")}
         </button>
       </div>
     </div>
@@ -15660,7 +15985,7 @@ function renderBulkProductUpdateValueInput(bulkState) {
       min="0"
       step="1"
       value="${escAttr(bulkState.value || "")}"
-      placeholder="ระบุ${escAttr(getBulkProductUpdateFieldLabel(field))}"
+      placeholder="${escAttr(formatUiText("bulkUpdateValuePlaceholder", { field: getBulkProductUpdateFieldLabel(field) }, "ระบุ{field}"))}"
       oninput="state.admin.bulkProductUpdate.value = this.value; invalidateBulkProductUpdatePreview(); syncBulkProductUpdatePreviewGateUi();">
   `;
 }
@@ -15690,7 +16015,7 @@ function renderBulkProductUpdatePickerRows() {
               <div class="bulk-product-picker-meta">
                 <span>SKU: ${esc(productId || "-")}</span>
                 <span>${t("price", "ราคา")}: ${esc(formatBulkProductUpdateValue("price", product.price))}</span>
-                <span>ต้นทุน: ${esc(formatBulkProductUpdateValue("costPrice", product.costPrice))}</span>
+                <span>${t("bulkFieldCostPrice", "ต้นทุน")}: ${esc(formatBulkProductUpdateValue("costPrice", product.costPrice))}</span>
               </div>
               <div class="bulk-product-picker-meta">
                 ${renderBulkProductUpdateValueDisplay("status", product.status)}
@@ -15700,7 +16025,7 @@ function renderBulkProductUpdatePickerRows() {
           </label>
         `;
       }).join("")
-    : `<div class="bulk-product-picker-empty">ไม่พบสินค้าตามเงื่อนไขที่ค้นหา</div>`;
+    : `<div class="bulk-product-picker-empty">${t("noMatchingProducts", "ไม่พบสินค้าตามเงื่อนไขที่ค้นหา")}</div>`;
 }
 
 function updateBulkProductUpdatePickerList() {
@@ -15756,9 +16081,9 @@ function renderBulkProductUpdatePicker() {
 
   return `
     <div class="bulk-product-picker">
-      <div class="admin-detail-title">เลือกสินค้าจากรายการ</div>
+      <div class="admin-detail-title">${t("bulkUpdatePickerTitle", "เลือกสินค้าจากรายการ")}</div>
       <div class="helper-text">
-        เลือกสินค้าด้วย checkbox หรือใช้ช่อง SKU ด้านล่างแบบเดิมก็ได้ เลือกแล้ว <span id="bulkProductUpdatePickerCount">${selectedCount}</span> รายการ
+        ${formatUiText("bulkUpdatePickerHelp", { count: `<span id="bulkProductUpdatePickerCount">${selectedCount}</span>` }, "เลือกสินค้าด้วย checkbox หรือใช้ช่อง SKU ด้านล่างแบบเดิมก็ได้ เลือกแล้ว {count} รายการ")}
       </div>
 
       <div class="bulk-product-picker-controls">
@@ -15800,7 +16125,7 @@ function renderBulkProductUpdatePreview(items, errors) {
   if (!items.length && !errors.length) {
     return `
       <div class="empty-state">
-        ระบุ SKU แล้วกดตรวจสอบข้อมูล เพื่อดูค่าเดิมและค่าใหม่ก่อนบันทึก
+        ${t("bulkUpdatePreviewEmpty", "ระบุ SKU แล้วกดตรวจสอบข้อมูล เพื่อดูค่าเดิมและค่าใหม่ก่อนบันทึก")}
       </div>
     `;
   }
@@ -15835,22 +16160,22 @@ function renderBulkProductUpdatePreview(items, errors) {
           <div class="name">${esc(product.name || item.productId || "-")}</div>
           <div class="bulk-preview-meta">
             SKU: ${esc(item.productId || "-")}<br>
-            อัปเดต: ${esc(getBulkProductUpdateFieldLabel(item.field))}
+            ${t("bulkUpdateTarget", "อัปเดต")}: ${esc(getBulkProductUpdateFieldLabel(item.field))}
           </div>
           <div class="bulk-update-values">
             <div class="bulk-update-value">
-              ค่าเดิม
+              ${t("oldValue", "ค่าเดิม")}
               <strong>${oldValue}</strong>
             </div>
             <div class="bulk-update-value">
-              ค่าใหม่
+              ${t("newValue", "ค่าใหม่")}
               <strong>${newValue}</strong>
             </div>
           </div>
           ${
             rowErrors.length
               ? `<ul class="bulk-error-list">${rowErrors.map(error => `<li>${esc(error.field)}: ${esc(error.message || getBulkProductUpdateBackendErrorMessage(error))}</li>`).join("")}</ul>`
-              : `<div class="status-badge status-approved compact" style="margin-top:8px">พร้อมอัปเดต</div>`
+              : `<div class="status-badge status-approved compact" style="margin-top:8px">${t("readyToUpdate", "พร้อมอัปเดต")}</div>`
           }
         </div>
       </div>
@@ -15894,47 +16219,46 @@ function renderBulkProductUpdateSheet() {
     <div class="sheet-topbar">
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closeBulkProductUpdateSheet()"
-        aria-label="ปิดหน้าต่างอัปเดตสินค้า">×</button>
-      <h3 id="adminBulkProductUpdateSheetTitle">อัปเดตราคา/สถานะหลายรายการ</h3>
+        aria-label="${t("bulkUpdateCloseAria", "ปิดหน้าต่างอัปเดตสินค้า")}">×</button>
+      <h3 id="adminBulkProductUpdateSheetTitle">${t("bulkUpdateProducts", "อัปเดตราคา/สถานะหลายรายการ")}</h3>
       <div aria-hidden="true"></div>
     </div>
 
     <div class="helper-text" style="margin-bottom:10px">
-      ใช้สำหรับอัปเดตราคาขาย ต้นทุน สถานะสินค้า หรือเปิด/ปิดการขายหลายรายการพร้อมกัน
-      โดยไม่เปลี่ยน SKU และไม่เปลี่ยนจำนวนสต็อก
+      ${t("bulkUpdateHelp", "ใช้สำหรับอัปเดตราคาขาย ต้นทุน สถานะสินค้า หรือเปิด/ปิดการขายหลายรายการพร้อมกัน โดยไม่เปลี่ยน SKU และไม่เปลี่ยนจำนวนสต็อก")}
     </div>
 
     ${renderBulkProductUpdatePicker()}
 
     <div class="form-group">
-      <label for="bulkProductUpdateSkus">รายการ SKU แบบพิมพ์เอง</label>
+      <label for="bulkProductUpdateSkus">${t("bulkUpdateManualSkuList", "รายการ SKU แบบพิมพ์เอง")}</label>
       <textarea
         id="bulkProductUpdateSkus"
         class="input"
         rows="5"
-        placeholder="เช่น BN007, BN008 หรือวางหนึ่ง SKU ต่อบรรทัด"
+        placeholder="${t("bulkUpdateSkuPlaceholder", "เช่น BN007, BN008 หรือวางหนึ่ง SKU ต่อบรรทัด")}"
         oninput="state.admin.bulkProductUpdate.skuText = this.value; invalidateBulkProductUpdatePreview(); syncBulkProductUpdatePreviewGateUi();">${esc(bulkState.skuText || "")}</textarea>
-      <div class="helper-text">รองรับการคั่นด้วยบรรทัดใหม่ เครื่องหมายจุลภาค หรือช่องว่าง สูงสุด 100 รายการ</div>
+      <div class="helper-text">${t("bulkUpdateSkuHelp", "รองรับการคั่นด้วยบรรทัดใหม่ เครื่องหมายจุลภาค หรือช่องว่าง สูงสุด 100 รายการ")}</div>
     </div>
 
     <div class="form-group">
-      <label for="bulkProductUpdateField">ข้อมูลที่ต้องการอัปเดต</label>
+      <label for="bulkProductUpdateField">${t("bulkUpdateField", "ข้อมูลที่ต้องการอัปเดต")}</label>
       <select id="bulkProductUpdateField"
         onchange="state.admin.bulkProductUpdate.field = this.value; state.admin.bulkProductUpdate.value = ''; invalidateBulkProductUpdatePreview(); renderBulkProductUpdateSheet();">
-        <option value="price" ${bulkState.field === "price" ? "selected" : ""}>ตั้งราคาขาย</option>
-        <option value="costPrice" ${bulkState.field === "costPrice" ? "selected" : ""}>ตั้งต้นทุน</option>
-        <option value="status" ${bulkState.field === "status" ? "selected" : ""}>เปลี่ยนสถานะ</option>
-        <option value="active" ${bulkState.field === "active" ? "selected" : ""}>เปิด/ปิดการขาย</option>
+        <option value="price" ${bulkState.field === "price" ? "selected" : ""}>${t("setSalePrice", "ตั้งราคาขาย")}</option>
+        <option value="costPrice" ${bulkState.field === "costPrice" ? "selected" : ""}>${t("setCost", "ตั้งต้นทุน")}</option>
+        <option value="status" ${bulkState.field === "status" ? "selected" : ""}>${t("changeProductStatus", "เปลี่ยนสถานะ")}</option>
+        <option value="active" ${bulkState.field === "active" ? "selected" : ""}>${t("changeSaleStatus", "เปิด/ปิดการขาย")}</option>
       </select>
     </div>
 
     <div class="form-group">
-      <label for="bulkProductUpdateValue">ค่าใหม่</label>
+      <label for="bulkProductUpdateValue">${t("bulkUpdateNewValue", "ค่าใหม่")}</label>
       ${renderBulkProductUpdateValueInput(bulkState)}
     </div>
 
     <button class="btn btn-outline" onclick="previewBulkProductUpdate()">
-      ตรวจสอบข้อมูล
+      ${t("validateData", "ตรวจสอบข้อมูล")}
     </button>
 
     <div id="bulkProductUpdateStatusHost">
@@ -15951,10 +16275,10 @@ function renderBulkProductUpdateSheet() {
       <button id="bulkProductUpdateSubmitButton" class="btn btn-primary"
         ${canSubmit ? "" : "disabled"}
         onclick="submitBulkProductUpdate(this)">
-        ${state.admin.isSubmitting ? "กำลังอัปเดต..." : "อัปเดตสินค้า"}
+        ${state.admin.isSubmitting ? t("updatingProducts", "กำลังอัปเดต...") : t("updateProducts", "อัปเดตสินค้า")}
       </button>
       <button class="btn btn-outline" onclick="closeBulkProductUpdateSheet()">
-        ยกเลิก
+        ${t("cancel", "ยกเลิก")}
       </button>
     </div>
   `;
@@ -15997,7 +16321,7 @@ async function submitBulkProductUpdate(btn) {
   renderBulkProductUpdateSheet();
 
   try {
-    showLoading("กำลังอัปเดตสินค้า...");
+    showLoading(t("bulkUpdateLoading", "กำลังอัปเดตสินค้า..."));
     const items = bulkState.items.map(item => ({
       productId: item.productId,
       [item.field]: item.newValue
@@ -16016,7 +16340,7 @@ async function submitBulkProductUpdate(btn) {
 
     if (json?.success === true) {
       const updated = Number(json.updated || json.data?.updated || 0);
-      const successSummary = `อัปเดตสินค้าสำเร็จ ${updated} รายการ`;
+      const successSummary = formatUiText("bulkUpdateSuccessCount", { count: updated }, "อัปเดตสำเร็จ {count} รายการ");
       bulkState.summary = successSummary;
       bulkState.updatedCount = updated;
       clearBulkProductUpdateWorkingState({ keepSuccess: true });
@@ -16037,7 +16361,7 @@ async function submitBulkProductUpdate(btn) {
       exitAdmin({ silent: true });
       return;
     }
-    showToast(getBulkProductUpdateBackendErrorMessage({ message: json?.error }) || "อัปเดตสินค้าไม่สำเร็จ", "error");
+    showToast(getBulkProductUpdateBackendErrorMessage({ message: json?.error }) || t("bulkUpdateFailedRetry", "อัปเดตสินค้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"), "error");
   } catch (err) {
     console.error(err);
     showToast(t("bulkUpdateFailedRetry", "อัปเดตสินค้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"), "error");
@@ -16057,7 +16381,7 @@ function ensureAdminSessionForLandedCost() {
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    showToast(t("sessionExpiredLoginAgain", "Session หมดอายุ กรุณา login ใหม่"), "warning");
+    showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
     exitAdmin();
     return false;
   }
@@ -16350,10 +16674,10 @@ function addSelectedLandedCostProducts() {
   calcState.applyMessage = "";
   clearLandedCostApplyStatus(calcState);
   calcState.pickerMessage = added
-    ? `เพิ่มสินค้าเข้ารอบคำนวณแล้ว ${added} รายการ${skipped ? ` · ข้ามรายการซ้ำ ${skipped} รายการ` : ""}`
+    ? `${formatUiText("addedToLandedCostBatch", { count: added }, "เพิ่มสินค้าเข้ารอบคำนวณแล้ว {count} รายการ")}${skipped ? ` · ${formatUiText("skippedDuplicateRows", { count: skipped }, "ข้ามรายการซ้ำ {count} รายการ")}` : ""}`
     : skipped
-      ? "สินค้านี้อยู่ในรายการแล้ว"
-      : "กรุณาเลือกสินค้าอย่างน้อย 1 รายการ";
+      ? t("productAlreadyInBatch", "สินค้านี้อยู่ในรายการแล้ว")
+      : t("chooseAtLeastOneProduct", "กรุณาเลือกสินค้าอย่างน้อย 1 รายการ");
   renderLandedCostSheet();
 }
 
@@ -16391,18 +16715,18 @@ function validateLandedCostInput() {
     ["chinaDomesticShipping", t("chinaDomesticShippingLabel", "ค่าส่งในจีน")],
     ["chinaToThailandShipping", t("chinaToThailandShippingLabel", "ค่าส่งจีนมาไทย")],
     ["thailandShipping", t("thailandShippingLabel", "ค่าส่งในไทย")],
-    ["otherFees", "ค่าใช้จ่ายอื่น ๆ"]
+    ["otherFees", t("otherFees", "ค่าใช้จ่ายอื่น ๆ")]
   ];
   const fees = {};
 
   feeFields.forEach(([field, label]) => {
     const parsed = parseNonNegativeNumber(calcState[field]);
-    if (!parsed.valid) errors.push(`${label} ต้องเป็นตัวเลข 0 ขึ้นไป`);
+    if (!parsed.valid) errors.push(formatUiText("fieldNonNegative", { field: label }, "{field} ต้องเป็นตัวเลข 0 ขึ้นไป"));
     fees[field] = parsed.value;
   });
 
   const profit = parseNonNegativeNumber(calcState.profitPercent);
-  if (!profit.valid) errors.push("% กำไรที่ต้องการต้องเป็นตัวเลข 0 ขึ้นไป");
+  if (!profit.valid) errors.push(t("landedCostProfitInvalid", "% กำไรที่ต้องการต้องเป็นตัวเลข 0 ขึ้นไป"));
 
   const rows = calcState.rows.map((row, index) => {
     const rowNumber = index + 1;
@@ -16412,10 +16736,10 @@ function validateLandedCostInput() {
     const chinaUnitCost = Number(row.chinaUnitCost);
 
     if (!Number.isInteger(qty) || qty <= 0) {
-      errors.push(`แถว ${rowNumber}: จำนวนต้องเป็นจำนวนเต็มมากกว่า 0`);
+      errors.push(formatUiText("landedCostRowQtyInvalid", { row: rowNumber }, "แถว {row}: จำนวนต้องเป็นจำนวนเต็มมากกว่า 0"));
     }
     if (!Number.isFinite(chinaUnitCost) || chinaUnitCost < 0) {
-      errors.push(`แถว ${rowNumber}: ต้นทุนจีน/ชิ้นต้องเป็นตัวเลข 0 ขึ้นไป`);
+      errors.push(formatUiText("landedCostRowChinaCostInvalid", { row: rowNumber }, "แถว {row}: ต้นทุนจีน/ชิ้นต้องเป็นตัวเลข 0 ขึ้นไป"));
     }
 
     return {
@@ -16443,8 +16767,8 @@ function validateLandedCostInput() {
   );
   const batchBaseCost = usableRows.reduce((sum, row) => sum + row.itemBaseCost, 0);
 
-  if (!usableRows.length) errors.push("กรุณาเพิ่มสินค้าอย่างน้อย 1 แถว");
-  if (batchBaseCost <= 0) errors.push("มูลค่าสินค้ารวมต้องมากกว่า 0 ก่อนคำนวณ");
+  if (!usableRows.length) errors.push(t("landedCostNeedOneRow", "กรุณาเพิ่มสินค้าอย่างน้อย 1 แถว"));
+  if (batchBaseCost <= 0) errors.push(t("landedCostBaseCostPositive", "มูลค่าสินค้ารวมต้องมากกว่า 0 ก่อนคำนวณ"));
 
   return { errors, fees, profitPercent: profit.value, rows: usableRows, batchBaseCost };
 }
@@ -16521,7 +16845,7 @@ function prepareLandedCostApplyPreview() {
   if (!resultRows.length) {
     calcState.applyPreviewRows = [];
     calcState.applySelectedIds = [];
-    calcState.applyMessage = "กรุณาคำนวณต้นทุนก่อนเตรียมรายการอัปเดต";
+    calcState.applyMessage = t("calculateCostFirst", "กรุณาคำนวณต้นทุนก่อนเตรียมรายการอัปเดต");
     renderLandedCostSheet();
     return;
   }
@@ -16559,8 +16883,8 @@ function prepareLandedCostApplyPreview() {
   calcState.applyPreviewRows = previewRows;
   calcState.applySelectedIds = previewRows.map(row => row.productId);
   calcState.applyMessage = previewRows.length
-    ? `เตรียมรายการอัปเดตแล้ว ${previewRows.length} รายการ${skippedRows.length ? ` · ข้าม ${skippedRows.length} รายการที่ไม่พบสินค้าในระบบ` : ""}`
-    : "ไม่มีรายการที่พร้อมอัปเดต กรุณาตรวจสอบ SKU ในรอบคำนวณ";
+    ? `${formatUiText("preparedUpdateRows", { count: previewRows.length }, "เตรียมรายการอัปเดตแล้ว {count} รายการ")}${skippedRows.length ? ` · ${formatUiText("skippedMissingProducts", { count: skippedRows.length }, "ข้าม {count} รายการที่ไม่พบสินค้าในระบบ")}` : ""}`
+    : t("noReadyUpdateRows", "ไม่มีรายการที่พร้อมอัปเดต กรุณาตรวจสอบ SKU ในรอบคำนวณ");
   clearLandedCostApplyStatus(calcState);
   renderLandedCostSheet();
 }
@@ -16609,23 +16933,23 @@ function buildLandedCostApplyItems() {
     const suggestedPrice = Number(row.suggestedPrice);
 
     if (!productId) {
-      errors.push("พบรายการที่ไม่มี SKU / Product ID");
+      errors.push(t("landedCostMissingSku", "พบรายการที่ไม่มี SKU / Product ID"));
       return;
     }
     if (seen.has(productId)) {
-      errors.push(`SKU ${productId} ซ้ำในรายการที่จะบันทึก`);
+      errors.push(formatUiText("landedCostDuplicateSku", { sku: productId }, "SKU {sku} ซ้ำในรายการที่จะบันทึก"));
       return;
     }
     if (!productMap.has(productId)) {
-      errors.push(`ไม่พบสินค้า ${productId} ในระบบ จึงไม่สามารถบันทึกได้`);
+      errors.push(formatUiText("landedCostProductMissing", { sku: productId }, "ไม่พบสินค้า {sku} ในระบบ จึงไม่สามารถบันทึกได้"));
       return;
     }
     if (!Number.isInteger(suggestedCostPrice) || suggestedCostPrice < 0) {
-      errors.push(`ต้นทุนใหม่ของ ${productId} ต้องเป็นจำนวนเต็ม 0 ขึ้นไป`);
+      errors.push(formatUiText("landedCostNewCostInvalid", { sku: productId }, "ต้นทุนใหม่ของ {sku} ต้องเป็นจำนวนเต็ม 0 ขึ้นไป"));
       return;
     }
     if (!Number.isInteger(suggestedPrice) || suggestedPrice < 0) {
-      errors.push(`ราคาขายใหม่ของ ${productId} ต้องเป็นจำนวนเต็ม 0 ขึ้นไป`);
+      errors.push(formatUiText("landedCostNewPriceInvalid", { sku: productId }, "ราคาขายใหม่ของ {sku} ต้องเป็นจำนวนเต็ม 0 ขึ้นไป"));
       return;
     }
 
@@ -16638,7 +16962,7 @@ function buildLandedCostApplyItems() {
   });
 
   if (!items.length && !errors.length) {
-    errors.push("กรุณาเลือกรายการอย่างน้อย 1 รายการก่อนบันทึก");
+    errors.push(t("selectAtLeastOneBeforeSave", "กรุณาเลือกรายการอย่างน้อย 1 รายการก่อนบันทึก"));
   }
 
   return { items, errors };
@@ -16675,7 +16999,7 @@ async function applyLandedCostPreview() {
   renderLandedCostSheet();
 
   try {
-    showLoading("กำลังบันทึกราคาทุน/ราคาขาย...");
+    showLoading(t("savingCostSalePrices", "กำลังบันทึกราคาทุน/ราคาขาย..."));
     const form = new URLSearchParams();
     form.append("action", "bulkUpdateProducts");
     form.append("token", state.admin.token);
@@ -16689,7 +17013,7 @@ async function applyLandedCostPreview() {
 
     if (json?.success === true) {
       const updated = Number(json.updated || json.data?.updated || items.length);
-      calcState.applyStatus = `บันทึกสำเร็จ ${updated} รายการ`;
+      calcState.applyStatus = formatUiText("landedCostSaveSuccess", { count: updated }, "บันทึกสำเร็จ {count} รายการ");
       calcState.applyError = "";
       calcState.appliedCount = updated;
       showToast(calcState.applyStatus, "success");
@@ -16701,7 +17025,7 @@ async function applyLandedCostPreview() {
     const backendErrors = Array.isArray(json?.data?.errors)
       ? json.data.errors.join(" · ")
       : "";
-    calcState.applyError = backendErrors || json?.message || json?.error || "บันทึกราคาทุน/ราคาขายไม่สำเร็จ";
+    calcState.applyError = backendErrors || json?.message || json?.error || t("landedCostSaveFailed", "บันทึกราคาทุน/ราคาขายไม่สำเร็จ");
     calcState.applyStatus = "";
     calcState.appliedCount = 0;
     renderLandedCostSheet();
@@ -16713,7 +17037,7 @@ async function applyLandedCostPreview() {
     showToast(calcState.applyError, "error");
   } catch (err) {
     console.error(err);
-    calcState.applyError = "บันทึกราคาทุน/ราคาขายไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+    calcState.applyError = t("landedCostSaveFailedRetry", "บันทึกราคาทุน/ราคาขายไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
     calcState.applyStatus = "";
     calcState.appliedCount = 0;
     renderLandedCostSheet();
@@ -16753,16 +17077,16 @@ function renderLandedCostPicker() {
   if (!calcState.pickerOpen) {
     return `
       <button class="btn btn-outline" type="button" onclick="toggleLandedCostPicker()">
-        เลือกสินค้า
+        ${t("selectProducts", "เลือกสินค้า")}
       </button>
     `;
   }
 
   return `
     <div class="bulk-product-picker" style="margin-top:10px">
-      <div class="admin-detail-title">${t("selectProductsWarning", "กรุณาเลือกสินค้า")}</div>
+      <div class="admin-detail-title">${t("selectProducts", "เลือกสินค้า")}</div>
       <div class="helper-text">
-        เลือกสินค้าจากรายการที่โหลดอยู่ ระบบจะเติม SKU ให้อัตโนมัติ ตั้งจำนวนเริ่มต้นเป็น 1 และใช้ต้นทุนปัจจุบันเป็นค่าเริ่มต้น
+        ${t("landedCostPickerHelp", "เลือกสินค้าจากรายการที่โหลดอยู่ ระบบจะเติม SKU ให้อัตโนมัติ ตั้งจำนวนเริ่มต้นเป็น 1 และใช้ต้นทุนปัจจุบันเป็นค่าเริ่มต้น")}
       </div>
       <div class="bulk-product-picker-controls">
         <input
@@ -16787,7 +17111,7 @@ function renderLandedCostPicker() {
           ${t("clearSelected", "ล้างที่เลือก")}
         </button>
         <button class="btn btn-secondary" type="button" onclick="toggleLandedCostPicker()">
-          ซ่อนตัวเลือก
+          ${t("hideOptions", "ซ่อนตัวเลือก")}
         </button>
       </div>
       ${
@@ -16819,25 +17143,25 @@ function renderLandedCostPicker() {
                       <div class="name">${esc(product.name || productId || "-")}</div>
                       <div class="bulk-product-picker-meta">
                         <span>SKU: ${esc(productId || "-")}</span>
-                        <span>ราคา: ${esc(formatBulkProductUpdateValue("price", product.price))}</span>
-                        <span>ต้นทุน: ${esc(formatBulkProductUpdateValue("costPrice", product.costPrice))}</span>
-                        <span>สต๊อก: ${Number(product.stock || 0).toLocaleString("th-TH")}</span>
+                        <span>${t("price", "ราคา")}: ${esc(formatBulkProductUpdateValue("price", product.price))}</span>
+                        <span>${t("bulkFieldCostPrice", "ต้นทุน")}: ${esc(formatBulkProductUpdateValue("costPrice", product.costPrice))}</span>
+                        <span>${t("stock", "สต๊อก")}: ${Number(product.stock || 0).toLocaleString("th-TH")}</span>
                       </div>
                       <div class="bulk-product-picker-meta">
                         ${renderBulkProductUpdateValueDisplay("status", product.status)}
                         ${renderBulkProductUpdateValueDisplay("active", isActive)}
-                        ${alreadyAdded ? `<span class="status-badge compact status-neutral">อยู่ในรายการแล้ว</span>` : ""}
+                        ${alreadyAdded ? `<span class="status-badge compact status-neutral">${t("alreadyInList", "อยู่ในรายการแล้ว")}</span>` : ""}
                       </div>
                     </div>
                   </label>
                 `;
               }).join("")
-            : `<div class="bulk-product-picker-empty">ไม่พบสินค้าตามเงื่อนไขที่ค้นหา</div>`
+            : `<div class="bulk-product-picker-empty">${t("noMatchingProducts", "ไม่พบสินค้าตามเงื่อนไขที่ค้นหา")}</div>`
         }
       </div>
       <div class="bulk-product-picker-actions" style="margin-top:10px">
         <button class="btn btn-primary" type="button" onclick="addSelectedLandedCostProducts()">
-          เพิ่มเข้ารอบคำนวณ (${selectedSkus.size})
+          ${formatUiText("addToCalculationBatch", { count: selectedSkus.size }, "เพิ่มเข้ารอบคำนวณ ({count})")}
         </button>
       </div>
     </div>
@@ -16867,9 +17191,11 @@ function renderLandedCostRows() {
                   <div class="name">${esc(productId || "-")}</div>
                   ${productName ? `<div class="helper-text">${esc(productName)}</div>` : ""}
                   <div class="bulk-preview-meta">
-                    ต้นทุน: ${Number(currentCostPrice || 0).toLocaleString("th-TH")} |
-                    ราคาขาย: ${Number(currentPrice || 0).toLocaleString("th-TH")} |
-                    สต๊อก: ${stock !== null && stock !== undefined ? Number(stock || 0).toLocaleString("th-TH") : "-"}
+                    ${formatUiText("productCurrentMeta", {
+                      cost: Number(currentCostPrice || 0).toLocaleString("th-TH"),
+                      price: Number(currentPrice || 0).toLocaleString("th-TH"),
+                      stock: stock !== null && stock !== undefined ? Number(stock || 0).toLocaleString("th-TH") : "-"
+                    }, "ต้นทุน: {cost} | ราคาขาย: {price} | สต๊อก: {stock}")}
                     ${status ? ` | ${esc(status)}` : ""}
                   </div>
                 </div>
@@ -16880,20 +17206,20 @@ function renderLandedCostRows() {
           <label>SKU / Product ID</label>
           <input value="${escAttr(row.productId || "")}" placeholder="เช่น BN007"
             oninput="updateLandedCostRow(${index}, 'productId', this.value)">
-          ${productName ? `<div class="helper-text">สินค้า: ${esc(productName)}</div>` : ""}
+          ${productName ? `<div class="helper-text">${t("productLabel", "สินค้า")}: ${esc(productName)}</div>` : ""}
         </div>
         <div class="form-group">
-          <label>จำนวน</label>
+          <label>${t("quantity", "จำนวน")}</label>
           <input type="number" min="1" step="1" value="${escAttr(row.qty || "")}" placeholder="0"
             oninput="updateLandedCostRow(${index}, 'qty', this.value)">
         </div>
         <div class="form-group">
-          <label>ต้นทุนจีน/ชิ้น</label>
+          <label>${t("chinaUnitCost", "ต้นทุนจีน/ชิ้น")}</label>
           <input type="number" min="0" step="0.01" value="${escAttr(row.chinaUnitCost || "")}" placeholder="0"
             oninput="updateLandedCostRow(${index}, 'chinaUnitCost', this.value)">
         </div>
         <button class="btn btn-outline" type="button" onclick="removeLandedCostRow(${index})">
-          ลบแถว
+          ${t("removeRow", "ลบแถว")}
         </button>
       </div>
     `;
@@ -16903,15 +17229,15 @@ function renderLandedCostRows() {
 function renderLandedCostResult() {
   const result = state.admin.landedCost.result;
   if (!result) {
-    return `<div class="empty-state">กรอกต้นทุนและกดคำนวณ เพื่อดูต้นทุนจริงต่อชิ้นและราคาขายแนะนำ</div>`;
+    return `<div class="empty-state">${t("landedCostEmptyResult", "กรอกต้นทุนและกดคำนวณ เพื่อดูต้นทุนจริงต่อชิ้นและราคาขายแนะนำ")}</div>`;
   }
 
   return `
     <div class="cart-summary">
-      <div class="summary-row"><span>ต้นทุนสินค้ารวม</span><strong>${formatLandedCostMoney(result.batchBaseCost)}</strong></div>
-      <div class="summary-row"><span>ค่าใช้จ่ายรวม</span><strong>${formatLandedCostMoney(result.sharedFees)}</strong></div>
-      <div class="summary-row"><span>ต้นทุนรวมหลังลงค่าใช้จ่าย</span><strong>${formatLandedCostMoney(result.totalLandedCost)}</strong></div>
-      <div class="summary-row"><span>% กำไรที่ต้องการ</span><strong>${Number(result.profitPercent || 0).toLocaleString("th-TH")}%</strong></div>
+      <div class="summary-row"><span>${t("batchBaseCost", "ต้นทุนสินค้ารวม")}</span><strong>${formatLandedCostMoney(result.batchBaseCost)}</strong></div>
+      <div class="summary-row"><span>${t("totalFees", "ค่าใช้จ่ายรวม")}</span><strong>${formatLandedCostMoney(result.sharedFees)}</strong></div>
+      <div class="summary-row"><span>${t("totalLandedCost", "ต้นทุนรวมหลังลงค่าใช้จ่าย")}</span><strong>${formatLandedCostMoney(result.totalLandedCost)}</strong></div>
+      <div class="summary-row"><span>${t("targetProfitPercent", "% กำไรที่ต้องการ")}</span><strong>${Number(result.profitPercent || 0).toLocaleString("th-TH")}%</strong></div>
     </div>
 
     <div class="bulk-preview-list">
@@ -16920,12 +17246,12 @@ function renderLandedCostResult() {
           <div class="name">${esc(row.productId || "-")}</div>
           ${row.name ? `<div class="helper-text">${esc(row.name)}</div>` : ""}
           <div class="bulk-preview-meta">
-            จำนวน: ${Number(row.qty || 0).toLocaleString("th-TH")}<br>
-            ต้นทุนสินค้า: ${formatLandedCostMoney(row.itemBaseCost)}<br>
-            ค่าใช้จ่ายที่เฉลี่ย: ${formatLandedCostMoney(row.allocatedFee)}<br>
-            ต้นทุนจริง/ชิ้น: ${formatLandedCostMoney(row.landedCostPerItem)}<br>
-            ต้นทุนใหม่ที่แนะนำ: <strong>${Number(row.suggestedCostPrice || 0).toLocaleString("th-TH")}</strong><br>
-            ราคาขายใหม่ที่แนะนำ: <strong>${Number(row.suggestedSellingPrice || 0).toLocaleString("th-TH")}</strong>
+            ${t("quantity", "จำนวน")}: ${Number(row.qty || 0).toLocaleString("th-TH")}<br>
+            ${t("itemBaseCost", "ต้นทุนสินค้า")}: ${formatLandedCostMoney(row.itemBaseCost)}<br>
+            ${t("allocatedFee", "ค่าใช้จ่ายที่เฉลี่ย")}: ${formatLandedCostMoney(row.allocatedFee)}<br>
+            ${t("landedCostPerUnit", "ต้นทุนจริง/ชิ้น")}: ${formatLandedCostMoney(row.landedCostPerItem)}<br>
+            ${t("suggestedCostPrice", "ต้นทุนใหม่ที่แนะนำ")}: <strong>${Number(row.suggestedCostPrice || 0).toLocaleString("th-TH")}</strong><br>
+            ${t("suggestedSalePrice", "ราคาขายใหม่ที่แนะนำ")}: <strong>${Number(row.suggestedSellingPrice || 0).toLocaleString("th-TH")}</strong>
           </div>
         </div>
       `).join("")}
@@ -16968,9 +17294,9 @@ function renderLandedCostApplyPreview() {
 
   return `
     <div class="admin-detail-section">
-      <div class="admin-detail-title">ตรวจสอบรายการก่อนบันทึก</div>
+      <div class="admin-detail-title">${t("reviewBeforeSave", "ตรวจสอบรายการก่อนบันทึก")}</div>
       <div class="helper-text">
-        ขั้นตอนนี้ยังไม่อัปเดตสินค้า เป็นเพียงการตรวจสอบก่อนบันทึกจริง
+        ${t("landedCostApplyHelp", "ขั้นตอนนี้ยังไม่อัปเดตสินค้า เป็นเพียงการตรวจสอบก่อนบันทึกจริง")}
       </div>
       ${
         calcState.applyMessage
@@ -16979,15 +17305,15 @@ function renderLandedCostApplyPreview() {
       }
       <div class="cart-summary">
         <div class="summary-row">
-          <span>รายการที่เลือก</span>
+          <span>${t("selectedItems", "รายการที่เลือก")}</span>
           <strong>${selectedRows.length.toLocaleString("th-TH")}</strong>
         </div>
         <div class="summary-row">
-          <span>ต้นทุนสต็อกเดิมโดยประมาณ</span>
+          <span>${t("currentStockCost", "ต้นทุนสต็อกเดิมโดยประมาณ")}</span>
           <strong>${formatLandedCostMoney(totalCurrentCost)}</strong>
         </div>
         <div class="summary-row">
-          <span>ต้นทุนสต็อกใหม่โดยประมาณ</span>
+          <span>${t("newStockCost", "ต้นทุนสต็อกใหม่โดยประมาณ")}</span>
           <strong>${formatLandedCostMoney(totalNewCost)}</strong>
         </div>
       </div>
@@ -17006,28 +17332,28 @@ function renderLandedCostApplyPreview() {
                   ${row.name ? `<div class="helper-text">${esc(row.name)}</div>` : ""}
                   <div class="landed-cost-apply-values">
                     <div class="landed-cost-apply-value">
-                      <span>จำนวน: ${Number(row.qty || 0).toLocaleString("th-TH")}</span>
-                      <strong>ต้นทุนจริงต่อชิ้น: ${formatLandedCostMoney(row.landedCostPerItem)}</strong>
+                      <span>${t("quantity", "จำนวน")}: ${Number(row.qty || 0).toLocaleString("th-TH")}</span>
+                      <strong>${t("landedCostPerUnit", "ต้นทุนจริงต่อชิ้น")}: ${formatLandedCostMoney(row.landedCostPerItem)}</strong>
                     </div>
                     <div class="landed-cost-apply-value">
-                      <span>ต้นทุนเดิม: ${Number(row.currentCostPrice || 0).toLocaleString("th-TH")}</span>
-                      <strong>ต้นทุนใหม่ที่แนะนำ: ${Number(row.suggestedCostPrice || 0).toLocaleString("th-TH")}</strong>
-                      <span class="landed-cost-apply-diff">ส่วนต่าง: ${formatLandedCostDiff(row.costPriceDiff)}</span>
+                      <span>${t("currentCost", "ต้นทุนเดิม")}: ${Number(row.currentCostPrice || 0).toLocaleString("th-TH")}</span>
+                      <strong>${t("suggestedCostPrice", "ต้นทุนใหม่ที่แนะนำ")}: ${Number(row.suggestedCostPrice || 0).toLocaleString("th-TH")}</strong>
+                      <span class="landed-cost-apply-diff">${t("difference", "ส่วนต่าง")}: ${formatLandedCostDiff(row.costPriceDiff)}</span>
                     </div>
                     <div class="landed-cost-apply-value">
-                      <span>ราคาขายเดิม: ${Number(row.currentPrice || 0).toLocaleString("th-TH")}</span>
-                      <strong>ราคาขายใหม่ที่แนะนำ: ${Number(row.suggestedPrice || 0).toLocaleString("th-TH")}</strong>
-                      <span class="landed-cost-apply-diff">ส่วนต่าง: ${formatLandedCostDiff(row.priceDiff)}</span>
+                      <span>${t("currentSalePrice", "ราคาขายเดิม")}: ${Number(row.currentPrice || 0).toLocaleString("th-TH")}</span>
+                      <strong>${t("suggestedSalePrice", "ราคาขายใหม่ที่แนะนำ")}: ${Number(row.suggestedPrice || 0).toLocaleString("th-TH")}</strong>
+                      <span class="landed-cost-apply-diff">${t("difference", "ส่วนต่าง")}: ${formatLandedCostDiff(row.priceDiff)}</span>
                     </div>
                   </div>
                   <div class="bulk-preview-meta landed-cost-apply-legacy">
-                    จำนวนในรอบ: ${Number(row.qty || 0).toLocaleString("th-TH")}<br>
-                    ต้นทุนจริง/ชิ้น: ${formatLandedCostMoney(row.landedCostPerItem)}<br>
-                    costPrice เดิม: ${Number(row.currentCostPrice || 0).toLocaleString("th-TH")}
-                    → ใหม่: <strong>${Number(row.suggestedCostPrice || 0).toLocaleString("th-TH")}</strong>
+                    ${t("quantityInBatch", "จำนวนในรอบ")}: ${Number(row.qty || 0).toLocaleString("th-TH")}<br>
+                    ${t("landedCostPerUnit", "ต้นทุนจริง/ชิ้น")}: ${formatLandedCostMoney(row.landedCostPerItem)}<br>
+                    costPrice ${t("oldValue", "เดิม")}: ${Number(row.currentCostPrice || 0).toLocaleString("th-TH")}
+                    → ${t("newValue", "ใหม่")}: <strong>${Number(row.suggestedCostPrice || 0).toLocaleString("th-TH")}</strong>
                     (${formatLandedCostDiff(row.costPriceDiff)})<br>
-                    price เดิม: ${Number(row.currentPrice || 0).toLocaleString("th-TH")}
-                    → ใหม่: <strong>${Number(row.suggestedPrice || 0).toLocaleString("th-TH")}</strong>
+                    price ${t("oldValue", "เดิม")}: ${Number(row.currentPrice || 0).toLocaleString("th-TH")}
+                    → ${t("newValue", "ใหม่")}: <strong>${Number(row.suggestedPrice || 0).toLocaleString("th-TH")}</strong>
                     (${formatLandedCostDiff(row.priceDiff)})
                   </div>
                 </div>
@@ -17047,13 +17373,13 @@ function renderLandedCostApplyPreview() {
           : ""
       }
       <div class="helper-text" style="margin-top:10px">
-        ยืนยันก่อนบันทึกจริง ระบบจะอัปเดตต้นทุนและราคาขายใน Products เฉพาะรายการที่เลือก
+        ${t("confirmBeforeLandedCostApply", "ยืนยันก่อนบันทึกจริง ระบบจะอัปเดตต้นทุนและราคาขายใน Products เฉพาะรายการที่เลือก")}
       </div>
       <button class="btn btn-primary" type="button"
         onclick="applyLandedCostPreview()"
         ${state.admin.isSubmitting || !selectedRows.length ? "disabled" : ""}
         style="margin-top:10px">
-        ${state.admin.isSubmitting ? "กำลังบันทึก..." : "บันทึกราคาทุน/ราคาขาย"}
+        ${state.admin.isSubmitting ? t("saving", "กำลังบันทึก...") : t("saveCostSalePrices", "บันทึกราคาทุน/ราคาขาย")}
       </button>
     </div>
   `;
@@ -17063,49 +17389,49 @@ function renderLandedCostSheet() {
   const calcState = state.admin.landedCost;
   adminLandedCostSheet.innerHTML = `
     <div class="sheet-topbar">
-      <button class="btn btn-outline sheet-nav-btn" onclick="closeLandedCostSheet()" aria-label="ปิดหน้าต่างคำนวณต้นทุนนำเข้า">×</button>
-      <h3 id="adminLandedCostSheetTitle">คำนวณต้นทุนนำเข้า</h3>
+      <button class="btn btn-outline sheet-nav-btn" onclick="closeLandedCostSheet()" aria-label="${t("landedCostCloseAria", "ปิดหน้าต่างคำนวณต้นทุนนำเข้า")}">×</button>
+      <h3 id="adminLandedCostSheetTitle">${t("landedCost", "คำนวณต้นทุนนำเข้า")}</h3>
       <div aria-hidden="true"></div>
     </div>
 
     <div class="admin-detail-section">
-      <div class="admin-detail-title">รอบนำเข้า</div>
-      <div class="helper-text">รอบนี้เป็นการคำนวณตัวอย่าง ยังไม่บันทึกเข้า Products</div>
+      <div class="admin-detail-title">${t("importBatch", "รอบนำเข้า")}</div>
+      <div class="helper-text">${t("landedCostBatchHelp", "รอบนี้เป็นการคำนวณตัวอย่าง ยังไม่บันทึกเข้า Products")}</div>
       <div class="form-group" style="margin-top:10px">
-        <label>ชื่อรอบ</label>
-        <input value="${escAttr(calcState.batchName || "")}" placeholder="รอบจีน 2026-06-17" oninput="updateLandedCostField('batchName', this.value)">
+        <label>${t("batchName", "ชื่อรอบ")}</label>
+        <input value="${escAttr(calcState.batchName || "")}" placeholder="${t("batchNamePlaceholder", "รอบจีน 2026-06-17")}" oninput="updateLandedCostField('batchName', this.value)">
       </div>
       <div class="form-group"><label>${t("chinaDomesticShippingLabel", "ค่าส่งในจีน")}</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.chinaDomesticShipping || "")}" placeholder="0" oninput="updateLandedCostField('chinaDomesticShipping', this.value)"></div>
       <div class="form-group"><label>${t("chinaToThailandShippingLabel", "ค่าส่งจีนมาไทย")}</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.chinaToThailandShipping || "")}" placeholder="0" oninput="updateLandedCostField('chinaToThailandShipping', this.value)"></div>
       <div class="form-group"><label>${t("thailandShippingLabel", "ค่าส่งในไทย")}</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.thailandShipping || "")}" placeholder="0" oninput="updateLandedCostField('thailandShipping', this.value)"></div>
-      <div class="form-group"><label>ค่าใช้จ่ายอื่น ๆ</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.otherFees || "")}" placeholder="0" oninput="updateLandedCostField('otherFees', this.value)"></div>
-      <div class="form-group"><label>% กำไรที่ต้องการ</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.profitPercent || "")}" placeholder="เช่น 30" oninput="updateLandedCostField('profitPercent', this.value)"></div>
+      <div class="form-group"><label>${t("otherFees", "ค่าใช้จ่ายอื่น ๆ")}</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.otherFees || "")}" placeholder="0" oninput="updateLandedCostField('otherFees', this.value)"></div>
+      <div class="form-group"><label>${t("targetProfitPercent", "% กำไรที่ต้องการ")}</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.profitPercent || "")}" placeholder="${t("targetProfitPlaceholder", "เช่น 30")}" oninput="updateLandedCostField('profitPercent', this.value)"></div>
       <div class="form-group">
-        <label>วิธีปัดเศษ</label>
+        <label>${t("roundingMethod", "วิธีปัดเศษ")}</label>
         <select onchange="updateLandedCostField('roundingMode', this.value)">
-          <option value="ceil" ${calcState.roundingMode === "ceil" ? "selected" : ""}>ปัดขึ้น (ceil)</option>
-          <option value="round" ${calcState.roundingMode === "round" ? "selected" : ""}>ปัดใกล้สุด (round)</option>
-          <option value="floor" ${calcState.roundingMode === "floor" ? "selected" : ""}>ปัดลง (floor)</option>
+          <option value="ceil" ${calcState.roundingMode === "ceil" ? "selected" : ""}>${t("roundCeil", "ปัดขึ้น (ceil)")}</option>
+          <option value="round" ${calcState.roundingMode === "round" ? "selected" : ""}>${t("roundNearest", "ปัดใกล้สุด (round)")}</option>
+          <option value="floor" ${calcState.roundingMode === "floor" ? "selected" : ""}>${t("roundFloor", "ปัดลง (floor)")}</option>
         </select>
       </div>
     </div>
 
     <div class="admin-detail-section">
-      <div class="admin-detail-title">รายการสินค้า</div>
-      <div class="helper-text">เพิ่ม SKU, จำนวน และต้นทุนจีนต่อชิ้น ระบบจะเฉลี่ยค่าใช้จ่ายตามมูลค่าสินค้า</div>
+      <div class="admin-detail-title">${t("itemList", "รายการสินค้า")}</div>
+      <div class="helper-text">${t("landedCostRowsHelp", "เพิ่ม SKU, จำนวน และต้นทุนจีนต่อชิ้น ระบบจะเฉลี่ยค่าใช้จ่ายตามมูลค่าสินค้า")}</div>
       ${renderLandedCostPicker()}
       <div class="bulk-preview-list" style="margin-top:10px">${renderLandedCostRows()}</div>
-      <button class="btn btn-outline" type="button" onclick="addLandedCostRow()" style="margin-top:10px">เพิ่มแถวสินค้า</button>
+      <button class="btn btn-outline" type="button" onclick="addLandedCostRow()" style="margin-top:10px">${t("addProductRow", "เพิ่มแถวสินค้า")}</button>
     </div>
 
     ${renderLandedCostErrors()}
 
     <div class="admin-detail-section">
-      <div class="admin-detail-title">ผลคำนวณ</div>
+      <div class="admin-detail-title">${t("calculationResult", "ผลคำนวณ")}</div>
       ${renderLandedCostResult()}
       ${
         calcState.result
-          ? `<button class="btn btn-secondary" type="button" onclick="prepareLandedCostApplyPreview()" style="margin-top:12px">เตรียมรายการอัปเดต</button>`
+          ? `<button class="btn btn-secondary" type="button" onclick="prepareLandedCostApplyPreview()" style="margin-top:12px">${t("prepareUpdateList", "เตรียมรายการอัปเดต")}</button>`
           : ""
       }
     </div>
@@ -17113,9 +17439,9 @@ function renderLandedCostSheet() {
     ${renderLandedCostApplyPreview()}
 
     <div class="sheet-action-footer">
-      <button class="btn btn-primary" type="button" onclick="calculateLandedCost()">คำนวณ</button>
-      <button class="btn btn-outline" type="button" onclick="resetLandedCostCalculator()">ล้างข้อมูล</button>
-      <button class="btn btn-outline" type="button" onclick="backToAdminMenuFromLandedCost()">กลับเมนูแอดมิน</button>
+      <button class="btn btn-primary" type="button" onclick="calculateLandedCost()">${t("calculate", "คำนวณ")}</button>
+      <button class="btn btn-outline" type="button" onclick="resetLandedCostCalculator()">${t("resetData", "ล้างข้อมูล")}</button>
+      <button class="btn btn-outline" type="button" onclick="backToAdminMenuFromLandedCost()">${t("backAdminMenu", "กลับเมนูแอดมิน")}</button>
     </div>
   `;
 }
