@@ -4432,7 +4432,121 @@ const UI_TEXT = {
     searchPo: "ค้นหาเลข PO",
     clear: "ล้าง",
     duplicatePo: "PO ซ้ำ",
-    duplicateWithOrder: "ซ้ำกับ Order"
+    duplicateWithOrder: "ซ้ำกับ Order",
+    partnerId: "รหัสคู่ค้า",
+    partnerName: "ชื่อคู่ค้า",
+    contactName: "ผู้ติดต่อ",
+    email: "อีเมล",
+    phone: "เบอร์โทร",
+    company: "บริษัท",
+    updatedAt: "อัปเดตล่าสุด",
+    loadingPartners: "กำลังโหลดคู่ค้า...",
+    noPartnersYet: "ยังไม่มีคู่ค้า",
+    partnersFound: "พบ {count} คู่ค้า",
+    addPartner: "เพิ่มคู่ค้า",
+    addPartnerHelp: "ใช้สร้างหรือกู้คืนรหัสคู่ค้า เช่น PTR-001 เพื่อใช้สร้างลิงก์คู่ค้า",
+    partnerNamePlaceholder: "ชื่อร้าน / ชื่อคู่ค้า",
+    partnerAdminHelp: "จัดการข้อมูลคู่ค้าที่ใช้สร้างลิงก์ Partner Catalog เช่น PTR-001",
+    partnerSearchPlaceholder: "ค้นหารหัสคู่ค้า / ชื่อ / ผู้ติดต่อ",
+    activeDisplay: "เปิดใช้งาน",
+    disabledDisplay: "ปิดใช้งาน",
+    refresh: "รีเฟรช",
+    clearFilters: "ล้างตัวกรอง",
+    addingPartner: "กำลังเพิ่มคู่ค้า...",
+    partnerLoadDeployError: "ยังไม่สามารถโหลดคู่ค้าได้ กรุณาตรวจสอบการ Deploy Apps Script",
+    partnerIdRequired: "กรุณาระบุรหัสคู่ค้า",
+    partnerNameRequired: "กรุณาระบุชื่อคู่ค้า",
+    addPartnerFailed: "เพิ่มคู่ค้าไม่สำเร็จ",
+    addPartnerSuccess: "เพิ่มคู่ค้าสำเร็จ",
+    partnerCatalogPickerTitle: "เลือกสินค้าในลิงก์คู่ค้า",
+    partnerCatalogPickerHelp: "เลือกเฉพาะสินค้าที่ต้องการให้คู่ค้าเห็นในลิงก์นี้ เลือกแล้ว {count} รายการ",
+    partnerLinkCreated: "สร้างลิงก์คู่ค้าสำเร็จ",
+    linkToSendPartner: "ลิงก์สำหรับส่งให้คู่ค้า",
+    copyLink: "คัดลอกลิงก์",
+    backToAdminMenu: "กลับเมนูแอดมิน",
+    partnerLinkDetails: "รายละเอียดลิงก์คู่ค้า",
+    partnerLinkHelp: "สร้างลิงก์ Private Catalog สำหรับคู่ค้า โดยเลือกเฉพาะสินค้าที่ต้องการให้เห็น ลิงก์นี้ใช้สำหรับส่งรายการสนใจเท่านั้น ไม่สร้างออเดอร์และไม่ตัดสต็อก",
+    partnerIdSheetHelp: "ต้องมีรหัสคู่ค้านี้อยู่ในชีต partners และสถานะยังเป็น active",
+    referenceNameOptional: "ชื่ออ้างอิง (ไม่บังคับ)",
+    referenceNamePlaceholder: "เช่น Catalog เดือนนี้",
+    expiryDate: "วันหมดอายุ",
+    custom: "กำหนดเอง",
+    customExpiryDate: "กำหนดวันหมดอายุเอง",
+    approximateExpiry: "หมดอายุโดยประมาณ: {date}",
+    creatingLink: "กำลังสร้างลิงก์...",
+    createPartnerLink: "สร้างลิงก์คู่ค้า",
+    partnerExpiryFutureRequired: "กรุณาระบุวันหมดอายุที่อยู่ในอนาคต",
+    selectAtLeastOneProduct: "กรุณาเลือกสินค้าอย่างน้อย 1 รายการ",
+    partnerLinkMaxItems: "เลือกรายการสินค้าได้สูงสุด 100 รายการต่อหนึ่งลิงก์",
+    adminTokenMissingLoginAgain: "ไม่พบ admin token กรุณาเข้าสู่ระบบใหม่",
+    creatingPartnerLink: "กำลังสร้างลิงก์คู่ค้า...",
+    createPartnerLinkFailed: "สร้างลิงก์คู่ค้าไม่สำเร็จ",
+    createPartnerLinkFailedRetry: "สร้างลิงก์คู่ค้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+    noLinkToCopy: "ไม่พบลิงก์สำหรับคัดลอก",
+    linkCopied: "คัดลอกลิงก์แล้ว",
+    linkCopyFailed: "คัดลอกลิงก์ไม่สำเร็จ กรุณาคัดลอกจากช่องข้อความ",
+    expired: "หมดอายุ",
+    activeNow: "ใช้งานอยู่",
+    createNewLink: "สร้างลิงก์ใหม่",
+    manageExistingLinks: "จัดการลิงก์เดิม",
+    loadingPartnerLinks: "กำลังโหลดลิงก์คู่ค้า...",
+    loadPartnerLinksFailed: "โหลดลิงก์คู่ค้าไม่สำเร็จ",
+    loadingPartnerLinkDetails: "กำลังโหลดรายละเอียดลิงก์...",
+    loadPartnerLinkDetailsFailed: "โหลดรายละเอียดลิงก์ไม่สำเร็จ",
+    updatingLinkStatus: "กำลังอัปเดตสถานะลิงก์...",
+    updateLinkStatusFailed: "อัปเดตสถานะลิงก์ไม่สำเร็จ",
+    linkStatusUpdated: "อัปเดตสถานะลิงก์แล้ว",
+    searchPartnerLinkPlaceholder: "ค้นหา linkId / Partner / label",
+    allStatuses: "ทุกสถานะ",
+    refreshSearch: "รีเฟรช / ค้นหา",
+    noPartnerLinks: "ยังไม่มีลิงก์คู่ค้าตามเงื่อนไขที่เลือก",
+    partnerLinksFound: "พบ {count} ลิงก์",
+    viewDetails: "ดูรายละเอียด",
+    enableLink: "เปิดใช้งานลิงก์",
+    disableLink: "ปิดลิงก์",
+    oldLinkCopyUnavailable: "ลิงก์เดิมไม่สามารถคัดลอกซ้ำได้ เพราะระบบไม่เก็บ token จริงไว้ หากต้องการส่งลิงก์ใหม่ ให้สร้างลิงก์ใหม่",
+    productsInLink: "สินค้าในลิงก์",
+    noProductsInLink: "ไม่มีสินค้าในลิงก์นี้",
+    managePartnerLinksHelp: "จัดการสถานะลิงก์คู่ค้าที่เคยสร้างไว้ ระบบไม่แสดง token จริงและไม่สามารถคัดลอกลิงก์เก่าซ้ำได้",
+    backToCreateLink: "กลับหน้าสร้างลิงก์",
+    partnerRequestDetails: "รายละเอียดคำขอคู่ค้า",
+    request: "คำขอ",
+    newStatus: "ใหม่",
+    reviewedStatus: "ตรวจแล้ว",
+    cancelledStatus: "ยกเลิกแล้ว",
+    markReviewed: "ทำเครื่องหมายว่าตรวจแล้ว",
+    closeRequest: "ปิดคำขอ",
+    markNew: "กลับเป็นใหม่",
+    loadingPartnerRequests: "กำลังโหลดคำขอคู่ค้า...",
+    loadPartnerRequestsFailed: "โหลดคำขอคู่ค้าไม่สำเร็จ",
+    loadingPartnerRequestDetails: "กำลังโหลดรายละเอียดคำขอ...",
+    loadPartnerRequestDetailsFailed: "โหลดรายละเอียดคำขอไม่สำเร็จ",
+    updatingRequestStatus: "กำลังอัปเดตสถานะ...",
+    updateRequestStatusFailed: "อัปเดตสถานะคำขอไม่สำเร็จ",
+    requestStatusUpdated: "อัปเดตสถานะคำขอแล้ว",
+    searchPartnerRequestPlaceholder: "ค้นหา requestId / คู่ค้า / ผู้ติดต่อ",
+    noPartnerRequests: "ยังไม่มีคำขอคู่ค้าตามเงื่อนไขที่เลือก",
+    partnerRequestsFound: "พบ {count} คำขอ",
+    submittedDate: "วันที่",
+    message: "ข้อความ",
+    createOrderFromRequest: "สร้างออเดอร์จากคำขอ",
+    partnerConvertHelp: "ออเดอร์ที่สร้างจากคำขอคู่ค้าจะเริ่มเป็น PENDING และต้องอนุมัติในออเดอร์รออนุมัติก่อน ระบบจึงจะตัดสต็อก",
+    poExample: "ตัวอย่าง: {po}",
+    orderCreatedPendingApproval: "สร้างออเดอร์แล้ว รออนุมัติในออเดอร์รออนุมัติ",
+    creatingOrderFromRequest: "กำลังสร้างออเดอร์...",
+    createOrderFromRequestFailed: "สร้างออเดอร์จากคำขอไม่สำเร็จ",
+    enterPoBeforeCreateOrder: "กรุณาระบุเลข PO ก่อนสร้างออเดอร์",
+    noProductsInRequest: "ไม่มีรายการสินค้าในคำขอนี้",
+    createdBy: "สร้างโดย",
+    expiredAlready: "หมดอายุแล้ว",
+    backToPartnerLinks: "กลับรายการลิงก์",
+    backToPartnerRequests: "กลับรายการคำขอ",
+    partnerRequestHelp: "อ่านคำขอจาก Partner Catalog เท่านั้น หน้านี้ยังไม่สร้างออเดอร์ ไม่อนุมัติ และไม่ตัดสต็อก",
+    andMoreOrders: "...และอีก {count} ออเดอร์",
+    duplicatePoPartnerConvertConfirm: "พบเลข PO ซ้ำ: {po}\n\n{details}{more}\n\nต้องการสร้างออเดอร์ด้วย PO นี้ต่อหรือไม่?",
+    duplicatePoPartnerCreateConfirm: "พบเลข PO ซ้ำ: {po}\n\n{details}{more}\n\nต้องการสร้างใบสั่งซื้อด้วย PO นี้ต่อหรือไม่?",
+    selectAllVisible: "เลือกสินค้าที่เห็นทั้งหมด",
+    clearSelected: "ล้างที่เลือก"
   },
   en: {
     langThai: "ไทย",
@@ -4661,7 +4775,121 @@ const UI_TEXT = {
     searchPo: "Search PO",
     clear: "Clear",
     duplicatePo: "Duplicate PO",
-    duplicateWithOrder: "Duplicate with Order"
+    duplicateWithOrder: "Duplicate with Order",
+    partnerId: "Partner ID",
+    partnerName: "Partner name",
+    contactName: "Contact",
+    email: "Email",
+    phone: "Phone",
+    company: "Company",
+    updatedAt: "Updated at",
+    loadingPartners: "Loading partners...",
+    noPartnersYet: "No partners yet",
+    partnersFound: "Found {count} partners",
+    addPartner: "Add partner",
+    addPartnerHelp: "Create or restore partner IDs such as PTR-001 for partner links.",
+    partnerNamePlaceholder: "Shop name / partner name",
+    partnerAdminHelp: "Manage partner records used to create Partner Catalog links such as PTR-001.",
+    partnerSearchPlaceholder: "Search partner ID / name / contact",
+    activeDisplay: "Active",
+    disabledDisplay: "Disabled",
+    refresh: "Refresh",
+    clearFilters: "Clear filters",
+    addingPartner: "Adding partner...",
+    partnerLoadDeployError: "Could not load partners. Please check Apps Script deployment.",
+    partnerIdRequired: "Please enter Partner ID",
+    partnerNameRequired: "Please enter partner name",
+    addPartnerFailed: "Could not add partner",
+    addPartnerSuccess: "Partner added",
+    partnerCatalogPickerTitle: "Select products for partner link",
+    partnerCatalogPickerHelp: "Select only products this partner should see. Selected {count} items.",
+    partnerLinkCreated: "Partner link created",
+    linkToSendPartner: "Link to send to partner",
+    copyLink: "Copy link",
+    backToAdminMenu: "Back to admin menu",
+    partnerLinkDetails: "Partner link details",
+    partnerLinkHelp: "Create a Private Catalog link for a partner by selecting only visible products. This link is for interest requests only. It does not create orders or deduct stock.",
+    partnerIdSheetHelp: "This Partner ID must exist in the partners sheet and have active status.",
+    referenceNameOptional: "Reference name (optional)",
+    referenceNamePlaceholder: "Example: This month's catalog",
+    expiryDate: "Expiry date",
+    custom: "Custom",
+    customExpiryDate: "Custom expiry date",
+    approximateExpiry: "Approximate expiry: {date}",
+    creatingLink: "Creating link...",
+    createPartnerLink: "Create partner link",
+    partnerExpiryFutureRequired: "Please enter a future expiry date",
+    selectAtLeastOneProduct: "Please select at least 1 product",
+    partnerLinkMaxItems: "You can select up to 100 products per link",
+    adminTokenMissingLoginAgain: "Admin token not found. Please log in again.",
+    creatingPartnerLink: "Creating partner link...",
+    createPartnerLinkFailed: "Could not create partner link",
+    createPartnerLinkFailedRetry: "Could not create partner link. Please try again.",
+    noLinkToCopy: "No link available to copy",
+    linkCopied: "Link copied",
+    linkCopyFailed: "Could not copy link. Please copy it from the text field.",
+    expired: "Expired",
+    activeNow: "Active",
+    createNewLink: "Create new link",
+    manageExistingLinks: "Manage existing links",
+    loadingPartnerLinks: "Loading partner links...",
+    loadPartnerLinksFailed: "Could not load partner links",
+    loadingPartnerLinkDetails: "Loading link details...",
+    loadPartnerLinkDetailsFailed: "Could not load link details",
+    updatingLinkStatus: "Updating link status...",
+    updateLinkStatusFailed: "Could not update link status",
+    linkStatusUpdated: "Link status updated",
+    searchPartnerLinkPlaceholder: "Search linkId / Partner / label",
+    allStatuses: "All statuses",
+    refreshSearch: "Refresh / Search",
+    noPartnerLinks: "No partner links match the selected filters",
+    partnerLinksFound: "Found {count} links",
+    viewDetails: "View details",
+    enableLink: "Enable link",
+    disableLink: "Disable link",
+    oldLinkCopyUnavailable: "Existing links cannot be copied again because the real token is not stored. Create a new link if you need to send one.",
+    productsInLink: "Products in link",
+    noProductsInLink: "No products in this link",
+    managePartnerLinksHelp: "Manage previously created partner links. The system does not show real tokens and cannot copy old links again.",
+    backToCreateLink: "Back to create link",
+    partnerRequestDetails: "Partner request details",
+    request: "Request",
+    newStatus: "New",
+    reviewedStatus: "Reviewed",
+    cancelledStatus: "Cancelled",
+    markReviewed: "Mark as reviewed",
+    closeRequest: "Close request",
+    markNew: "Move back to New",
+    loadingPartnerRequests: "Loading partner requests...",
+    loadPartnerRequestsFailed: "Could not load partner requests",
+    loadingPartnerRequestDetails: "Loading request details...",
+    loadPartnerRequestDetailsFailed: "Could not load request details",
+    updatingRequestStatus: "Updating status...",
+    updateRequestStatusFailed: "Could not update request status",
+    requestStatusUpdated: "Request status updated",
+    searchPartnerRequestPlaceholder: "Search requestId / partner / contact",
+    noPartnerRequests: "No partner requests match the selected filters",
+    partnerRequestsFound: "Found {count} requests",
+    submittedDate: "Submitted at",
+    message: "Message",
+    createOrderFromRequest: "Create order from request",
+    partnerConvertHelp: "Orders created from partner requests start as PENDING and must be approved in Pending Orders before stock is deducted.",
+    poExample: "Example: {po}",
+    orderCreatedPendingApproval: "Order created. Waiting for approval in Pending Orders.",
+    creatingOrderFromRequest: "Creating order...",
+    createOrderFromRequestFailed: "Could not create order from request",
+    enterPoBeforeCreateOrder: "Please enter PO number before creating order",
+    noProductsInRequest: "No products in this request",
+    createdBy: "Created by",
+    expiredAlready: "Expired",
+    backToPartnerLinks: "Back to links",
+    backToPartnerRequests: "Back to requests",
+    partnerRequestHelp: "Read requests from Partner Catalog only. This page does not create orders, approve orders, or deduct stock.",
+    andMoreOrders: "...and {count} more orders",
+    duplicatePoPartnerConvertConfirm: "Duplicate PO found: {po}\n\n{details}{more}\n\nCreate an order with this PO anyway?",
+    duplicatePoPartnerCreateConfirm: "Duplicate PO found: {po}\n\n{details}{more}\n\nCreate an order with this PO anyway?",
+    selectAllVisible: "Select all visible",
+    clearSelected: "Clear selected"
   }
 };
 
@@ -4688,6 +4916,15 @@ function setCurrentLang(lang) {
   }
   if (adminLoginSheet?.classList?.contains("show")) {
     renderAdminLogin();
+  }
+  if (adminPartnersSheet?.classList?.contains("show")) {
+    renderPartnerAdminSheet();
+  }
+  if (adminPartnerCatalogSheet?.classList?.contains("show")) {
+    renderPartnerCatalogSheet();
+  }
+  if (adminPartnerRequestsSheet?.classList?.contains("show")) {
+    renderPartnerRequestsSheet();
   }
   if (state.mode === "viewer" && Array.isArray(state.products)) {
     renderProducts();
@@ -13002,7 +13239,7 @@ function ensureAdminSessionForMultiSizeProduct() {
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+    showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
     exitAdmin();
     return false;
   }
@@ -13913,7 +14150,7 @@ function ensureAdminSessionForBulkImport() {
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+    showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
     exitAdmin();
     return false;
   }
@@ -14627,7 +14864,7 @@ async function submitBulkProductImport(btn) {
     bulkState.importedCount = 0;
     renderBulkProductImportSheet();
     if (isAuthError(json?.error)) {
-      showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+      showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
       exitAdmin({ silent: true });
       return;
     }
@@ -14651,7 +14888,7 @@ function ensureAdminSessionForBulkUpdate() {
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+    showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
     exitAdmin();
     return false;
   }
@@ -15160,7 +15397,7 @@ function renderBulkProductUpdatePickerRows() {
               <div class="name">${esc(product.name || productId || "-")}</div>
               <div class="bulk-product-picker-meta">
                 <span>SKU: ${esc(productId || "-")}</span>
-                <span>ราคา: ${esc(formatBulkProductUpdateValue("price", product.price))}</span>
+                <span>${t("price", "ราคา")}: ${esc(formatBulkProductUpdateValue("price", product.price))}</span>
                 <span>ต้นทุน: ${esc(formatBulkProductUpdateValue("costPrice", product.costPrice))}</span>
               </div>
               <div class="bulk-product-picker-meta">
@@ -15237,26 +15474,26 @@ function renderBulkProductUpdatePicker() {
           id="bulkProductUpdatePickerSearch"
           type="search"
           value="${escAttr(searchValue)}"
-          placeholder="ค้นหา SKU หรือชื่อสินค้า"
+          placeholder="${t("productSearchPlaceholder", "ค้นหาสินค้า / รหัส")}"
           oninput="setBulkProductUpdatePickerSearch(this.value)">
         <select
           id="bulkProductUpdatePickerStatus"
           onchange="setBulkProductUpdatePickerStatus(this.value)">
-          <option value="all" ${statusValue === "all" ? "selected" : ""}>ทุกสถานะ</option>
-          <option value="ready" ${statusValue === "ready" ? "selected" : ""}>พร้อมส่ง</option>
-          <option value="ready_plus" ${statusValue === "ready_plus" ? "selected" : ""}>พร้อมส่ง + เพิ่มได้</option>
-          <option value="shipping" ${statusValue === "shipping" ? "selected" : ""}>อยู่ระหว่างจัดส่ง</option>
-          <option value="warehouse" ${statusValue === "warehouse" ? "selected" : ""}>อยู่โกดังไทย</option>
-          <option value="out" ${statusValue === "out" ? "selected" : ""}>หมด</option>
+          <option value="all" ${statusValue === "all" ? "selected" : ""}>${t("allStatuses", "ทุกสถานะ")}</option>
+          <option value="ready" ${statusValue === "ready" ? "selected" : ""}>${getViewerStatusLabel("ready")}</option>
+          <option value="ready_plus" ${statusValue === "ready_plus" ? "selected" : ""}>${getViewerStatusLabel("ready_plus")}</option>
+          <option value="shipping" ${statusValue === "shipping" ? "selected" : ""}>${getViewerStatusLabel("shipping")}</option>
+          <option value="warehouse" ${statusValue === "warehouse" ? "selected" : ""}>${getViewerStatusLabel("warehouse")}</option>
+          <option value="out" ${statusValue === "out" ? "selected" : ""}>${getViewerStatusLabel("out")}</option>
         </select>
       </div>
 
       <div class="bulk-product-picker-actions">
         <button class="btn btn-outline" type="button" onclick="selectVisibleBulkProductUpdateProducts()">
-          เลือกทั้งหมดที่แสดง
+          ${t("selectAllVisible", "เลือกทั้งหมดที่แสดง")}
         </button>
         <button class="btn btn-outline" type="button" onclick="clearBulkProductUpdateSelection()">
-          ล้างที่เลือก
+          ${t("clearSelected", "ล้างที่เลือก")}
         </button>
       </div>
 
@@ -15504,7 +15741,7 @@ async function submitBulkProductUpdate(btn) {
     bulkState.updatedCount = 0;
     renderBulkProductUpdateSheet();
     if (isAuthError(json?.error)) {
-      showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+      showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
       exitAdmin({ silent: true });
       return;
     }
@@ -16173,7 +16410,7 @@ async function applyLandedCostPreview() {
     calcState.appliedCount = 0;
     renderLandedCostSheet();
     if (isAuthError(json?.error)) {
-      showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+      showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
       exitAdmin({ silent: true });
       return;
     }
@@ -16235,7 +16472,7 @@ function renderLandedCostPicker() {
         <input
           type="search"
           value="${escAttr(calcState.pickerSearch || "")}"
-          placeholder="ค้นหา SKU หรือชื่อสินค้า"
+          placeholder="${t("productSearchPlaceholder", "ค้นหาสินค้า / รหัส")}"
           oninput="setLandedCostPickerSearch(this.value)">
         <select onchange="setLandedCostPickerStatus(this.value)">
           <option value="all" ${calcState.pickerStatus === "all" ? "selected" : ""}>ทุกสถานะ</option>
@@ -16613,7 +16850,7 @@ function ensureAdminSessionForPartnerAdmin() {
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+    showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
     exitAdmin();
     return false;
   }
@@ -16677,8 +16914,8 @@ function updateNewPartnerField(field, value) {
 
 function getPartnerStatusLabel(status) {
   const normalized = String(status || "").trim().toLowerCase();
-  if (normalized === "active") return "active";
-  if (normalized === "disabled") return "disabled";
+  if (normalized === "active") return t("activeDisplay", "เปิดใช้งาน");
+  if (normalized === "disabled") return t("disabledDisplay", "ปิดใช้งาน");
   return normalized || "-";
 }
 
@@ -16699,13 +16936,13 @@ function renderPartnerAdminCard(partner) {
         </span>
       </div>
       <div class="meta">
-        รหัสคู่ค้า: ${esc(partner.partnerId || "-")}<br>
-        ${partner.contactName ? `ผู้ติดต่อ: ${esc(partner.contactName)}<br>` : ""}
-        ${partner.email ? `อีเมล: ${esc(partner.email)}<br>` : ""}
-        ${partner.phone ? `เบอร์โทร: ${esc(partner.phone)}<br>` : ""}
-        ${partner.company ? `บริษัท: ${esc(partner.company)}<br>` : ""}
-        ${partner.note ? `หมายเหตุ: ${esc(partner.note)}<br>` : ""}
-        ${partner.updatedAt ? `อัปเดตล่าสุด: ${esc(formatThaiDate(partner.updatedAt))}` : ""}
+        ${t("partnerId", "รหัสคู่ค้า")}: ${esc(partner.partnerId || "-")}<br>
+        ${partner.contactName ? `${t("contactName", "ผู้ติดต่อ")}: ${esc(partner.contactName)}<br>` : ""}
+        ${partner.email ? `${t("email", "อีเมล")}: ${esc(partner.email)}<br>` : ""}
+        ${partner.phone ? `${t("phone", "เบอร์โทร")}: ${esc(partner.phone)}<br>` : ""}
+        ${partner.company ? `${t("company", "บริษัท")}: ${esc(partner.company)}<br>` : ""}
+        ${partner.note ? `${t("note", "หมายเหตุ")}: ${esc(partner.note)}<br>` : ""}
+        ${partner.updatedAt ? `${t("updatedAt", "อัปเดตล่าสุด")}: ${esc(formatThaiDate(partner.updatedAt))}` : ""}
       </div>
     </div>
   `;
@@ -16714,7 +16951,7 @@ function renderPartnerAdminCard(partner) {
 function renderPartnerAdminList() {
   const partnerState = state.admin.partners;
   if (partnerState.loading) {
-    return `<div class="loading">กำลังโหลดคู่ค้า...</div>`;
+    return `<div class="loading">${t("loadingPartners", "กำลังโหลดคู่ค้า...")}</div>`;
   }
   if (partnerState.error) {
     return `
@@ -16724,12 +16961,12 @@ function renderPartnerAdminList() {
     `;
   }
   if (!partnerState.items.length) {
-    return `<div class="empty-state">ยังไม่มีคู่ค้า</div>`;
+    return `<div class="empty-state">${t("noPartnersYet", "ยังไม่มีคู่ค้า")}</div>`;
   }
 
   return `
     <div class="helper-text" style="margin-bottom:8px">
-      พบ ${Number(partnerState.total || partnerState.items.length || 0).toLocaleString("th-TH")} คู่ค้า
+      ${formatUiText("partnersFound", { count: Number(partnerState.total || partnerState.items.length || 0).toLocaleString("th-TH") }, "พบ {count} คู่ค้า")}
     </div>
     <div class="bulk-preview-list">
       ${partnerState.items.map(renderPartnerAdminCard).join("")}
@@ -16741,62 +16978,62 @@ function renderAddPartnerForm() {
   const draft = state.admin.partners.newPartner;
   return `
     <div class="admin-detail-card" style="margin-top:14px">
-      <div class="admin-detail-title">เพิ่มคู่ค้า</div>
+      <div class="admin-detail-title">${t("addPartner", "เพิ่มคู่ค้า")}</div>
       <div class="helper-text" style="margin-bottom:10px">
-        ใช้สร้างหรือกู้คืนรหัสคู่ค้า เช่น PTR-001 เพื่อใช้สร้างลิงก์คู่ค้า
+        ${t("addPartnerHelp", "ใช้สร้างหรือกู้คืนรหัสคู่ค้า เช่น PTR-001 เพื่อใช้สร้างลิงก์คู่ค้า")}
       </div>
       <div class="form-group">
-        <label for="newPartnerId">รหัสคู่ค้า *</label>
+        <label for="newPartnerId">${t("partnerId", "รหัสคู่ค้า")} *</label>
         <input id="newPartnerId" class="input" value="${escAttr(draft.partnerId || "")}"
           placeholder="PTR-001"
           oninput="updateNewPartnerField('partnerId', this.value)">
       </div>
       <div class="form-group">
-        <label for="newPartnerName">ชื่อคู่ค้า *</label>
+        <label for="newPartnerName">${t("partnerName", "ชื่อคู่ค้า")} *</label>
         <input id="newPartnerName" class="input" value="${escAttr(draft.partnerName || "")}"
-          placeholder="ชื่อร้าน / ชื่อคู่ค้า"
+          placeholder="${t("partnerNamePlaceholder", "ชื่อร้าน / ชื่อคู่ค้า")}"
           oninput="updateNewPartnerField('partnerName', this.value)">
       </div>
       <div class="form-grid">
         <div class="form-group">
-          <label for="newPartnerContactName">ผู้ติดต่อ</label>
+          <label for="newPartnerContactName">${t("contactName", "ผู้ติดต่อ")}</label>
           <input id="newPartnerContactName" class="input" value="${escAttr(draft.contactName || "")}"
             oninput="updateNewPartnerField('contactName', this.value)">
         </div>
         <div class="form-group">
-          <label for="newPartnerPhone">เบอร์โทร</label>
+          <label for="newPartnerPhone">${t("phone", "เบอร์โทร")}</label>
           <input id="newPartnerPhone" class="input" value="${escAttr(draft.phone || "")}"
             oninput="updateNewPartnerField('phone', this.value)">
         </div>
       </div>
       <div class="form-grid">
         <div class="form-group">
-          <label for="newPartnerEmail">อีเมล</label>
+          <label for="newPartnerEmail">${t("email", "อีเมล")}</label>
           <input id="newPartnerEmail" class="input" value="${escAttr(draft.email || "")}"
             oninput="updateNewPartnerField('email', this.value)">
         </div>
         <div class="form-group">
-          <label for="newPartnerCompany">บริษัท</label>
+          <label for="newPartnerCompany">${t("company", "บริษัท")}</label>
           <input id="newPartnerCompany" class="input" value="${escAttr(draft.company || "")}"
             oninput="updateNewPartnerField('company', this.value)">
         </div>
       </div>
       <div class="form-group">
-        <label for="newPartnerStatus">สถานะ</label>
+        <label for="newPartnerStatus">${t("status", "สถานะ")}</label>
         <select id="newPartnerStatus" onchange="updateNewPartnerField('status', this.value)">
-          <option value="active" ${draft.status === "active" ? "selected" : ""}>เปิดใช้งาน</option>
-          <option value="disabled" ${draft.status === "disabled" ? "selected" : ""}>ปิดใช้งาน</option>
+          <option value="active" ${draft.status === "active" ? "selected" : ""}>${t("activeDisplay", "เปิดใช้งาน")}</option>
+          <option value="disabled" ${draft.status === "disabled" ? "selected" : ""}>${t("disabledDisplay", "ปิดใช้งาน")}</option>
         </select>
       </div>
       <div class="form-group">
-        <label for="newPartnerNote">หมายเหตุ</label>
+        <label for="newPartnerNote">${t("note", "หมายเหตุ")}</label>
         <textarea id="newPartnerNote" class="input" rows="3"
           oninput="updateNewPartnerField('note', this.value)">${esc(draft.note || "")}</textarea>
       </div>
       <button class="btn btn-primary" type="button"
         ${state.admin.partners.isCreating ? "disabled" : ""}
         onclick="createPartnerFromAdmin()">
-        ${state.admin.partners.isCreating ? "กำลังเพิ่มคู่ค้า..." : "เพิ่มคู่ค้า"}
+        ${state.admin.partners.isCreating ? t("addingPartner", "กำลังเพิ่มคู่ค้า...") : t("addPartner", "เพิ่มคู่ค้า")}
       </button>
     </div>
   `;
@@ -16808,15 +17045,15 @@ function renderPartnerAdminSheet() {
     <div class="sheet-topbar">
       <button class="btn btn-outline sheet-nav-btn"
         onclick="backToAdminMenuFromPartnerAdmin()"
-        aria-label="กลับเมนูแอดมิน">←</button>
-      <h3 id="adminPartnersSheetTitle">คู่ค้า</h3>
+        aria-label="${t("backToAdminMenu", "กลับเมนูแอดมิน")}">←</button>
+      <h3 id="adminPartnersSheetTitle">${t("partners", "คู่ค้า")}</h3>
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closePartnerAdminSheet()"
-        aria-label="ปิดหน้าต่างคู่ค้า">×</button>
+        aria-label="${t("close", "ปิด")}">×</button>
     </div>
 
     <div class="helper-text" style="margin-bottom:10px">
-      จัดการข้อมูลคู่ค้าที่ใช้สร้างลิงก์ Partner Catalog เช่น PTR-001
+      ${t("partnerAdminHelp", "จัดการข้อมูลคู่ค้าที่ใช้สร้างลิงก์ Partner Catalog เช่น PTR-001")}
     </div>
 
     <div class="bulk-product-picker-controls">
@@ -16824,20 +17061,20 @@ function renderPartnerAdminSheet() {
         id="partnerAdminSearch"
         type="search"
         value="${escAttr(partnerState.q || "")}"
-        placeholder="ค้นหารหัสคู่ค้า / ชื่อ / ผู้ติดต่อ"
+        placeholder="${t("partnerSearchPlaceholder", "ค้นหารหัสคู่ค้า / ชื่อ / ผู้ติดต่อ")}"
         oninput="setPartnerAdminSearch(this.value)"
         onkeydown="if(event.key === 'Enter') refreshPartners();">
       <select id="partnerAdminStatus" onchange="setPartnerAdminStatusFilter(this.value)">
-        <option value="all" ${partnerState.status === "all" ? "selected" : ""}>ทั้งหมด</option>
-        <option value="active" ${partnerState.status === "active" ? "selected" : ""}>เปิดใช้งาน</option>
-        <option value="disabled" ${partnerState.status === "disabled" ? "selected" : ""}>ปิดใช้งาน</option>
+        <option value="all" ${partnerState.status === "all" ? "selected" : ""}>${t("allProducts", "ทั้งหมด")}</option>
+        <option value="active" ${partnerState.status === "active" ? "selected" : ""}>${t("activeDisplay", "เปิดใช้งาน")}</option>
+        <option value="disabled" ${partnerState.status === "disabled" ? "selected" : ""}>${t("disabledDisplay", "ปิดใช้งาน")}</option>
       </select>
     </div>
     <div class="bulk-product-picker-actions">
-      <button class="btn btn-outline" type="button" onclick="refreshPartners()">รีเฟรช</button>
+      <button class="btn btn-outline" type="button" onclick="refreshPartners()">${t("refresh", "รีเฟรช")}</button>
       <button class="btn btn-outline" type="button"
         onclick="state.admin.partners.q=''; state.admin.partners.status='all'; refreshPartners();">
-        ล้างตัวกรอง
+        ${t("clearFilters", "ล้างตัวกรอง")}
       </button>
     </div>
 
@@ -16873,11 +17110,11 @@ async function fetchPartners() {
 
     if (json?.success !== true) {
       if (isAuthError(json?.error)) {
-        showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+        showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
         exitAdmin({ silent: true });
         return;
       }
-      throw new Error(json?.error || json?.message || "ยังไม่สามารถโหลดคู่ค้าได้ กรุณาตรวจสอบการ Deploy Apps Script");
+      throw new Error(json?.error || json?.message || t("partnerLoadDeployError", "ยังไม่สามารถโหลดคู่ค้าได้ กรุณาตรวจสอบการ Deploy Apps Script"));
     }
 
     partnerState.items = Array.isArray(json.data?.partners)
@@ -16888,7 +17125,7 @@ async function fetchPartners() {
     console.error(err);
     partnerState.items = [];
     partnerState.total = 0;
-    partnerState.error = "ยังไม่สามารถโหลดคู่ค้าได้ กรุณาตรวจสอบการ Deploy Apps Script";
+    partnerState.error = t("partnerLoadDeployError", "ยังไม่สามารถโหลดคู่ค้าได้ กรุณาตรวจสอบการ Deploy Apps Script");
   } finally {
     partnerState.loading = false;
     renderPartnerAdminSheet();
@@ -16903,12 +17140,12 @@ async function createPartnerFromAdmin() {
   const partnerName = String(draft.partnerName || "").trim();
 
   if (!partnerId) {
-    partnerState.error = "กรุณาระบุรหัสคู่ค้า";
+    partnerState.error = t("partnerIdRequired", "กรุณาระบุรหัสคู่ค้า");
     renderPartnerAdminSheet();
     return;
   }
   if (!partnerName) {
-    partnerState.error = "กรุณาระบุชื่อคู่ค้า";
+    partnerState.error = t("partnerNameRequired", "กรุณาระบุชื่อคู่ค้า");
     renderPartnerAdminSheet();
     return;
   }
@@ -16943,22 +17180,22 @@ async function createPartnerFromAdmin() {
 
     if (json?.success !== true) {
       if (isAuthError(json?.error)) {
-        showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+        showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
         exitAdmin({ silent: true });
         return;
       }
-      throw new Error(json?.error || json?.message || "เพิ่มคู่ค้าไม่สำเร็จ");
+      throw new Error(json?.error || json?.message || t("addPartnerFailed", "เพิ่มคู่ค้าไม่สำเร็จ"));
     }
 
     resetNewPartnerDraft();
     partnerState.isCreating = false;
-    showToast("เพิ่มคู่ค้าสำเร็จ", "success");
+    showToast(t("addPartnerSuccess", "เพิ่มคู่ค้าสำเร็จ"), "success");
     await fetchPartners();
-    partnerState.message = "เพิ่มคู่ค้าสำเร็จ";
+    partnerState.message = t("addPartnerSuccess", "เพิ่มคู่ค้าสำเร็จ");
     renderPartnerAdminSheet();
   } catch (err) {
     console.error(err);
-    partnerState.error = err.message || "เพิ่มคู่ค้าไม่สำเร็จ";
+    partnerState.error = err.message || t("addPartnerFailed", "เพิ่มคู่ค้าไม่สำเร็จ");
     renderPartnerAdminSheet();
   } finally {
     partnerState.isCreating = false;
@@ -16973,7 +17210,7 @@ function ensureAdminSessionForPartnerCatalog() {
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+    showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
     exitAdmin();
     return false;
   }
@@ -17188,8 +17425,8 @@ function renderPartnerCatalogPickerRows() {
             <div class="bulk-product-picker-main">
               <div class="name">${esc(product.name || productId || "-")}</div>
               <div class="bulk-product-picker-meta">
-                <span>SKU: ${esc(productId || "-")}</span>
-                <span>ราคา: ${esc(formatBulkProductUpdateValue("price", product.price))}</span>
+                <span>${t("productCode", "รหัส")}: ${esc(productId || "-")}</span>
+                <span>${t("price", "ราคา")}: ${esc(formatBulkProductUpdateValue("price", product.price))}</span>
               </div>
               <div class="bulk-product-picker-meta">
                 ${renderBulkProductUpdateValueDisplay("status", product.status)}
@@ -17233,9 +17470,9 @@ function renderPartnerCatalogPicker() {
 
   return `
     <div class="bulk-product-picker">
-      <div class="admin-detail-title">เลือกสินค้าในลิงก์คู่ค้า</div>
+      <div class="admin-detail-title">${t("partnerCatalogPickerTitle", "เลือกสินค้าในลิงก์คู่ค้า")}</div>
       <div class="helper-text">
-        เลือกเฉพาะสินค้าที่ต้องการให้คู่ค้าเห็นในลิงก์นี้ เลือกแล้ว <span id="partnerCatalogPickerCount">${selectedCount}</span> รายการ
+        ${formatUiText("partnerCatalogPickerHelp", { count: `<span id="partnerCatalogPickerCount">${selectedCount}</span>` }, "เลือกเฉพาะสินค้าที่ต้องการให้คู่ค้าเห็นในลิงก์นี้ เลือกแล้ว {count} รายการ")}
       </div>
 
       <div class="bulk-product-picker-controls">
@@ -17248,21 +17485,21 @@ function renderPartnerCatalogPicker() {
         <select
           id="partnerCatalogPickerStatus"
           onchange="setPartnerCatalogPickerStatus(this.value)">
-          <option value="all" ${statusValue === "all" ? "selected" : ""}>ทุกสถานะ</option>
-          <option value="ready" ${statusValue === "ready" ? "selected" : ""}>พร้อมส่ง</option>
-          <option value="ready_plus" ${statusValue === "ready_plus" ? "selected" : ""}>พร้อมส่ง + เพิ่มได้</option>
-          <option value="shipping" ${statusValue === "shipping" ? "selected" : ""}>อยู่ระหว่างจัดส่ง</option>
-          <option value="warehouse" ${statusValue === "warehouse" ? "selected" : ""}>อยู่โกดังไทย</option>
-          <option value="out" ${statusValue === "out" ? "selected" : ""}>หมด</option>
+          <option value="all" ${statusValue === "all" ? "selected" : ""}>${t("allStatuses", "ทุกสถานะ")}</option>
+          <option value="ready" ${statusValue === "ready" ? "selected" : ""}>${getViewerStatusLabel("ready")}</option>
+          <option value="ready_plus" ${statusValue === "ready_plus" ? "selected" : ""}>${getViewerStatusLabel("ready_plus")}</option>
+          <option value="shipping" ${statusValue === "shipping" ? "selected" : ""}>${getViewerStatusLabel("shipping")}</option>
+          <option value="warehouse" ${statusValue === "warehouse" ? "selected" : ""}>${getViewerStatusLabel("warehouse")}</option>
+          <option value="out" ${statusValue === "out" ? "selected" : ""}>${getViewerStatusLabel("out")}</option>
         </select>
       </div>
 
       <div class="bulk-product-picker-actions">
         <button class="btn btn-outline" type="button" onclick="selectVisiblePartnerCatalogProducts()">
-          เลือกทั้งหมดที่แสดง
+          ${t("selectAllVisible", "เลือกทั้งหมดที่แสดง")}
         </button>
         <button class="btn btn-outline" type="button" onclick="clearPartnerCatalogSelection()">
-          ล้างที่เลือก
+          ${t("clearSelected", "ล้างที่เลือก")}
         </button>
       </div>
 
@@ -17279,20 +17516,20 @@ function renderPartnerCatalogSuccessCard() {
   const url = getPartnerCatalogResultUrl(result);
   return `
     <div class="bulk-import-success-card" role="status" aria-live="polite">
-      <strong>สร้างลิงก์คู่ค้าสำเร็จ</strong>
+      <strong>${t("partnerLinkCreated", "สร้างลิงก์คู่ค้าสำเร็จ")}</strong>
       <div class="helper-text" style="margin-top:8px">
         Link ID: ${esc(result.linkId || "-")}<br>
-        Partner: ${esc(result.partnerId || "-")}<br>
-        หมดอายุ: ${esc(formatThaiDate(result.expiresAt || ""))}
+        ${t("partner", "คู่ค้า")}: ${esc(result.partnerId || "-")}<br>
+        ${t("expired", "หมดอายุ")}: ${esc(formatThaiDate(result.expiresAt || ""))}
       </div>
-      <label for="partnerCatalogGeneratedUrl" style="margin-top:12px">ลิงก์สำหรับส่งให้คู่ค้า</label>
+      <label for="partnerCatalogGeneratedUrl" style="margin-top:12px">${t("linkToSendPartner", "ลิงก์สำหรับส่งให้คู่ค้า")}</label>
       <textarea id="partnerCatalogGeneratedUrl" class="input" rows="3" readonly>${esc(url)}</textarea>
       <div class="bulk-product-picker-actions">
         <button class="btn btn-primary" type="button" onclick="copyPartnerCatalogLink()">
-          Copy Link
+          ${t("copyLink", "คัดลอกลิงก์")}
         </button>
         <button class="btn btn-outline" type="button" onclick="backToAdminMenuFromPartnerCatalog()">
-          กลับเมนูแอดมิน
+          ${t("backToAdminMenu", "กลับเมนูแอดมิน")}
         </button>
       </div>
     </div>
@@ -17320,13 +17557,13 @@ function renderPartnerCatalogSheet() {
     <div class="sheet-topbar">
       <button class="btn btn-outline sheet-nav-btn"
         onclick="${partnerState.view === "linkDetail" ? "backToPartnerLinkList()" : "closePartnerCatalogSheet()"}"
-        aria-label="ปิดหน้าต่างลิงก์คู่ค้า">${partnerState.view === "linkDetail" ? "←" : "×"}</button>
-      <h3 id="adminPartnerCatalogSheetTitle">${partnerState.view === "linkDetail" ? "รายละเอียดลิงก์คู่ค้า" : "ลิงก์คู่ค้า"}</h3>
+        aria-label="${t("close", "ปิด")}">${partnerState.view === "linkDetail" ? "←" : "×"}</button>
+      <h3 id="adminPartnerCatalogSheetTitle">${partnerState.view === "linkDetail" ? t("partnerLinkDetails", "รายละเอียดลิงก์คู่ค้า") : t("partnerLinks", "ลิงก์คู่ค้า")}</h3>
       <div aria-hidden="true"></div>
     </div>
 
     <div class="helper-text" style="margin-bottom:10px">
-      สร้างลิงก์ Private Catalog สำหรับคู่ค้า โดยเลือกเฉพาะสินค้าที่ต้องการให้เห็น ลิงก์นี้ใช้สำหรับส่งรายการสนใจเท่านั้น ไม่สร้างออเดอร์และไม่ตัดสต็อก
+      ${t("partnerLinkHelp", "สร้างลิงก์ Private Catalog สำหรับคู่ค้า โดยเลือกเฉพาะสินค้าที่ต้องการให้เห็น ลิงก์นี้ใช้สำหรับส่งรายการสนใจเท่านั้น ไม่สร้างออเดอร์และไม่ตัดสต็อก")}
     </div>
 
     ${renderPartnerCatalogTabs()}
@@ -17337,41 +17574,41 @@ function renderPartnerCatalogSheet() {
         ? renderPartnerLinksView()
         : (result ? renderPartnerCatalogSuccessCard() : `
       <div class="form-group">
-        <label for="partnerCatalogPartnerId">รหัสคู่ค้า</label>
+        <label for="partnerCatalogPartnerId">${t("partnerId", "รหัสคู่ค้า")}</label>
         <input
           id="partnerCatalogPartnerId"
           class="input"
           value="${escAttr(partnerState.partnerId || "")}"
           placeholder="PTR-001"
           oninput="state.admin.partnerCatalog.partnerId = this.value; state.admin.partnerCatalog.error = '';">
-        <div class="helper-text">ต้องมีรหัสคู่ค้านี้อยู่ในชีต partners และสถานะยังเป็น active</div>
+        <div class="helper-text">${t("partnerIdSheetHelp", "ต้องมีรหัสคู่ค้านี้อยู่ในชีต partners และสถานะยังเป็น active")}</div>
       </div>
 
       <div class="form-group">
-        <label for="partnerCatalogLabel">ชื่ออ้างอิง (ไม่บังคับ)</label>
+        <label for="partnerCatalogLabel">${t("referenceNameOptional", "ชื่ออ้างอิง (ไม่บังคับ)")}</label>
         <input
           id="partnerCatalogLabel"
           class="input"
           value="${escAttr(partnerState.label || "")}"
-          placeholder="เช่น Catalog เดือนนี้"
+          placeholder="${t("referenceNamePlaceholder", "เช่น Catalog เดือนนี้")}"
           oninput="state.admin.partnerCatalog.label = this.value; state.admin.partnerCatalog.error = '';">
       </div>
 
       <div class="form-group">
-        <label for="partnerCatalogExpiryMode">วันหมดอายุ</label>
+        <label for="partnerCatalogExpiryMode">${t("expiryDate", "วันหมดอายุ")}</label>
         <select
           id="partnerCatalogExpiryMode"
           onchange="state.admin.partnerCatalog.expiryMode = this.value; state.admin.partnerCatalog.error = ''; renderPartnerCatalogSheet();">
           <option value="7" ${partnerState.expiryMode === "7" ? "selected" : ""}>7 วัน</option>
           <option value="14" ${partnerState.expiryMode === "14" ? "selected" : ""}>14 วัน</option>
           <option value="30" ${partnerState.expiryMode === "30" ? "selected" : ""}>30 วัน</option>
-          <option value="custom" ${partnerState.expiryMode === "custom" ? "selected" : ""}>กำหนดเอง</option>
+          <option value="custom" ${partnerState.expiryMode === "custom" ? "selected" : ""}>${t("custom", "กำหนดเอง")}</option>
         </select>
       </div>
 
       ${customVisible ? `
         <div class="form-group">
-          <label for="partnerCatalogCustomExpiresAt">กำหนดวันหมดอายุเอง</label>
+          <label for="partnerCatalogCustomExpiresAt">${t("customExpiryDate", "กำหนดวันหมดอายุเอง")}</label>
           <input
             id="partnerCatalogCustomExpiresAt"
             class="input"
@@ -17381,7 +17618,7 @@ function renderPartnerCatalogSheet() {
         </div>
       ` : `
         <div class="helper-text" style="margin-bottom:10px">
-          หมดอายุโดยประมาณ: ${esc(formatThaiDate(expiresAt))}
+          ${formatUiText("approximateExpiry", { date: esc(formatThaiDate(expiresAt)) }, "หมดอายุโดยประมาณ: {date}")}
         </div>
       `}
 
@@ -17394,10 +17631,10 @@ function renderPartnerCatalogSheet() {
           type="button"
           ${state.admin.isSubmitting ? "disabled" : ""}
           onclick="createPartnerCatalogLink(this)">
-          ${state.admin.isSubmitting ? "กำลังสร้างลิงก์..." : `สร้างลิงก์คู่ค้า (${selectedCount})`}
+          ${state.admin.isSubmitting ? t("creatingLink", "กำลังสร้างลิงก์...") : `${t("createPartnerLink", "สร้างลิงก์คู่ค้า")} (${selectedCount})`}
         </button>
         <button class="btn btn-outline" type="button" onclick="closePartnerCatalogSheet()">
-          ยกเลิก
+          ${t("cancel", "ยกเลิก")}
         </button>
       </div>
     `)}
@@ -17412,19 +17649,19 @@ function validatePartnerCatalogInput() {
   const expiresTime = expiresAt ? new Date(expiresAt).getTime() : NaN;
 
   if (!partnerId) {
-    return { valid: false, message: "กรุณาระบุรหัสคู่ค้า" };
+    return { valid: false, message: t("partnerIdRequired", "กรุณาระบุรหัสคู่ค้า") };
   }
   if (!expiresAt || Number.isNaN(expiresTime) || expiresTime <= Date.now()) {
-    return { valid: false, message: "กรุณาระบุวันหมดอายุที่อยู่ในอนาคต" };
+    return { valid: false, message: t("partnerExpiryFutureRequired", "กรุณาระบุวันหมดอายุที่อยู่ในอนาคต") };
   }
   if (!productIds.length) {
-    return { valid: false, message: "กรุณาเลือกสินค้าอย่างน้อย 1 รายการ" };
+    return { valid: false, message: t("selectAtLeastOneProduct", "กรุณาเลือกสินค้าอย่างน้อย 1 รายการ") };
   }
   if (productIds.length > 100) {
-    return { valid: false, message: "เลือกรายการสินค้าได้สูงสุด 100 รายการต่อหนึ่งลิงก์" };
+    return { valid: false, message: t("partnerLinkMaxItems", "เลือกรายการสินค้าได้สูงสุด 100 รายการต่อหนึ่งลิงก์") };
   }
   if (!state.admin.token) {
-    return { valid: false, message: "ไม่พบ admin token กรุณาเข้าสู่ระบบใหม่" };
+    return { valid: false, message: t("adminTokenMissingLoginAgain", "ไม่พบ admin token กรุณาเข้าสู่ระบบใหม่") };
   }
 
   return {
@@ -17452,7 +17689,7 @@ async function createPartnerCatalogLink(btn) {
   renderPartnerCatalogSheet();
 
   try {
-    showLoading("กำลังสร้างลิงก์คู่ค้า...");
+    showLoading(t("creatingPartnerLink", "กำลังสร้างลิงก์คู่ค้า..."));
     const form = new URLSearchParams();
     form.append("action", "createPartnerLink");
     form.append("token", state.admin.token);
@@ -17470,22 +17707,22 @@ async function createPartnerCatalogLink(btn) {
     if (json?.success === true) {
       state.admin.partnerCatalog.result = json.data || {};
       state.admin.partnerCatalog.error = "";
-      showToast("สร้างลิงก์คู่ค้าสำเร็จ", "success");
+      showToast(t("partnerLinkCreated", "สร้างลิงก์คู่ค้าสำเร็จ"), "success");
       renderPartnerCatalogSheet();
       return;
     }
 
     if (isAuthError(json?.error)) {
-      showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+      showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
       exitAdmin({ silent: true });
       return;
     }
 
-    state.admin.partnerCatalog.error = json?.error || json?.message || "สร้างลิงก์คู่ค้าไม่สำเร็จ";
+    state.admin.partnerCatalog.error = json?.error || json?.message || t("createPartnerLinkFailed", "สร้างลิงก์คู่ค้าไม่สำเร็จ");
     renderPartnerCatalogSheet();
   } catch (err) {
     console.error(err);
-    state.admin.partnerCatalog.error = err.message || "สร้างลิงก์คู่ค้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
+    state.admin.partnerCatalog.error = err.message || t("createPartnerLinkFailedRetry", "สร้างลิงก์คู่ค้าไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
     renderPartnerCatalogSheet();
   } finally {
     safeHideLoading();
@@ -17500,7 +17737,7 @@ async function copyPartnerCatalogLink() {
   const result = state.admin.partnerCatalog.result;
   const url = getPartnerCatalogResultUrl(result);
   if (!url) {
-    showToast("ไม่พบลิงก์สำหรับคัดลอก", "warning");
+    showToast(t("noLinkToCopy", "ไม่พบลิงก์สำหรับคัดลอก"), "warning");
     return;
   }
 
@@ -17518,10 +17755,10 @@ async function copyPartnerCatalogLink() {
       document.execCommand("copy");
       textarea.remove();
     }
-    showToast("คัดลอกลิงก์แล้ว", "success");
+    showToast(t("linkCopied", "คัดลอกลิงก์แล้ว"), "success");
   } catch (err) {
     console.error(err);
-    showToast("คัดลอกลิงก์ไม่สำเร็จ กรุณาคัดลอกจากช่องข้อความ", "warning");
+    showToast(t("linkCopyFailed", "คัดลอกลิงก์ไม่สำเร็จ กรุณาคัดลอกจากช่องข้อความ"), "warning");
   }
 }
 
@@ -17535,10 +17772,10 @@ function getPartnerLinkStatusClass(link) {
 
 function getPartnerLinkStatusLabel(link) {
   const status = String(link?.status || "").trim().toLowerCase();
-  if (link?.isExpired) return "หมดอายุ";
+  if (link?.isExpired) return t("expired", "หมดอายุ");
   return {
-    active: "ใช้งานอยู่",
-    disabled: "ปิดใช้งาน"
+    active: t("activeNow", "ใช้งานอยู่"),
+    disabled: t("disabledDisplay", "ปิดใช้งาน")
   }[status] || (status || "-");
 }
 
@@ -17548,11 +17785,11 @@ function renderPartnerCatalogTabs() {
     <div class="bulk-product-picker-actions" style="margin-bottom:12px">
       <button class="btn ${view === "create" ? "btn-primary" : "btn-outline"}" type="button"
         onclick="setPartnerCatalogView('create')">
-        สร้างลิงก์ใหม่
+        ${t("createNewLink", "สร้างลิงก์ใหม่")}
       </button>
       <button class="btn ${view === "links" || view === "linkDetail" ? "btn-primary" : "btn-outline"}" type="button"
         onclick="setPartnerCatalogView('links')">
-        จัดการลิงก์เดิม
+        ${t("manageExistingLinks", "จัดการลิงก์เดิม")}
       </button>
     </div>
   `;
@@ -17593,11 +17830,11 @@ async function loadPartnerLinks() {
 
     if (json?.success !== true) {
       if (isAuthError(json?.error)) {
-        showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+        showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
         exitAdmin({ silent: true });
         return;
       }
-      throw new Error(json?.error || json?.message || "โหลดลิงก์คู่ค้าไม่สำเร็จ");
+      throw new Error(json?.error || json?.message || t("loadPartnerLinksFailed", "โหลดลิงก์คู่ค้าไม่สำเร็จ"));
     }
 
     partnerState.links = Array.isArray(json.data?.links)
@@ -17611,7 +17848,7 @@ async function loadPartnerLinks() {
     console.error(err);
     partnerState.links = [];
     partnerState.linkTotal = 0;
-    partnerState.linkError = err.message || "โหลดลิงก์คู่ค้าไม่สำเร็จ";
+    partnerState.linkError = err.message || t("loadPartnerLinksFailed", "โหลดลิงก์คู่ค้าไม่สำเร็จ");
   } finally {
     partnerState.linkLoading = false;
     renderPartnerCatalogSheet();
@@ -17646,11 +17883,11 @@ async function openPartnerLinkDetail(linkId) {
 
     if (json?.success !== true) {
       if (isAuthError(json?.error)) {
-        showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+        showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
         exitAdmin({ silent: true });
         return;
       }
-      throw new Error(json?.error || json?.message || "โหลดรายละเอียดลิงก์ไม่สำเร็จ");
+      throw new Error(json?.error || json?.message || t("loadPartnerLinkDetailsFailed", "โหลดรายละเอียดลิงก์ไม่สำเร็จ"));
     }
 
     partnerState.linkDetail = json.data || null;
@@ -17658,7 +17895,7 @@ async function openPartnerLinkDetail(linkId) {
   } catch (err) {
     console.error(err);
     partnerState.linkDetail = null;
-    partnerState.linkError = err.message || "โหลดรายละเอียดลิงก์ไม่สำเร็จ";
+    partnerState.linkError = err.message || t("loadPartnerLinkDetailsFailed", "โหลดรายละเอียดลิงก์ไม่สำเร็จ");
   } finally {
     partnerState.linkLoading = false;
     renderPartnerCatalogSheet();
@@ -17676,7 +17913,7 @@ async function updatePartnerLinkStatusFromAdmin(linkId, status) {
   if (!cleanLinkId || !cleanStatus) return;
 
   partnerState.linkStatusSubmitting = true;
-  partnerState.linkStatusMessage = "กำลังอัปเดตสถานะลิงก์...";
+  partnerState.linkStatusMessage = t("updatingLinkStatus", "กำลังอัปเดตสถานะลิงก์...");
   partnerState.linkError = "";
   renderPartnerCatalogSheet();
 
@@ -17695,11 +17932,11 @@ async function updatePartnerLinkStatusFromAdmin(linkId, status) {
 
     if (json?.success !== true) {
       if (isAuthError(json?.error)) {
-        showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+        showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
         exitAdmin({ silent: true });
         return;
       }
-      throw new Error(json?.error || json?.message || "อัปเดตสถานะลิงก์ไม่สำเร็จ");
+      throw new Error(json?.error || json?.message || t("updateLinkStatusFailed", "อัปเดตสถานะลิงก์ไม่สำเร็จ"));
     }
 
     const updatedLink = json.data?.link || null;
@@ -17717,12 +17954,12 @@ async function updatePartnerLinkStatusFromAdmin(linkId, status) {
       );
     }
 
-    partnerState.linkStatusMessage = "อัปเดตสถานะลิงก์แล้ว";
-    showToast("อัปเดตสถานะลิงก์แล้ว", "success");
+    partnerState.linkStatusMessage = t("linkStatusUpdated", "อัปเดตสถานะลิงก์แล้ว");
+    showToast(t("linkStatusUpdated", "อัปเดตสถานะลิงก์แล้ว"), "success");
   } catch (err) {
     console.error(err);
     partnerState.linkStatusMessage = "";
-    partnerState.linkError = err.message || "อัปเดตสถานะลิงก์ไม่สำเร็จ";
+    partnerState.linkError = err.message || t("updateLinkStatusFailed", "อัปเดตสถานะลิงก์ไม่สำเร็จ");
     showToast(partnerState.linkError, "error");
   } finally {
     partnerState.linkStatusSubmitting = false;
@@ -17740,30 +17977,30 @@ function renderPartnerLinkFilters() {
         id="partnerLinkSearch"
         type="search"
         value="${escAttr(partnerState.linkQ || "")}"
-        placeholder="ค้นหา linkId / Partner / label"
+        placeholder="${t("searchPartnerLinkPlaceholder", "ค้นหา linkId / Partner / label")}"
         oninput="setPartnerLinkSearch(this.value)"
         onkeydown="if(event.key === 'Enter') refreshPartnerLinks();">
       <input
         id="partnerLinkPartnerId"
         value="${escAttr(partnerState.linkPartnerId || "")}"
-        placeholder="รหัสคู่ค้า"
+        placeholder="${t("partnerId", "รหัสคู่ค้า")}"
         oninput="setPartnerLinkPartnerFilter(this.value)"
         onkeydown="if(event.key === 'Enter') refreshPartnerLinks();">
       <select
         id="partnerLinkStatus"
         onchange="setPartnerLinkStatusFilter(this.value)">
-        <option value="all" ${status === "all" ? "selected" : ""}>ทุกสถานะ</option>
-        <option value="active" ${status === "active" ? "selected" : ""}>ใช้งานอยู่</option>
-        <option value="disabled" ${status === "disabled" ? "selected" : ""}>ปิดใช้งาน</option>
+        <option value="all" ${status === "all" ? "selected" : ""}>${t("allStatuses", "ทุกสถานะ")}</option>
+        <option value="active" ${status === "active" ? "selected" : ""}>${t("activeNow", "ใช้งานอยู่")}</option>
+        <option value="disabled" ${status === "disabled" ? "selected" : ""}>${t("disabledDisplay", "ปิดใช้งาน")}</option>
       </select>
     </div>
     <div class="bulk-product-picker-actions">
       <button class="btn btn-outline" type="button" onclick="refreshPartnerLinks()">
-        รีเฟรช / ค้นหา
+        ${t("refreshSearch", "รีเฟรช / ค้นหา")}
       </button>
       <button class="btn btn-outline" type="button"
         onclick="state.admin.partnerCatalog.linkQ=''; state.admin.partnerCatalog.linkPartnerId=''; state.admin.partnerCatalog.linkStatus='all'; refreshPartnerLinks();">
-        ล้างตัวกรอง
+        ${t("clearFilters", "ล้างตัวกรอง")}
       </button>
     </div>
   `;
@@ -17776,22 +18013,22 @@ function renderPartnerLinkCard(link) {
         <div class="name">${esc(link.partnerNameSnapshot || link.partnerId || "-")}</div>
         <div class="bulk-preview-meta">
           Link ID: ${esc(link.linkId || "-")}<br>
-          รหัสคู่ค้า: ${esc(link.partnerId || "-")}<br>
-          ชื่ออ้างอิง: ${esc(link.label || "-")}<br>
-          สร้างโดย: ${esc(link.createdBy || "-")}<br>
-          สร้างเมื่อ: ${esc(formatThaiDate(link.createdAt || ""))}<br>
-          หมดอายุ: ${esc(formatThaiDate(link.expiresAt || ""))}
+          ${t("partnerId", "รหัสคู่ค้า")}: ${esc(link.partnerId || "-")}<br>
+          ${t("referenceNameOptional", "ชื่ออ้างอิง (ไม่บังคับ)")}: ${esc(link.label || "-")}<br>
+          ${t("createdBy", "สร้างโดย")}: ${esc(link.createdBy || "-")}<br>
+          ${t("createdAt", "สร้างเมื่อ")}: ${esc(formatThaiDate(link.createdAt || ""))}<br>
+          ${t("expired", "หมดอายุ")}: ${esc(formatThaiDate(link.expiresAt || ""))}
         </div>
         <div class="bulk-product-picker-meta" style="margin-top:8px">
           <span class="status-badge compact ${getPartnerLinkStatusClass(link)}">
             ${esc(getPartnerLinkStatusLabel(link))}
           </span>
-          <span>${Number(link.itemCount || 0)} รายการ</span>
+          <span>${Number(link.itemCount || 0)} ${t("itemUnit", "รายการ")}</span>
         </div>
         <div class="bulk-product-picker-actions">
           <button class="btn btn-primary" type="button"
             onclick="openPartnerLinkDetail(${toInlineJsStringLiteral(link.linkId || "")})">
-            ดูรายละเอียด
+            ${t("viewDetails", "ดูรายละเอียด")}
           </button>
         </div>
       </div>
@@ -17802,25 +18039,25 @@ function renderPartnerLinkCard(link) {
 function renderPartnerLinksList() {
   const partnerState = state.admin.partnerCatalog;
   if (partnerState.linkLoading) {
-    return `<div class="loading">กำลังโหลดลิงก์คู่ค้า...</div>`;
+    return `<div class="loading">${t("loadingPartnerLinks", "กำลังโหลดลิงก์คู่ค้า...")}</div>`;
   }
   if (partnerState.linkError) {
     return `
       <div class="empty-state">
         ${esc(partnerState.linkError)}
         <div style="margin-top:10px">
-          <button class="btn btn-outline" type="button" onclick="refreshPartnerLinks()">ลองใหม่</button>
+          <button class="btn btn-outline" type="button" onclick="refreshPartnerLinks()">${t("retry", "ลองใหม่")}</button>
         </div>
       </div>
     `;
   }
   if (!partnerState.links.length) {
-    return `<div class="empty-state">ยังไม่มีลิงก์คู่ค้าตามเงื่อนไขที่เลือก</div>`;
+    return `<div class="empty-state">${t("noPartnerLinks", "ยังไม่มีลิงก์คู่ค้าตามเงื่อนไขที่เลือก")}</div>`;
   }
 
   return `
     <div class="helper-text" style="margin:10px 0">
-      พบ ${Number(partnerState.linkTotal || 0).toLocaleString("th-TH")} ลิงก์
+      ${formatUiText("partnerLinksFound", { count: Number(partnerState.linkTotal || 0).toLocaleString("th-TH") }, "พบ {count} ลิงก์")}
     </div>
     <div class="bulk-preview-list">
       ${partnerState.links.map(renderPartnerLinkCard).join("")}
@@ -17835,7 +18072,7 @@ function renderPartnerLinkStatusActions(link) {
   if (!linkId) return "";
 
   const nextStatus = status === "disabled" ? "active" : "disabled";
-  const label = nextStatus === "active" ? "เปิดใช้งานลิงก์" : "ปิดลิงก์";
+  const label = nextStatus === "active" ? t("enableLink", "เปิดใช้งานลิงก์") : t("disableLink", "ปิดลิงก์");
 
   return `
     <div class="bulk-product-picker-actions" style="margin-top:12px">
@@ -17858,14 +18095,14 @@ function renderPartnerLinkDetailItem(item) {
     <div class="bulk-preview-card">
       ${renderCartItemThumb({
         productId: item.productId,
-        name: item.nameSnapshot || item.productId || "สินค้า",
+        name: item.nameSnapshot || item.productId || t("productLabel", "สินค้า"),
         image: item.imageSnapshot || ""
       })}
       <div>
         <div class="name">${esc(item.nameSnapshot || item.productId || "-")}</div>
         <div class="bulk-preview-meta">
-          SKU: ${esc(item.productId || "-")}<br>
-          ราคา: ${esc(formatPartnerRequestMoney(item.priceSnapshot || 0))}
+          ${t("productCode", "รหัส")}: ${esc(item.productId || "-")}<br>
+          ${t("price", "ราคา")}: ${esc(formatPartnerRequestMoney(item.priceSnapshot || 0))}
         </div>
         <div class="bulk-product-picker-meta" style="margin-top:8px">
           ${renderBulkProductUpdateValueDisplay("status", item.statusSnapshot)}
@@ -17878,14 +18115,14 @@ function renderPartnerLinkDetailItem(item) {
 function renderPartnerLinkDetail() {
   const partnerState = state.admin.partnerCatalog;
   if (partnerState.linkLoading) {
-    return `<div class="loading">กำลังโหลดรายละเอียดลิงก์...</div>`;
+    return `<div class="loading">${t("loadingPartnerLinkDetails", "กำลังโหลดรายละเอียดลิงก์...")}</div>`;
   }
   if (partnerState.linkError) {
     return `
       <div class="empty-state">
         ${esc(partnerState.linkError)}
         <div style="margin-top:10px">
-          <button class="btn btn-outline" type="button" onclick="backToPartnerLinkList()">กลับรายการลิงก์</button>
+          <button class="btn btn-outline" type="button" onclick="backToPartnerLinkList()">${t("backToPartnerLinks", "กลับรายการลิงก์")}</button>
         </div>
       </div>
     `;
@@ -17897,33 +18134,33 @@ function renderPartnerLinkDetail() {
 
   return `
     <div class="admin-detail-card">
-      <div class="admin-detail-title">${esc(link.partnerNameSnapshot || link.partnerId || "ลิงก์คู่ค้า")}</div>
+      <div class="admin-detail-title">${esc(link.partnerNameSnapshot || link.partnerId || t("partnerLinks", "ลิงก์คู่ค้า"))}</div>
       <div class="bulk-preview-meta">
         Link ID: ${esc(link.linkId || "-")}<br>
-        รหัสคู่ค้า: ${esc(link.partnerId || "-")}<br>
-        ชื่ออ้างอิง: ${esc(link.label || "-")}<br>
-        สร้างโดย: ${esc(link.createdBy || "-")}<br>
-        สร้างเมื่อ: ${esc(formatThaiDate(link.createdAt || ""))}<br>
-        หมดอายุ: ${esc(formatThaiDate(link.expiresAt || ""))}
+        ${t("partnerId", "รหัสคู่ค้า")}: ${esc(link.partnerId || "-")}<br>
+        ${t("referenceNameOptional", "ชื่ออ้างอิง (ไม่บังคับ)")}: ${esc(link.label || "-")}<br>
+        ${t("createdBy", "สร้างโดย")}: ${esc(link.createdBy || "-")}<br>
+        ${t("createdAt", "สร้างเมื่อ")}: ${esc(formatThaiDate(link.createdAt || ""))}<br>
+        ${t("expired", "หมดอายุ")}: ${esc(formatThaiDate(link.expiresAt || ""))}
       </div>
       <div class="bulk-product-picker-meta" style="margin-top:8px">
         <span class="status-badge compact ${getPartnerLinkStatusClass(link)}">
           ${esc(getPartnerLinkStatusLabel(link))}
         </span>
-        <span>${Number(link.itemCount || items.length || 0)} รายการ</span>
-        ${link.isExpired ? `<span>หมดอายุแล้ว</span>` : ``}
+        <span>${Number(link.itemCount || items.length || 0)} ${t("itemUnit", "รายการ")}</span>
+        ${link.isExpired ? `<span>${t("expiredAlready", "หมดอายุแล้ว")}</span>` : ``}
       </div>
       <div class="bulk-error-list" style="margin-top:12px">
-        ลิงก์เดิมไม่สามารถคัดลอกซ้ำได้ เพราะระบบไม่เก็บ token จริงไว้ หากต้องการส่งลิงก์ใหม่ ให้สร้างลิงก์ใหม่
+        ${t("oldLinkCopyUnavailable", "ลิงก์เดิมไม่สามารถคัดลอกซ้ำได้ เพราะระบบไม่เก็บ token จริงไว้ หากต้องการส่งลิงก์ใหม่ ให้สร้างลิงก์ใหม่")}
       </div>
       ${renderPartnerLinkStatusActions(link)}
     </div>
 
-    <div class="admin-detail-title" style="margin-top:14px">สินค้าในลิงก์</div>
+    <div class="admin-detail-title" style="margin-top:14px">${t("productsInLink", "สินค้าในลิงก์")}</div>
     ${
       items.length
         ? `<div class="bulk-preview-list">${items.map(renderPartnerLinkDetailItem).join("")}</div>`
-        : `<div class="empty-state">ไม่มีสินค้าในลิงก์นี้</div>`
+        : `<div class="empty-state">${t("noProductsInLink", "ไม่มีสินค้าในลิงก์นี้")}</div>`
     }
   `;
 }
@@ -17931,14 +18168,14 @@ function renderPartnerLinkDetail() {
 function renderPartnerLinksView() {
   return `
     <div class="helper-text" style="margin-bottom:10px">
-      จัดการสถานะลิงก์คู่ค้าที่เคยสร้างไว้ ระบบไม่แสดง token จริงและไม่สามารถคัดลอกลิงก์เก่าซ้ำได้
+      ${t("managePartnerLinksHelp", "จัดการสถานะลิงก์คู่ค้าที่เคยสร้างไว้ ระบบไม่แสดง token จริงและไม่สามารถคัดลอกลิงก์เก่าซ้ำได้")}
     </div>
     <div class="bulk-product-picker-actions" style="margin-bottom:10px">
       <button class="btn btn-outline" type="button" onclick="setPartnerCatalogView('create')">
-        กลับหน้าสร้างลิงก์
+        ${t("backToCreateLink", "กลับหน้าสร้างลิงก์")}
       </button>
       <button class="btn btn-outline" type="button" onclick="backToAdminMenuFromPartnerCatalog()">
-        กลับเมนูแอดมิน
+        ${t("backToAdminMenu", "กลับเมนูแอดมิน")}
       </button>
     </div>
     ${renderPartnerLinkFilters()}
@@ -17953,7 +18190,7 @@ function ensureAdminSessionForPartnerRequests() {
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+    showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
     exitAdmin();
     return false;
   }
@@ -18047,10 +18284,10 @@ function getPartnerRequestStatusClass(status) {
 function getPartnerRequestStatusLabel(status) {
   const key = String(status || "").trim().toLowerCase();
   return {
-    new: "ใหม่",
-    reviewed: "ตรวจแล้ว",
-    closed: "ปิดแล้ว",
-    cancelled: "ยกเลิกแล้ว"
+    new: t("newStatus", "ใหม่"),
+    reviewed: t("reviewedStatus", "ตรวจแล้ว"),
+    closed: t("statusClosed", "ปิดแล้ว"),
+    cancelled: t("cancelledStatus", "ยกเลิกแล้ว")
   }[key] || (status || "-");
 }
 
@@ -18064,22 +18301,22 @@ function getPartnerRequestStatusActions(status) {
   const key = String(status || "").trim().toLowerCase();
   const actionsByStatus = {
     new: [
-      ["reviewed", "ทำเครื่องหมายว่าตรวจแล้ว"],
-      ["closed", "ปิดคำขอ"],
-      ["cancelled", "ยกเลิก"]
+      ["reviewed", t("markReviewed", "ทำเครื่องหมายว่าตรวจแล้ว")],
+      ["closed", t("closeRequest", "ปิดคำขอ")],
+      ["cancelled", t("cancel", "ยกเลิก")]
     ],
     reviewed: [
-      ["closed", "ปิดคำขอ"],
-      ["cancelled", "ยกเลิก"],
-      ["new", "กลับเป็นใหม่"]
+      ["closed", t("closeRequest", "ปิดคำขอ")],
+      ["cancelled", t("cancel", "ยกเลิก")],
+      ["new", t("markNew", "กลับเป็นใหม่")]
     ],
     closed: [
-      ["new", "กลับเป็นใหม่"],
-      ["reviewed", "ทำเครื่องหมายว่าตรวจแล้ว"]
+      ["new", t("markNew", "กลับเป็นใหม่")],
+      ["reviewed", t("markReviewed", "ทำเครื่องหมายว่าตรวจแล้ว")]
     ],
     cancelled: [
-      ["new", "กลับเป็นใหม่"],
-      ["reviewed", "ทำเครื่องหมายว่าตรวจแล้ว"]
+      ["new", t("markNew", "กลับเป็นใหม่")],
+      ["reviewed", t("markReviewed", "ทำเครื่องหมายว่าตรวจแล้ว")]
     ]
   };
   return actionsByStatus[key] || actionsByStatus.new;
@@ -18122,7 +18359,7 @@ async function updatePartnerRequestStatusFromAdmin(requestId, status) {
 
   const requestState = state.admin.partnerRequests;
   requestState.statusSubmitting = true;
-  requestState.statusMessage = "กำลังอัปเดตสถานะ...";
+  requestState.statusMessage = t("updatingRequestStatus", "กำลังอัปเดตสถานะ...");
   requestState.error = "";
   renderPartnerRequestsSheet();
 
@@ -18141,11 +18378,11 @@ async function updatePartnerRequestStatusFromAdmin(requestId, status) {
 
     if (json?.success !== true) {
       if (isAuthError(json?.error)) {
-        showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+        showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
         exitAdmin({ silent: true });
         return;
       }
-      throw new Error(json?.error || json?.message || "อัปเดตสถานะคำขอไม่สำเร็จ");
+      throw new Error(json?.error || json?.message || t("updateRequestStatusFailed", "อัปเดตสถานะคำขอไม่สำเร็จ"));
     }
 
     const updatedRequest = json.data?.request || null;
@@ -18163,12 +18400,12 @@ async function updatePartnerRequestStatusFromAdmin(requestId, status) {
       );
     }
 
-    requestState.statusMessage = "อัปเดตสถานะแล้ว";
-    showToast("อัปเดตสถานะคำขอแล้ว", "success");
+    requestState.statusMessage = t("requestStatusUpdated", "อัปเดตสถานะแล้ว");
+    showToast(t("requestStatusUpdated", "อัปเดตสถานะคำขอแล้ว"), "success");
   } catch (err) {
     console.error(err);
     requestState.statusMessage = "";
-    requestState.error = err.message || "อัปเดตสถานะคำขอไม่สำเร็จ";
+    requestState.error = err.message || t("updateRequestStatusFailed", "อัปเดตสถานะคำขอไม่สำเร็จ");
     showToast(requestState.error, "error");
   } finally {
     requestState.statusSubmitting = false;
@@ -18202,23 +18439,23 @@ function confirmDuplicatePoBeforePartnerConvert(poNumber) {
     .slice(0, 3)
     .map(order => {
       const parts = [
-        `เลขออเดอร์: ${order?.orderId || "-"}`,
-        `สถานะ: ${order?.status || "-"}`,
-        `แหล่งที่มา: ${getAdminOrderSourceLabel(order)}`
+        `${t("orderNumber", "เลขออเดอร์")}: ${order?.orderId || "-"}`,
+        `${t("status", "สถานะ")}: ${getAdminOrderStatusLabel(order?.status || "-")}`,
+        `${t("source", "แหล่งที่มา")}: ${getAdminOrderSourceDisplayLabel(order)}`
       ];
       if (order?.partnerRequestId) {
-        parts.push(`เลขคำขอคู่ค้า: ${order.partnerRequestId}`);
+        parts.push(`${t("partnerRequestId", "เลขคำขอคู่ค้า")}: ${order.partnerRequestId}`);
       }
       return parts.join(" | ");
     })
     .join("\n");
 
   const moreText = duplicates.length > 3
-    ? `\n...และอีก ${duplicates.length - 3} ออเดอร์`
+    ? `\n${formatUiText("andMoreOrders", { count: duplicates.length - 3 }, "...และอีก {count} ออเดอร์")}`
     : "";
 
   return window.confirm(
-    `พบเลข PO ซ้ำ: ${poNumber}\n\n${detailText}${moreText}\n\nต้องการสร้างออเดอร์ด้วย PO นี้ต่อหรือไม่?`
+    formatUiText("duplicatePoPartnerConvertConfirm", { po: poNumber, details: detailText, more: moreText }, "พบเลข PO ซ้ำ: {po}\n\n{details}{more}\n\nต้องการสร้างออเดอร์ด้วย PO นี้ต่อหรือไม่?")
   );
 }
 
@@ -18256,23 +18493,23 @@ async function confirmDuplicatePoBeforeCreateOrder(poNumber) {
     .slice(0, 3)
     .map(order => {
       const parts = [
-        `เลขออเดอร์: ${order?.orderId || "-"}`,
-        `สถานะ: ${order?.status || "-"}`,
-        `แหล่งที่มา: ${order?.source || "-"}`
+        `${t("orderNumber", "เลขออเดอร์")}: ${order?.orderId || "-"}`,
+        `${t("status", "สถานะ")}: ${getAdminOrderStatusLabel(order?.status || "-")}`,
+        `${t("source", "แหล่งที่มา")}: ${esc(order?.source || "-")}`
       ];
       if (order?.partnerRequestId) {
-        parts.push(`เลขคำขอคู่ค้า: ${order.partnerRequestId}`);
+        parts.push(`${t("partnerRequestId", "เลขคำขอคู่ค้า")}: ${order.partnerRequestId}`);
       }
       return parts.join(" | ");
     })
     .join("\n");
 
   const moreText = matches.length > 3
-    ? `\n...และอีก ${matches.length - 3} ออเดอร์`
+    ? `\n${formatUiText("andMoreOrders", { count: matches.length - 3 }, "...และอีก {count} ออเดอร์")}`
     : "";
 
   return window.confirm(
-    `พบเลข PO ซ้ำ: ${poNumber}\n\n${detailText}${moreText}\n\nต้องการสร้างใบสั่งซื้อด้วย PO นี้ต่อหรือไม่?`
+    formatUiText("duplicatePoPartnerCreateConfirm", { po: poNumber, details: detailText, more: moreText }, "พบเลข PO ซ้ำ: {po}\n\n{details}{more}\n\nต้องการสร้างใบสั่งซื้อด้วย PO นี้ต่อหรือไม่?")
   );
 }
 
@@ -18289,14 +18526,14 @@ async function convertPartnerRequestToOrderFromAdmin(requestId) {
   if (!cleanRequestId) return;
 
   if (!poNumber) {
-    requestState.convertError = "กรุณาระบุเลข PO ก่อนสร้างออเดอร์";
+    requestState.convertError = t("enterPoBeforeCreateOrder", "กรุณาระบุเลข PO ก่อนสร้างออเดอร์");
     requestState.convertResult = null;
     renderPartnerRequestsSheet();
     return;
   }
 
   if (!confirmDuplicatePoBeforePartnerConvert(poNumber)) {
-    requestState.convertError = "ยกเลิกการสร้างออเดอร์ เนื่องจากพบเลข PO ซ้ำ";
+    requestState.convertError = t("duplicatePoCancelled", "ยกเลิกการสร้างใบสั่งซื้อ เนื่องจากพบเลข PO ซ้ำ");
     requestState.convertResult = null;
     renderPartnerRequestsSheet();
     return;
@@ -18323,17 +18560,17 @@ async function convertPartnerRequestToOrderFromAdmin(requestId) {
 
     if (json?.success !== true) {
       if (isAuthError(json?.error)) {
-        showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+        showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
         exitAdmin({ silent: true });
         return;
       }
-      throw new Error(json?.error || json?.message || "สร้างออเดอร์จากคำขอไม่สำเร็จ");
+      throw new Error(json?.error || json?.message || t("createOrderFromRequestFailed", "สร้างออเดอร์จากคำขอไม่สำเร็จ"));
     }
 
     requestState.convertResult = json.data || null;
     requestState.convertError = "";
     requestState.convertPoNumber = "";
-    showToast("สร้างออเดอร์แล้ว รออนุมัติในออเดอร์รออนุมัติ", "success");
+    showToast(t("orderCreatedPendingApproval", "สร้างออเดอร์แล้ว รออนุมัติในออเดอร์รออนุมัติ"), "success");
 
     try {
       state.admin.orders = await fetchOrders();
@@ -18343,7 +18580,7 @@ async function convertPartnerRequestToOrderFromAdmin(requestId) {
   } catch (err) {
     console.error(err);
     requestState.convertResult = null;
-    requestState.convertError = err.message || "สร้างออเดอร์จากคำขอไม่สำเร็จ";
+    requestState.convertError = err.message || t("createOrderFromRequestFailed", "สร้างออเดอร์จากคำขอไม่สำเร็จ");
     showToast(requestState.convertError, "error");
   } finally {
     requestState.convertSubmitting = false;
@@ -18384,11 +18621,11 @@ async function loadPartnerRequests() {
 
     if (json?.success !== true) {
       if (isAuthError(json?.error)) {
-        showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+        showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
         exitAdmin({ silent: true });
         return;
       }
-      throw new Error(json?.error || json?.message || "โหลดคำขอคู่ค้าไม่สำเร็จ");
+      throw new Error(json?.error || json?.message || t("loadPartnerRequestsFailed", "โหลดคำขอคู่ค้าไม่สำเร็จ"));
     }
 
     requestState.requests = Array.isArray(json.data?.requests)
@@ -18402,7 +18639,7 @@ async function loadPartnerRequests() {
     console.error(err);
     requestState.requests = [];
     requestState.total = 0;
-    requestState.error = err.message || "โหลดคำขอคู่ค้าไม่สำเร็จ";
+    requestState.error = err.message || t("loadPartnerRequestsFailed", "โหลดคำขอคู่ค้าไม่สำเร็จ");
   } finally {
     requestState.loading = false;
     renderPartnerRequestsSheet();
@@ -18439,11 +18676,11 @@ async function openPartnerRequestDetail(requestId) {
 
     if (json?.success !== true) {
       if (isAuthError(json?.error)) {
-        showToast("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง", "warning");
+        showToast(t("sessionExpiredLoginAgain", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้ง"), "warning");
         exitAdmin({ silent: true });
         return;
       }
-      throw new Error(json?.error || json?.message || "โหลดรายละเอียดคำขอไม่สำเร็จ");
+      throw new Error(json?.error || json?.message || t("loadPartnerRequestDetailsFailed", "โหลดรายละเอียดคำขอไม่สำเร็จ"));
     }
 
     requestState.detail = json.data || null;
@@ -18451,7 +18688,7 @@ async function openPartnerRequestDetail(requestId) {
   } catch (err) {
     console.error(err);
     requestState.detail = null;
-    requestState.error = err.message || "โหลดรายละเอียดคำขอไม่สำเร็จ";
+    requestState.error = err.message || t("loadPartnerRequestDetailsFailed", "โหลดรายละเอียดคำขอไม่สำเร็จ");
   } finally {
     requestState.loading = false;
     renderPartnerRequestsSheet();
@@ -18468,31 +18705,31 @@ function renderPartnerRequestsFilters() {
         id="partnerRequestSearch"
         type="search"
         value="${escAttr(requestState.q || "")}"
-        placeholder="ค้นหา requestId / คู่ค้า / ผู้ติดต่อ"
+        placeholder="${t("searchPartnerRequestPlaceholder", "ค้นหา requestId / คู่ค้า / ผู้ติดต่อ")}"
         oninput="setPartnerRequestSearch(this.value)"
         onkeydown="if(event.key === 'Enter') refreshPartnerRequests();">
       <input
         id="partnerRequestPartnerId"
         value="${escAttr(requestState.partnerId || "")}"
-        placeholder="รหัสคู่ค้า"
+        placeholder="${t("partnerId", "รหัสคู่ค้า")}"
         oninput="setPartnerRequestPartnerFilter(this.value)"
         onkeydown="if(event.key === 'Enter') refreshPartnerRequests();">
       <select
         id="partnerRequestStatus"
         onchange="setPartnerRequestStatusFilter(this.value)">
-        <option value="all" ${status === "all" ? "selected" : ""}>ทุกสถานะ</option>
-        <option value="new" ${status === "new" ? "selected" : ""}>ใหม่</option>
-        <option value="reviewed" ${status === "reviewed" ? "selected" : ""}>ตรวจแล้ว</option>
-        <option value="closed" ${status === "closed" ? "selected" : ""}>ปิดแล้ว</option>
+        <option value="all" ${status === "all" ? "selected" : ""}>${t("allStatuses", "ทุกสถานะ")}</option>
+        <option value="new" ${status === "new" ? "selected" : ""}>${t("newStatus", "ใหม่")}</option>
+        <option value="reviewed" ${status === "reviewed" ? "selected" : ""}>${t("reviewedStatus", "ตรวจแล้ว")}</option>
+        <option value="closed" ${status === "closed" ? "selected" : ""}>${t("statusClosed", "ปิดแล้ว")}</option>
       </select>
     </div>
     <div class="bulk-product-picker-actions">
       <button class="btn btn-outline" type="button" onclick="refreshPartnerRequests()">
-        รีเฟรช / ค้นหา
+        ${t("refreshSearch", "รีเฟรช / ค้นหา")}
       </button>
       <button class="btn btn-outline" type="button"
         onclick="state.admin.partnerRequests.q=''; state.admin.partnerRequests.partnerId=''; state.admin.partnerRequests.status='all'; refreshPartnerRequests();">
-        ล้างตัวกรอง
+        ${t("clearFilters", "ล้างตัวกรอง")}
       </button>
     </div>
   `;
@@ -18505,24 +18742,24 @@ function renderPartnerRequestCard(request) {
       <div>
         <div class="name">${esc(request.partnerNameSnapshot || request.partnerId || "-")}</div>
         <div class="bulk-preview-meta">
-          Request: ${esc(request.requestId || "-")}<br>
-          รหัสคู่ค้า: ${esc(request.partnerId || "-")}<br>
-          ผู้ติดต่อ: ${esc(request.contactName || "-")} · ${esc(request.contactPhone || "-")}<br>
-          อีเมล: ${esc(request.contactEmail || "-")}<br>
-          วันที่: ${esc(formatThaiDate(request.submittedAt || ""))}
+          ${t("partnerRequestId", "เลขคำขอคู่ค้า")}: ${esc(request.requestId || "-")}<br>
+          ${t("partnerId", "รหัสคู่ค้า")}: ${esc(request.partnerId || "-")}<br>
+          ${t("contactName", "ผู้ติดต่อ")}: ${esc(request.contactName || "-")} · ${esc(request.contactPhone || "-")}<br>
+          ${t("email", "อีเมล")}: ${esc(request.contactEmail || "-")}<br>
+          ${t("submittedDate", "วันที่")}: ${esc(formatThaiDate(request.submittedAt || ""))}
         </div>
         <div class="bulk-product-picker-meta" style="margin-top:8px">
           <span class="status-badge compact ${getPartnerRequestStatusClass(request.status)}">
             ${esc(getPartnerRequestStatusLabel(request.status))}
           </span>
-          <span>${Number(request.itemCount || 0)} รายการ</span>
+          <span>${Number(request.itemCount || 0)} ${t("itemUnit", "รายการ")}</span>
           <span>${esc(formatPartnerRequestMoney(request.estimatedTotal))}</span>
         </div>
         ${messagePreview ? `<div class="helper-text" style="margin-top:8px">${esc(messagePreview)}</div>` : ""}
         <div class="bulk-product-picker-actions">
           <button class="btn btn-primary" type="button"
             onclick="openPartnerRequestDetail(${toInlineJsStringLiteral(request.requestId || "")})">
-            ดูรายละเอียด
+            ${t("viewDetails", "ดูรายละเอียด")}
           </button>
         </div>
       </div>
@@ -18533,25 +18770,25 @@ function renderPartnerRequestCard(request) {
 function renderPartnerRequestsList() {
   const requestState = state.admin.partnerRequests;
   if (requestState.loading) {
-    return `<div class="loading">กำลังโหลดคำขอคู่ค้า...</div>`;
+    return `<div class="loading">${t("loadingPartnerRequests", "กำลังโหลดคำขอคู่ค้า...")}</div>`;
   }
   if (requestState.error) {
     return `
       <div class="empty-state">
         ${esc(requestState.error)}
         <div style="margin-top:10px">
-          <button class="btn btn-outline" type="button" onclick="refreshPartnerRequests()">ลองใหม่</button>
+          <button class="btn btn-outline" type="button" onclick="refreshPartnerRequests()">${t("retry", "ลองใหม่")}</button>
         </div>
       </div>
     `;
   }
   if (!requestState.requests.length) {
-    return `<div class="empty-state">ยังไม่มีคำขอคู่ค้าตามเงื่อนไขที่เลือก</div>`;
+    return `<div class="empty-state">${t("noPartnerRequests", "ยังไม่มีคำขอคู่ค้าตามเงื่อนไขที่เลือก")}</div>`;
   }
 
   return `
     <div class="helper-text" style="margin:10px 0">
-      พบ ${Number(requestState.total || 0).toLocaleString("th-TH")} คำขอ
+      ${formatUiText("partnerRequestsFound", { count: Number(requestState.total || 0).toLocaleString("th-TH") }, "พบ {count} คำขอ")}
     </div>
     <div class="bulk-preview-list">
       ${requestState.requests.map(renderPartnerRequestCard).join("")}
@@ -18567,20 +18804,20 @@ function renderPartnerRequestDetailItem(item) {
     <div class="bulk-preview-card">
       ${renderCartItemThumb({
         productId: item.productId,
-        name: item.nameSnapshot || item.productId || "สินค้า",
+        name: item.nameSnapshot || item.productId || t("productLabel", "สินค้า"),
         image: item.imageSnapshot || ""
       })}
       <div>
         <div class="name">${esc(item.nameSnapshot || item.productId || "-")}</div>
         <div class="bulk-preview-meta">
-          SKU: ${esc(item.productId || "-")}<br>
-          ราคา: ${esc(formatPartnerRequestMoney(price))} · จำนวน: ${qty.toLocaleString("th-TH")}<br>
-          รวม: ${esc(formatPartnerRequestMoney(subtotal))}
+          ${t("productCode", "รหัส")}: ${esc(item.productId || "-")}<br>
+          ${t("price", "ราคา")}: ${esc(formatPartnerRequestMoney(price))} · ${t("quantity", "จำนวน")}: ${qty.toLocaleString("th-TH")}<br>
+          ${t("total", "รวม")}: ${esc(formatPartnerRequestMoney(subtotal))}
         </div>
         <div class="bulk-product-picker-meta" style="margin-top:8px">
           ${renderBulkProductUpdateValueDisplay("status", item.statusSnapshot)}
         </div>
-        ${item.partnerNote ? `<div class="helper-text" style="margin-top:8px">หมายเหตุ: ${esc(item.partnerNote)}</div>` : ""}
+        ${item.partnerNote ? `<div class="helper-text" style="margin-top:8px">${t("note", "หมายเหตุ")}: ${esc(item.partnerNote)}</div>` : ""}
       </div>
     </div>
   `;
@@ -18596,21 +18833,21 @@ function renderPartnerRequestConvertCard(request) {
 
   return `
     <div class="admin-detail-card" style="margin-top:14px">
-      <div class="admin-detail-title">สร้างออเดอร์จากคำขอ</div>
+      <div class="admin-detail-title">${t("createOrderFromRequest", "สร้างออเดอร์จากคำขอ")}</div>
       <div class="helper-text">
-        ออเดอร์ที่สร้างจากคำขอคู่ค้าจะเริ่มเป็น PENDING และต้องอนุมัติในออเดอร์รออนุมัติก่อน ระบบจึงจะตัดสต็อก
+        ${t("partnerConvertHelp", "ออเดอร์ที่สร้างจากคำขอคู่ค้าจะเริ่มเป็น PENDING และต้องอนุมัติในออเดอร์รออนุมัติก่อน ระบบจึงจะตัดสต็อก")}
       </div>
 
       <div class="form-group" style="margin-top:10px">
-        <label for="partnerRequestConvertPoNumber">เลข PO</label>
+        <label for="partnerRequestConvertPoNumber">${t("poNumber", "เลข PO")}</label>
         <input
           id="partnerRequestConvertPoNumber"
           class="input"
           value="${escAttr(requestState.convertPoNumber || "")}"
-          placeholder="เช่น PO-PARTNER-20260617-001"
+          placeholder="${formatUiText("poExample", { po: "PO-PARTNER-20260617-001" }, "เช่น {po}")}"
           ${requestState.convertSubmitting ? "disabled" : ""}>
         <div class="helper-text" style="margin-top:6px">
-          ตัวอย่าง: PO-PARTNER-20260617-001
+          ${formatUiText("poExample", { po: "PO-PARTNER-20260617-001" }, "ตัวอย่าง: {po}")}
         </div>
       </div>
 
@@ -18624,13 +18861,13 @@ function renderPartnerRequestConvertCard(request) {
         result
           ? `
             <div class="bulk-import-success-card" role="status" aria-live="polite" style="margin-top:10px">
-              <strong>สร้างออเดอร์แล้ว รออนุมัติในออเดอร์รออนุมัติ</strong>
+              <strong>${t("orderCreatedPendingApproval", "สร้างออเดอร์แล้ว รออนุมัติในออเดอร์รออนุมัติ")}</strong>
               <div class="helper-text" style="margin-top:8px">
-                เลขออเดอร์: ${esc(result.orderId || "-")}<br>
-                สถานะ: ${esc(result.status || "PENDING")}<br>
+                ${t("orderNumber", "เลขออเดอร์")}: ${esc(result.orderId || "-")}<br>
+                ${t("status", "สถานะ")}: ${esc(getAdminOrderStatusLabel(result.status || "PENDING"))}<br>
                 PO: ${esc(result.poNumber || "-")}<br>
-                รวม: ${esc(formatPartnerRequestMoney(result.total || 0))}<br>
-                จำนวนรายการ: ${Number(result.itemCount || 0).toLocaleString("th-TH")}
+                ${t("total", "รวม")}: ${esc(formatPartnerRequestMoney(result.total || 0))}<br>
+                ${t("totalItems", "จำนวนรายการ")}: ${Number(result.itemCount || 0).toLocaleString("th-TH")}
               </div>
             </div>
           `
@@ -18641,7 +18878,7 @@ function renderPartnerRequestConvertCard(request) {
         <button class="btn btn-primary" type="button"
           ${requestState.convertSubmitting ? "disabled" : ""}
           onclick="convertPartnerRequestToOrderFromAdmin(${toInlineJsStringLiteral(requestId)})">
-          ${requestState.convertSubmitting ? "กำลังสร้างออเดอร์..." : "สร้างออเดอร์จากคำขอ"}
+          ${requestState.convertSubmitting ? t("creatingOrderFromRequest", "กำลังสร้างออเดอร์...") : t("createOrderFromRequest", "สร้างออเดอร์จากคำขอ")}
         </button>
       </div>
     </div>
@@ -18651,14 +18888,14 @@ function renderPartnerRequestConvertCard(request) {
 function renderPartnerRequestDetail() {
   const requestState = state.admin.partnerRequests;
   if (requestState.loading) {
-    return `<div class="loading">กำลังโหลดรายละเอียดคำขอ...</div>`;
+    return `<div class="loading">${t("loadingPartnerRequestDetails", "กำลังโหลดรายละเอียดคำขอ...")}</div>`;
   }
   if (requestState.error) {
     return `
       <div class="empty-state">
         ${esc(requestState.error)}
         <div style="margin-top:10px">
-          <button class="btn btn-outline" type="button" onclick="backToPartnerRequestList()">กลับรายการคำขอ</button>
+          <button class="btn btn-outline" type="button" onclick="backToPartnerRequestList()">${t("backToPartnerRequests", "กลับรายการคำขอ")}</button>
         </div>
       </div>
     `;
@@ -18669,33 +18906,33 @@ function renderPartnerRequestDetail() {
   const items = Array.isArray(detail.items) ? detail.items : [];
   return `
     <div class="admin-detail-card">
-      <div class="admin-detail-title">${esc(request.partnerNameSnapshot || request.partnerId || "คำขอคู่ค้า")}</div>
+      <div class="admin-detail-title">${esc(request.partnerNameSnapshot || request.partnerId || t("partnerRequests", "คำขอคู่ค้า"))}</div>
       <div class="bulk-preview-meta">
-        Request: ${esc(request.requestId || "-")}<br>
-        รหัสคู่ค้า: ${esc(request.partnerId || "-")}<br>
-        ผู้ติดต่อ: ${esc(request.contactName || "-")}<br>
-        โทร: ${esc(request.contactPhone || "-")}<br>
-        อีเมล: ${esc(request.contactEmail || "-")}<br>
-        วันที่: ${esc(formatThaiDate(request.submittedAt || ""))}
+        ${t("partnerRequestId", "เลขคำขอคู่ค้า")}: ${esc(request.requestId || "-")}<br>
+        ${t("partnerId", "รหัสคู่ค้า")}: ${esc(request.partnerId || "-")}<br>
+        ${t("contactName", "ผู้ติดต่อ")}: ${esc(request.contactName || "-")}<br>
+        ${t("phone", "โทร")}: ${esc(request.contactPhone || "-")}<br>
+        ${t("email", "อีเมล")}: ${esc(request.contactEmail || "-")}<br>
+        ${t("submittedDate", "วันที่")}: ${esc(formatThaiDate(request.submittedAt || ""))}
       </div>
       <div class="bulk-product-picker-meta" style="margin-top:8px">
         <span class="status-badge compact ${getPartnerRequestStatusClass(request.status)}">
           ${esc(getPartnerRequestStatusLabel(request.status))}
         </span>
-        <span>${Number(request.itemCount || items.length || 0)} รายการ</span>
+        <span>${Number(request.itemCount || items.length || 0)} ${t("itemUnit", "รายการ")}</span>
         <span>${esc(formatPartnerRequestMoney(request.estimatedTotal))}</span>
       </div>
-      ${request.message ? `<div class="helper-text" style="margin-top:10px">ข้อความ: ${esc(request.message)}</div>` : ""}
+      ${request.message ? `<div class="helper-text" style="margin-top:10px">${t("message", "ข้อความ")}: ${esc(request.message)}</div>` : ""}
       ${renderPartnerRequestStatusActions(request)}
     </div>
 
     ${renderPartnerRequestConvertCard(request)}
 
-    <div class="admin-detail-title" style="margin-top:14px">รายการสินค้า</div>
+    <div class="admin-detail-title" style="margin-top:14px">${t("itemList", "รายการสินค้า")}</div>
     ${
       items.length
         ? `<div class="bulk-preview-list">${items.map(renderPartnerRequestDetailItem).join("")}</div>`
-        : `<div class="empty-state">ไม่มีรายการสินค้าในคำขอนี้</div>`
+        : `<div class="empty-state">${t("noProductsInRequest", "ไม่มีรายการสินค้าในคำขอนี้")}</div>`
     }
   `;
 }
@@ -18708,15 +18945,15 @@ function renderPartnerRequestsSheet() {
     <div class="sheet-topbar">
       <button class="btn btn-outline sheet-nav-btn"
         onclick="${isDetail ? "backToPartnerRequestList()" : "backToAdminMenuFromPartnerRequests()"}"
-        aria-label="กลับ">←</button>
-      <h3 id="adminPartnerRequestsSheetTitle">${isDetail ? "รายละเอียดคำขอคู่ค้า" : "คำขอคู่ค้า"}</h3>
+        aria-label="${t("back", "กลับ")}">←</button>
+      <h3 id="adminPartnerRequestsSheetTitle">${isDetail ? t("partnerRequestDetails", "รายละเอียดคำขอคู่ค้า") : t("partnerRequests", "คำขอคู่ค้า")}</h3>
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closePartnerRequestsSheet()"
-        aria-label="ปิดหน้าต่างคำขอคู่ค้า">×</button>
+        aria-label="${t("close", "ปิด")}">×</button>
     </div>
 
     <div class="helper-text" style="margin-bottom:10px">
-      อ่านคำขอจาก Partner Catalog เท่านั้น หน้านี้ยังไม่สร้างออเดอร์ ไม่อนุมัติ และไม่ตัดสต็อก
+      ${t("partnerRequestHelp", "อ่านคำขอจาก Partner Catalog เท่านั้น หน้านี้ยังไม่สร้างออเดอร์ ไม่อนุมัติ และไม่ตัดสต็อก")}
     </div>
 
     ${
