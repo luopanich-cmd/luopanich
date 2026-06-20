@@ -3977,6 +3977,8 @@ Object.assign(window, {
   closeDeliveryNoteSheet,
   renderDeliveryNoteSheet,
   prepareDeliveryNoteSearch,
+  printDeliveryNote,
+  copyDeliveryNote,
   toggleDeliveryNoteItem,
   updateDeliveryNoteItemQty,
   updateDeliveryNoteItemNote,
@@ -4386,6 +4388,12 @@ const UI_TEXT = {
     poNote: "หมายเหตุ PO",
     noItemsInOrder: "ออเดอร์นี้ไม่มีรายการสินค้า",
     deliveryNoteInvalidQty: "จำนวนส่งของ {sku} ต้องเป็นจำนวนเต็ม 0 ถึง {max}",
+    printDeliveryNote: "พิมพ์ใบส่งของ",
+    copyDeliveryNote: "คัดลอกใบส่งของ",
+    deliveryNoteNoSelectedItems: "กรุณาเลือกรายการที่มีจำนวนส่งมากกว่า 0 อย่างน้อย 1 รายการ",
+    deliveryNoteCopied: "คัดลอกใบส่งของแล้ว",
+    deliveryNoteCopyFailed: "คัดลอกใบส่งของไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+    deliveryNotePrintError: "ไม่สามารถเปิดหน้าพิมพ์ใบส่งของได้",
     latestBill: "บิลล่าสุด",
     addProduct: "เพิ่มสินค้าใหม่",
     addMultiSizeProduct: "เพิ่มสินค้าแบบหลายไซส์",
@@ -5049,6 +5057,12 @@ const UI_TEXT = {
     poNote: "PO note",
     noItemsInOrder: "This order has no items",
     deliveryNoteInvalidQty: "Delivery qty for {sku} must be an integer from 0 to {max}",
+    printDeliveryNote: "Print Delivery Note",
+    copyDeliveryNote: "Copy Delivery Note",
+    deliveryNoteNoSelectedItems: "Select at least one item with delivery qty greater than 0",
+    deliveryNoteCopied: "Delivery note copied",
+    deliveryNoteCopyFailed: "Could not copy delivery note. Please try again",
+    deliveryNotePrintError: "Could not open the delivery note print page",
     latestBill: "Latest bill",
     addProduct: "Add product",
     addMultiSizeProduct: "Add multi-size product",
@@ -11838,6 +11852,448 @@ function renderDeliveryNoteItemRow(order, item, index) {
   `;
 }
 
+function findDeliveryNoteProductMeta(productId) {
+  const cleanProductId = normalizeProductId(productId || "");
+  if (!cleanProductId) return null;
+  const products = [
+    ...(Array.isArray(state.products) ? state.products : []),
+    ...(Array.isArray(state.admin?.products) ? state.admin.products : [])
+  ];
+  return products.find(product =>
+    normalizeProductId(product?.productId || "") === cleanProductId
+  ) || null;
+}
+
+function getDeliveryNoteVariantMeta(item) {
+  const productId = String(item?.productId || "").trim();
+  const product = findDeliveryNoteProductMeta(productId) || {};
+  const parentProductId = String(item?.parentProductId || product.parentProductId || "").trim();
+  const variantType = String(item?.variantType || product.variantType || "").trim().toLowerCase();
+  const variantValue = String(item?.variantValue || product.variantValue || "").trim();
+  const displayName = String(item?.displayName || product.displayName || "").trim();
+  const variantSortOrder = Number(item?.variantSortOrder ?? product.variantSortOrder);
+
+  if (!parentProductId || variantType !== "size" || !variantValue) {
+    return null;
+  }
+
+  return {
+    groupCode: parentProductId,
+    groupName: displayName || String(item?.name || product.name || "").trim(),
+    size: variantValue,
+    sortOrder: Number.isFinite(variantSortOrder) ? variantSortOrder : 9999
+  };
+}
+
+function buildDeliveryNoteData() {
+  const noteState = getDeliveryNoteState();
+  const orders = [];
+  const errors = [];
+
+  (Array.isArray(noteState.matchedOrders) ? noteState.matchedOrders : []).forEach(order => {
+    const orderId = String(order?.orderId || "").trim();
+    const poNumber = String(order?.poNumber || "").trim();
+    const orderItems = [];
+
+    (Array.isArray(order?.items) ? order.items : []).forEach((item, index) => {
+      const key = getDeliveryNoteItemKey(order, item, index);
+      if (noteState.selectedItems[key] === false) return;
+
+      const qtyError = getDeliveryNoteQtyError(key, item);
+      if (qtyError) {
+        errors.push(qtyError);
+        return;
+      }
+
+      const deliveryQty = Number(getDeliveryNoteItemQtyValue(noteState, key, item));
+      if (!deliveryQty) return;
+
+      const productId = String(item?.productId || "").trim();
+      const name = String(item?.name || "").trim();
+      orderItems.push({
+        key,
+        orderId,
+        poNumber,
+        productId,
+        name,
+        deliveryQty,
+        itemNote: String(noteState.itemNotes?.[key] || "").trim(),
+        imageUrl: getAdminPoPrintItemImage(item),
+        variantMeta: getDeliveryNoteVariantMeta(item)
+      });
+    });
+
+    if (orderItems.length) {
+      orders.push({
+        orderId,
+        poNumber,
+        orderDate: getOrderDateValue(order),
+        poNote: String(noteState.poNotes?.[orderId] || "").trim(),
+        items: orderItems
+      });
+    }
+  });
+
+  return { orders, errors };
+}
+
+function getValidatedDeliveryNoteData() {
+  const data = buildDeliveryNoteData();
+
+  if (data.errors.length) {
+    showToast(data.errors[0], "warning");
+    return null;
+  }
+
+  const itemCount = data.orders.reduce((sum, order) => sum + order.items.length, 0);
+  if (!itemCount) {
+    showToast(t("deliveryNoteNoSelectedItems", "กรุณาเลือกรายการที่มีจำนวนส่งมากกว่า 0 อย่างน้อย 1 รายการ"), "warning");
+    return null;
+  }
+
+  return data;
+}
+
+function buildDeliveryNoteDisplayRows(items) {
+  const rows = [];
+  const groups = new Map();
+
+  (Array.isArray(items) ? items : []).forEach(item => {
+    const variantMeta = item.variantMeta;
+    if (!variantMeta) {
+      rows.push({
+        type: "single",
+        imageUrl: item.imageUrl,
+        productId: item.productId,
+        name: item.name,
+        displayText: `${item.productId || "-"} = ${item.deliveryQty}`,
+        deliveryQty: item.deliveryQty,
+        note: item.itemNote
+      });
+      return;
+    }
+
+    const groupKey = variantMeta.groupCode;
+    if (!groups.has(groupKey)) {
+      const group = {
+        type: "variantGroup",
+        imageUrl: item.imageUrl,
+        productId: variantMeta.groupCode,
+        name: variantMeta.groupName || item.name,
+        deliveryQty: 0,
+        variants: new Map(),
+        notes: []
+      };
+      groups.set(groupKey, group);
+      rows.push(group);
+    }
+
+    const group = groups.get(groupKey);
+    if (!group.imageUrl && item.imageUrl) group.imageUrl = item.imageUrl;
+    group.deliveryQty += item.deliveryQty;
+    if (item.itemNote) group.notes.push(item.itemNote);
+
+    const sizeKey = variantMeta.size;
+    const current = group.variants.get(sizeKey) || {
+      size: sizeKey,
+      qty: 0,
+      sortOrder: variantMeta.sortOrder
+    };
+    current.qty += item.deliveryQty;
+    current.sortOrder = Math.min(current.sortOrder, variantMeta.sortOrder);
+    group.variants.set(sizeKey, current);
+  });
+
+  return rows.map(row => {
+    if (row.type !== "variantGroup") return row;
+    const parts = [...row.variants.values()]
+      .sort((a, b) => {
+        if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+        return String(a.size || "").localeCompare(String(b.size || ""));
+      })
+      .map(variant => `${variant.size}-${variant.qty}`);
+
+    return {
+      ...row,
+      displayText: `${row.productId || "-"} = ${parts.join(" ")}`,
+      note: row.notes.join("; ")
+    };
+  });
+}
+
+function formatDeliveryNoteShortDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value || "").trim();
+  return `${date.getDate()}/${date.getMonth() + 1}`;
+}
+
+function renderDeliveryNotePrintImage(imageUrl, altText) {
+  const cleanImageUrl = String(imageUrl || "").trim();
+  if (!cleanImageUrl) return "-";
+  return `<img class="delivery-note-thumb" src="${escAttr(cleanImageUrl)}" alt="${escAttr(altText || "")}" onerror="this.replaceWith(document.createTextNode('-'));">`;
+}
+
+function buildDeliveryNotePrintHtml(data) {
+  const printDateTime = new Date().toLocaleString("th-TH");
+  const title = t("deliveryNote", "ใบส่งของ");
+  const shopName = t("shopTitle", "ร้านค้า Luopanich");
+  const noteLabel = t("note", "หมายเหตุ");
+  const orderSections = data.orders.map(order => {
+    const displayRows = buildDeliveryNoteDisplayRows(order.items);
+    const itemRows = displayRows.map((item, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td class="thumb-col">${renderDeliveryNotePrintImage(item.imageUrl, item.name || item.productId)}</td>
+        <td>${esc(item.displayText || "-")}</td>
+        <td>${esc(item.name || "-")}</td>
+        <td class="num">${esc(item.deliveryQty)}</td>
+        <td>${item.note ? esc(item.note) : "-"}</td>
+      </tr>
+    `).join("");
+
+    return `
+      <section class="po-section">
+        <div class="po-heading">
+          <div>
+            <h2>${esc(order.poNumber || "-")}</h2>
+            <div class="muted">${esc(formatDeliveryNoteShortDate(order.orderDate) || "-")} ${order.orderId ? ` · ${esc(t("orderNumber", "เลขออเดอร์"))}: ${esc(order.orderId)}` : ""}</div>
+          </div>
+        </div>
+        ${order.poNote ? `<div class="note-box"><strong>${esc(noteLabel)}:</strong> ${esc(order.poNote)}</div>` : ""}
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>${t("imageLabel", "รูป")}</th>
+              <th>SKU</th>
+              <th>${t("productLabel", "สินค้า")}</th>
+              <th class="num">${t("deliveryQty", "จำนวนส่ง")}</th>
+              <th>${esc(noteLabel)}</th>
+            </tr>
+          </thead>
+          <tbody>${itemRows}</tbody>
+        </table>
+      </section>
+    `;
+  }).join("");
+
+  return `
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>${esc(title)}</title>
+      <style>
+        @page { size: A4; margin: 14mm; }
+        * { box-sizing:border-box; }
+        body {
+          font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+          color:#111827;
+          font-size:13px;
+          margin:0;
+          background:#fff;
+        }
+        h1 { margin:3px 0 4px; font-size:27px; line-height:1.15; }
+        h2 { margin:0; font-size:18px; }
+        .muted { color:#6B7280; font-size:12px; }
+        .doc-header {
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:18px;
+          padding-bottom:14px;
+          border-bottom:2px solid #111827;
+          margin-bottom:14px;
+        }
+        .shop-name { font-size:15px; font-weight:800; }
+        .doc-meta {
+          min-width:210px;
+          border:1px solid #D1D5DB;
+          border-radius:10px;
+          overflow:hidden;
+        }
+        .doc-meta div {
+          display:grid;
+          grid-template-columns:92px 1fr;
+          gap:8px;
+          padding:7px 9px;
+          border-bottom:1px solid #E5E7EB;
+        }
+        .doc-meta div:last-child { border-bottom:0; }
+        .po-section { margin:16px 0 18px; break-inside:avoid; }
+        .po-heading {
+          display:flex;
+          justify-content:space-between;
+          gap:12px;
+          margin-bottom:8px;
+        }
+        table { width:100%; border-collapse:collapse; table-layout:fixed; }
+        th, td { border:1px solid #D1D5DB; padding:7px; text-align:left; vertical-align:top; }
+        th { background:#F3F4F6; font-weight:800; }
+        th:nth-child(1) { width:30px; }
+        th:nth-child(2) { width:58px; }
+        th:nth-child(5) { width:68px; }
+        td { word-break:break-word; }
+        .thumb-col { width:52px; text-align:center; }
+        .delivery-note-thumb {
+          width:42px;
+          height:42px;
+          object-fit:cover;
+          border:1px solid #E5E7EB;
+          border-radius:8px;
+          background:#F9FAFB;
+        }
+        .num { text-align:right; white-space:nowrap; }
+        .note-box {
+          margin:8px 0;
+          padding:8px 10px;
+          border:1px solid #D1D5DB;
+          border-radius:10px;
+          white-space:pre-wrap;
+        }
+        .signature-grid {
+          display:grid;
+          grid-template-columns:repeat(3, 1fr);
+          gap:14px;
+          margin-top:34px;
+          break-inside:avoid;
+        }
+        .signature-box { text-align:center; color:#374151; }
+        .signature-line {
+          height:38px;
+          border-bottom:1px solid #111827;
+          margin-bottom:7px;
+        }
+        .print-screen-toolbar {
+          position:sticky;
+          top:0;
+          z-index:10;
+          display:flex;
+          gap:8px;
+          justify-content:flex-end;
+          padding:10px;
+          margin:0 -2px 12px;
+          background:rgba(255,255,255,.96);
+          border-bottom:1px solid #E5E7EB;
+        }
+        .print-screen-toolbar button {
+          min-height:42px;
+          padding:9px 14px;
+          border:1px solid #D1D5DB;
+          border-radius:999px;
+          background:#111827;
+          color:#fff;
+          font-weight:800;
+          cursor:pointer;
+        }
+        .print-screen-toolbar button.secondary { background:#fff; color:#111827; }
+        @media print {
+          body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+          .print-screen-toolbar { display:none !important; }
+          .doc-header, .po-section, .signature-grid { break-inside:avoid; }
+        }
+        @media screen and (max-width:640px) {
+          .print-screen-toolbar { justify-content:stretch; }
+          .print-screen-toolbar button { flex:1; }
+          .doc-header { display:block; }
+          .doc-meta { min-width:0; margin-top:12px; }
+          .signature-grid { grid-template-columns:1fr; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="print-screen-toolbar">
+        <button type="button" onclick="closePrintPage()">${t("returnToSystem", "กลับระบบ")}</button>
+        <button type="button" class="secondary" onclick="window.print()">${t("printAgain", "พิมพ์อีกครั้ง")}</button>
+      </div>
+      <div class="document">
+        <div class="doc-header">
+          <div>
+            <div class="shop-name">${esc(shopName)}</div>
+            <h1>${esc(title)}</h1>
+          </div>
+          <div class="doc-meta">
+            <div><strong>${t("printedAt", "พิมพ์เมื่อ")}</strong><span>${esc(printDateTime)}</span></div>
+          </div>
+        </div>
+        ${orderSections}
+        <div class="signature-grid">
+          <div class="signature-box"><div class="signature-line"></div>${t("preparedBy", "ผู้จัดทำ")}</div>
+          <div class="signature-box"><div class="signature-line"></div>${t("checkedBy", "ผู้ตรวจสอบ")}</div>
+          <div class="signature-box"><div class="signature-line"></div>${t("receiverPacker", "ผู้รับสินค้า / ผู้แพ็กของ")}</div>
+        </div>
+      </div>
+      <script>
+        function closePrintPage() {
+          try {
+            if (window.opener && !window.opener.closed) {
+              window.opener.focus();
+            }
+          } catch (err) {}
+          window.close();
+          setTimeout(function() {
+            if (history.length > 1) {
+              history.back();
+            }
+          }, 120);
+        }
+        window.onload = function() { window.print(); };
+      <\/script>
+    </body>
+    </html>
+  `;
+}
+
+function buildDeliveryNoteCopyText(data) {
+  const noteLabel = t("note", "หมายเหตุ");
+  const lines = [
+    t("deliveryNote", "ใบส่งของ"),
+    t("shopTitle", "ร้านค้า Luopanich"),
+    ""
+  ];
+
+  data.orders.forEach(order => {
+    const shortDate = formatDeliveryNoteShortDate(order.orderDate);
+    lines.push([order.poNumber || "-", shortDate].filter(Boolean).join(" "));
+    if (order.poNote) lines.push(`${noteLabel}: ${order.poNote}`);
+
+    buildDeliveryNoteDisplayRows(order.items).forEach(item => {
+      const noteText = item.note ? `  ${noteLabel}: ${item.note}` : "";
+      lines.push(`${item.displayText || "-"}${noteText}`);
+    });
+
+    lines.push("");
+  });
+
+  return lines.join("\n").trim();
+}
+
+function printDeliveryNote() {
+  const data = getValidatedDeliveryNoteData();
+  if (!data) return;
+
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    showToast(t("deliveryNotePrintError", "ไม่สามารถเปิดหน้าพิมพ์ใบส่งของได้"), "warning");
+    return;
+  }
+
+  printWindow.document.write(buildDeliveryNotePrintHtml(data));
+  printWindow.document.close();
+}
+
+function copyDeliveryNote() {
+  const data = getValidatedDeliveryNoteData();
+  if (!data) return;
+
+  copyTextToClipboard(
+    buildDeliveryNoteCopyText(data),
+    t("deliveryNoteCopied", "คัดลอกใบส่งของแล้ว"),
+    t("deliveryNoteCopyFailed", "คัดลอกใบส่งของไม่สำเร็จ กรุณาลองใหม่อีกครั้ง")
+  );
+}
+
 function renderDeliveryNoteMatchedOrders() {
   const noteState = getDeliveryNoteState();
   const orders = Array.isArray(noteState.matchedOrders) ? noteState.matchedOrders : [];
@@ -11871,6 +12327,14 @@ function renderDeliveryNoteMatchedOrders() {
     ${noteState.error ? `<div class="card"><div class="error-text">${esc(noteState.error)}</div></div>` : ""}
     <div class="helper-text" style="margin:12px 0">
       ${formatUiText("deliveryNoteMatchedOrders", { count: orders.length }, "พบ {count} ออเดอร์")}
+    </div>
+    <div class="action-row" style="margin:12px 0">
+      <button class="btn btn-primary" type="button" onclick="printDeliveryNote()">
+        ${t("printDeliveryNote", "พิมพ์ใบส่งของ")}
+      </button>
+      <button class="btn btn-outline" type="button" onclick="copyDeliveryNote()">
+        ${t("copyDeliveryNote", "คัดลอกใบส่งของ")}
+      </button>
     </div>
     ${orders.map(order => {
       const items = Array.isArray(order?.items) ? order.items : [];
@@ -15174,7 +15638,7 @@ function getBulkProductTemplateHeader() {
   return BULK_PRODUCT_COLUMNS.join("\t");
 }
 
-async function copyTextToClipboard(text, successMessage) {
+async function copyTextToClipboard(text, successMessage, failureMessage) {
   try {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);
@@ -15192,7 +15656,7 @@ async function copyTextToClipboard(text, successMessage) {
     showToast(successMessage, "success");
   } catch (err) {
     console.error(err);
-    showToast(t("copyFailedRetry", "คัดลอกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"), "error");
+    showToast(failureMessage || t("copyFailedRetry", "คัดลอกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง"), "error");
   }
 }
 
