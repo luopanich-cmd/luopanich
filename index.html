@@ -596,6 +596,45 @@ body[data-theme="cute"] .shop-subtitle{
   word-break:break-word;
 }
 
+.delivery-note-po-card{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  overflow:hidden;
+  cursor:pointer;
+}
+
+.delivery-note-po-card-row{
+  display:grid;
+  grid-template-columns:24px minmax(0, 1fr);
+  gap:10px;
+  align-items:flex-start;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
+
+.delivery-note-po-card input[type="checkbox"]{
+  width:auto;
+  margin:3px 0 0;
+}
+
+.delivery-note-po-card-content{
+  min-width:0;
+  max-width:100%;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+
+.delivery-note-po-card-title,
+.delivery-note-po-card-content .stock{
+  max-width:100%;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+
 #adminDeliveryNoteSheet .form-grid{
   max-width:100%;
   min-width:0;
@@ -12737,13 +12776,13 @@ function renderDeliveryNotePoPicker() {
             const shortOrderId = orderId.length > 18 ? `${orderId.slice(0, 18)}...` : orderId;
 
             return `
-              <label class="card compact-card" style="display:block;cursor:pointer">
-                <div style="display:flex;gap:10px;align-items:flex-start;min-width:0">
+              <label class="card compact-card delivery-note-po-card">
+                <div class="delivery-note-po-card-row">
                   <input type="checkbox"
                     ${checked ? "checked" : ""}
                     onchange="toggleDeliveryNotePoSelection(${toInlineJsStringLiteral(poNumber)}, this.checked)">
-                  <span style="min-width:0;flex:1">
-                    <strong>${esc(poNumber || "-")}</strong>
+                  <span class="delivery-note-po-card-content">
+                    <strong class="delivery-note-po-card-title">${esc(poNumber || "-")}</strong>
                     <div class="stock">${esc(dateText)} · ${esc(statusText || "-")}</div>
                     <div class="stock">
                       ${formatUiText("deliveryNoteOrderSummary", { items: itemCount, qty: unitCount }, "{items} รายการ · {qty} ชิ้น")}
