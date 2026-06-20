@@ -4304,6 +4304,22 @@ const UI_TEXT = {
     productStatus: "สถานะสินค้า",
     sellPrice: "ราคาขาย",
     costPriceAdmin: "ราคาต้นทุน",
+    bulkFieldPrice: "ราคาขาย",
+    bulkFieldCostPrice: "ต้นทุน",
+    bulkFieldStatus: "สถานะสินค้า",
+    bulkFieldActive: "สถานะการขาย",
+    productData: "ข้อมูลสินค้า",
+    openForSale: "เปิดขาย",
+    closedForSale: "ปิดขาย",
+    autoEnableAfterCreate: "สินค้าใหม่จะเปิดใช้งานอัตโนมัติ",
+    selectAll: "เลือกทั้งหมด",
+    productGroupNameMismatchWarning: "ชื่อสินค้าในกลุ่มไม่เหมือนกันทั้งหมด ควรตรวจสอบก่อนบันทึกจริง",
+    readyForUpdate: "ตรวจสอบแล้ว {count} รายการ พร้อมส่งไปอัปเดต",
+    outOfStockError: "สินค้านี้หมดสต๊อก",
+    adminModeExited: "ออกจากโหมดแอดมินแล้ว",
+    chinaDomesticShippingLabel: "ค่าส่งในจีน",
+    chinaToThailandShippingLabel: "ค่าส่งจีนมาไทย",
+    thailandShippingLabel: "ค่าส่งในไทย",
     productNoteAdmin: "หมายเหตุสินค้า (สำหรับแอดมิน)",
     productDetailsForViewer: "รายละเอียดสินค้า (แสดงในปุ่มรายละเอียด)",
     compareImages: "รูปเทียบสินค้า",
@@ -4647,6 +4663,22 @@ const UI_TEXT = {
     productStatus: "Product status",
     sellPrice: "Selling price",
     costPriceAdmin: "Cost price",
+    bulkFieldPrice: "Selling price",
+    bulkFieldCostPrice: "Cost price",
+    bulkFieldStatus: "Product status",
+    bulkFieldActive: "Sale status",
+    productData: "Product data",
+    openForSale: "Open for sale",
+    closedForSale: "Closed for sale",
+    autoEnableAfterCreate: "New products will be enabled automatically",
+    selectAll: "Select all",
+    productGroupNameMismatchWarning: "Product names in this group are not all the same. Please review before saving.",
+    readyForUpdate: "Checked {count} items and ready to update",
+    outOfStockError: "This product is out of stock",
+    adminModeExited: "Exited admin mode",
+    chinaDomesticShippingLabel: "China domestic shipping",
+    chinaToThailandShippingLabel: "China to Thailand shipping",
+    thailandShippingLabel: "Thailand shipping",
     productNoteAdmin: "Product note (admin only)",
     productDetailsForViewer: "Product details (shown in details button)",
     compareImages: "Compare images",
@@ -5416,7 +5448,7 @@ function isAuthError(message = "") {
 
    if (json?.error || json?.success === false) {
      if (isAuthError(json.error)) {
-       showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
+       showToast(t("sessionExpiredLoginAgain", "Session หมดอายุ กรุณา login ใหม่"), "warning");
        exitAdmin({ silent: true });
      }
      throw new Error(json.message || json.error || "Request failed");
@@ -7484,7 +7516,7 @@ function openAdminEntry(){
   // 🔒 ถ้ามี session อยู่แล้ว → ต้อง valid ก่อนค่อยเข้า admin
   if (state.admin.loggedIn && state.admin.token) {
     if (isAdminSessionExpired()) {
-      showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
+      showToast(t("sessionExpiredLoginAgain", "Session หมดอายุ กรุณา login ใหม่"), "warning");
       clearAdminSession();
     } else {
       enterAdmin();
@@ -7669,7 +7701,7 @@ function closeQty(){
 function openQtySheet(){
   // 🔒 GUARD: ห้ามเลือกจำนวนถ้า stock = 0
   if (!state.selectedProduct || Number(state.selectedProduct.stock) <= 0) {
-    showToast("สินค้านี้หมดสต๊อก", "error");
+    showToast(t("outOfStockError", "สินค้านี้หมดสต๊อก"), "error");
     return;
   }
 
@@ -9281,7 +9313,7 @@ async function openStockTimeline(force = false, options = {}) {
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
+    showToast(t("sessionExpiredLoginAgain", "Session หมดอายุ กรุณา login ใหม่"), "warning");
     exitAdmin();
     return;
   }
@@ -10803,13 +10835,6 @@ function openStockAction(p){
   state.selectedProduct = p;
   const stockQty = Number(p.stock) || 0;
   const statusKey = normalizeProductStatus(p.status || (stockQty <= 0 ? "out" : "ready"));
-  const statusLabelMap = {
-    ready: t("statusReady", "พร้อมส่ง"),
-    ready_plus: t("statusReadyPlus", "พร้อมส่ง + เพิ่มได้"),
-    shipping: t("statusShipping", "อยู่ระหว่างจัดส่ง"),
-    warehouse: t("statusWarehouse", "อยู่โกดังไทย"),
-    out: t("statusOut", "หมด")
-  };
   const statusBadgeClass = stockQty <= 0
     ? "status-rejected"
     : statusKey === "shipping"
@@ -10839,7 +10864,7 @@ function openStockAction(p){
             <span>SKU: ${esc(p.productId || "-")}</span>
             <span>${t("stockRemaining", "คงเหลือ")} ${stockQty} ${t("pieceUnit", "ชิ้น")}</span>
             <span class="status-badge compact ${statusBadgeClass}">
-              ${esc(statusLabelMap[statusKey] || t("statusReady", "พร้อมส่ง"))}
+              ${esc(getViewerStatusLabel(statusKey))}
             </span>
           </div>
         </div>
@@ -11512,7 +11537,7 @@ function openMainMenu(triggerEl){
 
   // ✅ ถ้าอยู่ใน admin mode แต่ session ไม่ valid → ค่อยบังคับออก
   if (state.mode === "admin" && !adminValid) {
-    showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
+    showToast(t("sessionExpiredLoginAgain", "Session หมดอายุ กรุณา login ใหม่"), "warning");
     exitAdmin();
     return;
   }
@@ -11715,7 +11740,7 @@ function openAddProduct(force = false){
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
+    showToast(t("sessionExpiredLoginAgain", "Session หมดอายุ กรุณา login ใหม่"), "warning");
     exitAdmin();
     return;
   }
@@ -12245,13 +12270,6 @@ function openProductEdit(p){
   const editStatusKey = normalizeProductStatus(
     latestProduct.status || (editStockQty <= 0 ? "out" : "ready")
   );
-  const editStatusLabelMap = {
-    ready: t("statusReady", "พร้อมส่ง"),
-    ready_plus: t("statusReadyPlus", "พร้อมส่ง + เพิ่มได้"),
-    shipping: t("statusShipping", "อยู่ระหว่างจัดส่ง"),
-    warehouse: t("statusWarehouse", "อยู่โกดังไทย"),
-    out: t("statusOut", "หมด")
-  };
   const editStatusBadgeClass = editStockQty <= 0
     ? "status-rejected"
     : editStatusKey === "shipping"
@@ -12284,7 +12302,7 @@ function openProductEdit(p){
             <span>SKU: ${esc(latestProduct.productId || "-")}</span>
             <span>${t("stockRemaining", "คงเหลือ")} ${editStockQty} ${t("pieceUnit", "ชิ้น")}</span>
             <span class="status-badge compact ${editStatusBadgeClass}">
-              ${esc(editStatusLabelMap[editStatusKey] || t("statusReady", "พร้อมส่ง"))}
+              ${esc(getViewerStatusLabel(editStatusKey))}
             </span>
             <span>${t("sellPrice", "ราคาขาย")} ฿${editPriceText}</span>
             <span>${t("costPriceAdmin", "ราคาต้นทุน")} ฿${editCostText}</span>
@@ -13541,18 +13559,18 @@ function renderMultiSizeProductSheet() {
       <div class="form-group">
         <label>สถานะสินค้า</label>
         <select onchange="updateMultiSizeProductField('status', this.value)">
-          <option value="ready" ${multiState.status === "ready" ? "selected" : ""}>พร้อมส่ง</option>
-          <option value="ready_plus" ${multiState.status === "ready_plus" ? "selected" : ""}>พร้อมส่ง สามารถบวกเพิ่มได้</option>
-          <option value="shipping" ${multiState.status === "shipping" ? "selected" : ""}>ระหว่างจัดส่ง</option>
-          <option value="warehouse" ${multiState.status === "warehouse" ? "selected" : ""}>โกดังไทย</option>
-          <option value="out" ${multiState.status === "out" ? "selected" : ""}>หมด</option>
+          <option value="ready" ${multiState.status === "ready" ? "selected" : ""}>${getViewerStatusLabel("ready")}</option>
+          <option value="ready_plus" ${multiState.status === "ready_plus" ? "selected" : ""}>${getViewerStatusLabel("ready_plus")}</option>
+          <option value="shipping" ${multiState.status === "shipping" ? "selected" : ""}>${getViewerStatusLabel("shipping")}</option>
+          <option value="warehouse" ${multiState.status === "warehouse" ? "selected" : ""}>${getViewerStatusLabel("warehouse")}</option>
+          <option value="out" ${multiState.status === "out" ? "selected" : ""}>${getViewerStatusLabel("out")}</option>
         </select>
       </div>
       <div class="form-group">
         <label class="continue-row">
           <input type="checkbox" ${multiState.active !== false ? "checked" : ""}
             onchange="updateMultiSizeProductField('active', this.checked)">
-          <span class="continue-text">เปิดใช้งานสินค้าเหล่านี้หลังสร้าง</span>
+          <span class="continue-text">${t("autoEnableAfterCreate", "สินค้าใหม่จะเปิดใช้งานอัตโนมัติ")}</span>
         </label>
       </div>
       <div class="form-group">
@@ -14084,11 +14102,11 @@ function renderVariantScanSheet() {
       <div class="sheet-action-footer" style="margin-top:12px">
         <button class="btn btn-outline" type="button" onclick="selectAllVariantScanGroups()"
           ${results.groups.length ? "" : "disabled"}>
-          เลือกทั้งหมด
+          ${t("selectAll", "เลือกทั้งหมด")}
         </button>
         <button class="btn btn-outline" type="button" onclick="clearVariantScanGroups()"
           ${selectedGroups.length ? "" : "disabled"}>
-          ล้างที่เลือก
+          ${t("clearSelected", "ล้างที่เลือก")}
         </button>
       </div>
     </div>
@@ -15058,21 +15076,15 @@ function backToAdminMenuFromBulkProductUpdate() {
 
 function getBulkProductUpdateFieldLabel(field) {
   return {
-    price: "ราคาขาย",
-    costPrice: "ต้นทุน",
-    status: "สถานะสินค้า",
-    active: "สถานะการขาย"
-  }[field] || "ข้อมูลสินค้า";
+    price: t("bulkFieldPrice", "ราคาขาย"),
+    costPrice: t("bulkFieldCostPrice", "ต้นทุน"),
+    status: t("bulkFieldStatus", "สถานะสินค้า"),
+    active: t("bulkFieldActive", "สถานะการขาย")
+  }[field] || t("productData", "ข้อมูลสินค้า");
 }
 
 function getBulkProductUpdateStatusLabel(status) {
-  return {
-    ready: "พร้อมส่ง",
-    ready_plus: "พร้อมส่ง + เพิ่มได้",
-    shipping: "อยู่ระหว่างจัดส่ง",
-    warehouse: "อยู่โกดังไทย",
-    out: "หมด"
-  }[normalizeProductStatus(status)] || "พร้อมส่ง";
+  return getViewerStatusLabel(status);
 }
 
 function getBulkProductUpdateStatusClass(status) {
@@ -15091,7 +15103,7 @@ function formatBulkProductUpdateValue(field, value) {
     return getBulkProductUpdateStatusLabel(value);
   }
   if (field === "active") {
-    return value === true ? "เปิดขาย" : "ปิดขาย";
+    return value === true ? t("openForSale", "เปิดขาย") : t("closedForSale", "ปิดขาย");
   }
   return String(value ?? "-");
 }
@@ -15102,7 +15114,7 @@ function renderBulkProductUpdateValueDisplay(field, value) {
   }
   if (field === "active") {
     const isActive = value === true;
-    return `<span class="status-badge compact ${isActive ? "status-approved" : "status-neutral"}">${isActive ? "เปิดขาย" : "ปิดขาย"}</span>`;
+    return `<span class="status-badge compact ${isActive ? "status-approved" : "status-neutral"}">${isActive ? t("openForSale", "เปิดขาย") : t("closedForSale", "ปิดขาย")}</span>`;
   }
   return esc(formatBulkProductUpdateValue(field, value));
 }
@@ -15341,12 +15353,12 @@ function renderBulkProductUpdateValueInput(bulkState) {
   if (field === "status") {
     return `
       <select id="bulkProductUpdateValue" onchange="state.admin.bulkProductUpdate.value = this.value; invalidateBulkProductUpdatePreview(); renderBulkProductUpdateSheet();">
-        <option value="">เลือกสถานะสินค้า</option>
-        <option value="ready" ${bulkState.value === "ready" ? "selected" : ""}>พร้อมส่ง</option>
-        <option value="ready_plus" ${bulkState.value === "ready_plus" ? "selected" : ""}>พร้อมส่ง + เพิ่มได้</option>
-        <option value="shipping" ${bulkState.value === "shipping" ? "selected" : ""}>อยู่ระหว่างจัดส่ง</option>
-        <option value="warehouse" ${bulkState.value === "warehouse" ? "selected" : ""}>อยู่โกดังไทย</option>
-        <option value="out" ${bulkState.value === "out" ? "selected" : ""}>หมด</option>
+        <option value="">${t("filterStatus", "กรองสถานะ")}</option>
+        <option value="ready" ${bulkState.value === "ready" ? "selected" : ""}>${getViewerStatusLabel("ready")}</option>
+        <option value="ready_plus" ${bulkState.value === "ready_plus" ? "selected" : ""}>${getViewerStatusLabel("ready_plus")}</option>
+        <option value="shipping" ${bulkState.value === "shipping" ? "selected" : ""}>${getViewerStatusLabel("shipping")}</option>
+        <option value="warehouse" ${bulkState.value === "warehouse" ? "selected" : ""}>${getViewerStatusLabel("warehouse")}</option>
+        <option value="out" ${bulkState.value === "out" ? "selected" : ""}>${getViewerStatusLabel("out")}</option>
       </select>
     `;
   }
@@ -15354,9 +15366,9 @@ function renderBulkProductUpdateValueInput(bulkState) {
   if (field === "active") {
     return `
       <select id="bulkProductUpdateValue" onchange="state.admin.bulkProductUpdate.value = this.value; invalidateBulkProductUpdatePreview(); renderBulkProductUpdateSheet();">
-        <option value="">เลือกสถานะการขาย</option>
-        <option value="true" ${String(bulkState.value) === "true" ? "selected" : ""}>เปิดขาย</option>
-        <option value="false" ${String(bulkState.value) === "false" ? "selected" : ""}>ปิดขาย</option>
+        <option value="">${t("bulkFieldActive", "สถานะการขาย")}</option>
+        <option value="true" ${String(bulkState.value) === "true" ? "selected" : ""}>${t("openForSale", "เปิดขาย")}</option>
+        <option value="false" ${String(bulkState.value) === "false" ? "selected" : ""}>${t("closedForSale", "ปิดขาย")}</option>
       </select>
     `;
   }
@@ -15765,7 +15777,7 @@ function ensureAdminSessionForLandedCost() {
     !state.admin.token ||
     isAdminSessionExpired()
   ) {
-    showToast("Session หมดอายุ กรุณา login ใหม่", "warning");
+    showToast(t("sessionExpiredLoginAgain", "Session หมดอายุ กรุณา login ใหม่"), "warning");
     exitAdmin();
     return false;
   }
@@ -16096,9 +16108,9 @@ function validateLandedCostInput() {
   const calcState = state.admin.landedCost;
   const errors = [];
   const feeFields = [
-    ["chinaDomesticShipping", "ค่าส่งในจีน"],
-    ["chinaToThailandShipping", "ค่าส่งจีนมาไทย"],
-    ["thailandShipping", "ค่าส่งในไทย"],
+    ["chinaDomesticShipping", t("chinaDomesticShippingLabel", "ค่าส่งในจีน")],
+    ["chinaToThailandShipping", t("chinaToThailandShippingLabel", "ค่าส่งจีนมาไทย")],
+    ["thailandShipping", t("thailandShippingLabel", "ค่าส่งในไทย")],
     ["otherFees", "ค่าใช้จ่ายอื่น ๆ"]
   ];
   const fees = {};
@@ -16464,7 +16476,7 @@ function renderLandedCostPicker() {
 
   return `
     <div class="bulk-product-picker" style="margin-top:10px">
-      <div class="admin-detail-title">เลือกสินค้า</div>
+      <div class="admin-detail-title">${t("selectProductsWarning", "กรุณาเลือกสินค้า")}</div>
       <div class="helper-text">
         เลือกสินค้าจากรายการที่โหลดอยู่ ระบบจะเติม SKU ให้อัตโนมัติ ตั้งจำนวนเริ่มต้นเป็น 1 และใช้ต้นทุนปัจจุบันเป็นค่าเริ่มต้น
       </div>
@@ -16475,20 +16487,20 @@ function renderLandedCostPicker() {
           placeholder="${t("productSearchPlaceholder", "ค้นหาสินค้า / รหัส")}"
           oninput="setLandedCostPickerSearch(this.value)">
         <select onchange="setLandedCostPickerStatus(this.value)">
-          <option value="all" ${calcState.pickerStatus === "all" ? "selected" : ""}>ทุกสถานะ</option>
-          <option value="ready" ${calcState.pickerStatus === "ready" ? "selected" : ""}>พร้อมส่ง</option>
-          <option value="ready_plus" ${calcState.pickerStatus === "ready_plus" ? "selected" : ""}>พร้อมส่ง + เพิ่มได้</option>
-          <option value="shipping" ${calcState.pickerStatus === "shipping" ? "selected" : ""}>อยู่ระหว่างจัดส่ง</option>
-          <option value="warehouse" ${calcState.pickerStatus === "warehouse" ? "selected" : ""}>อยู่โกดังไทย</option>
-          <option value="out" ${calcState.pickerStatus === "out" ? "selected" : ""}>หมด</option>
+          <option value="all" ${calcState.pickerStatus === "all" ? "selected" : ""}>${t("allStatuses", "ทุกสถานะ")}</option>
+          <option value="ready" ${calcState.pickerStatus === "ready" ? "selected" : ""}>${getViewerStatusLabel("ready")}</option>
+          <option value="ready_plus" ${calcState.pickerStatus === "ready_plus" ? "selected" : ""}>${getViewerStatusLabel("ready_plus")}</option>
+          <option value="shipping" ${calcState.pickerStatus === "shipping" ? "selected" : ""}>${getViewerStatusLabel("shipping")}</option>
+          <option value="warehouse" ${calcState.pickerStatus === "warehouse" ? "selected" : ""}>${getViewerStatusLabel("warehouse")}</option>
+          <option value="out" ${calcState.pickerStatus === "out" ? "selected" : ""}>${getViewerStatusLabel("out")}</option>
         </select>
       </div>
       <div class="bulk-product-picker-actions">
         <button class="btn btn-outline" type="button" onclick="selectVisibleLandedCostProducts()">
-          เลือกทั้งหมดที่แสดง
+          ${t("selectAllVisible", "เลือกทั้งหมดที่แสดง")}
         </button>
         <button class="btn btn-outline" type="button" onclick="clearLandedCostSelection()">
-          ล้างที่เลือก
+          ${t("clearSelected", "ล้างที่เลือก")}
         </button>
         <button class="btn btn-secondary" type="button" onclick="toggleLandedCostPicker()">
           ซ่อนตัวเลือก
@@ -16779,9 +16791,9 @@ function renderLandedCostSheet() {
         <label>ชื่อรอบ</label>
         <input value="${escAttr(calcState.batchName || "")}" placeholder="รอบจีน 2026-06-17" oninput="updateLandedCostField('batchName', this.value)">
       </div>
-      <div class="form-group"><label>ค่าส่งในจีน</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.chinaDomesticShipping || "")}" placeholder="0" oninput="updateLandedCostField('chinaDomesticShipping', this.value)"></div>
-      <div class="form-group"><label>ค่าส่งจีนมาไทย</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.chinaToThailandShipping || "")}" placeholder="0" oninput="updateLandedCostField('chinaToThailandShipping', this.value)"></div>
-      <div class="form-group"><label>ค่าส่งในไทย</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.thailandShipping || "")}" placeholder="0" oninput="updateLandedCostField('thailandShipping', this.value)"></div>
+      <div class="form-group"><label>${t("chinaDomesticShippingLabel", "ค่าส่งในจีน")}</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.chinaDomesticShipping || "")}" placeholder="0" oninput="updateLandedCostField('chinaDomesticShipping', this.value)"></div>
+      <div class="form-group"><label>${t("chinaToThailandShippingLabel", "ค่าส่งจีนมาไทย")}</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.chinaToThailandShipping || "")}" placeholder="0" oninput="updateLandedCostField('chinaToThailandShipping', this.value)"></div>
+      <div class="form-group"><label>${t("thailandShippingLabel", "ค่าส่งในไทย")}</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.thailandShipping || "")}" placeholder="0" oninput="updateLandedCostField('thailandShipping', this.value)"></div>
       <div class="form-group"><label>ค่าใช้จ่ายอื่น ๆ</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.otherFees || "")}" placeholder="0" oninput="updateLandedCostField('otherFees', this.value)"></div>
       <div class="form-group"><label>% กำไรที่ต้องการ</label><input type="number" min="0" step="0.01" value="${escAttr(calcState.profitPercent || "")}" placeholder="เช่น 30" oninput="updateLandedCostField('profitPercent', this.value)"></div>
       <div class="form-group">
@@ -19718,7 +19730,7 @@ function exitAdmin(opts = {}){
   renderProducts();
   if (typeof renderBadge === "function") renderBadge();
 
-  if (!silent) showToast("ออกจากโหมดแอดมินแล้ว", "info");
+  if (!silent) showToast(t("adminModeExited", "ออกจากโหมดแอดมินแล้ว"), "info");
 }
 
 // ================= EMERGENCY UI UNLOCK =================
