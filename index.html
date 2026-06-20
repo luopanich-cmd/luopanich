@@ -4240,7 +4240,47 @@ const UI_TEXT = {
     statusReadyPlus: "พร้อมส่ง สามารถบวกเพิ่มได้",
     statusShipping: "กำลังเดินทาง",
     statusWarehouse: "อยู่โกดัง",
-    statusOut: "หมด"
+    statusOut: "หมด",
+    close: "ปิด",
+    productGroupLabel: "กลุ่มสินค้า",
+    productDetails: "รายละเอียดสินค้า",
+    remainingStock: "คงเหลือ",
+    totalItems: "จำนวนรายการ",
+    total: "ยอดรวม",
+    itemUnit: "รายการ",
+    pieceUnit: "ชิ้น",
+    cart: "ตะกร้า",
+    cartEmpty: "ยังไม่มีสินค้าในตะกร้า",
+    cartEmptyHint: "เลือกสินค้าแล้วกดเพิ่มลงตะกร้าเพื่อเริ่มสร้างใบสั่งซื้อ",
+    perPiece: "ชิ้น",
+    remove: "ลบ",
+    createOrder: "สร้างใบสั่งซื้อ",
+    confirmOrder: "ยืนยันใบสั่งซื้อ",
+    poNumber: "เลข PO",
+    poPlaceholder: "กรอกเลข PO",
+    confirmCreateOrder: "ยืนยันสร้างใบสั่งซื้อ",
+    cancel: "ยกเลิก",
+    quantityTitle: "ระบุจำนวน",
+    desiredQuantity: "จำนวนที่ต้องการ",
+    confirmQuantity: "ยืนยันจำนวน",
+    chooseQuantity: "เลือกระบุจำนวนสินค้า",
+    quantityMustBePositive: "จำนวนสินค้าต้องเป็นจำนวนเต็มมากกว่า 0",
+    addedToCart: "เพิ่ม \"{name}\" ลงตะกร้าแล้ว",
+    stockRemainingMessage: "สินค้า \"{name}\" คงเหลือ {stock} ชิ้น",
+    poRequired: "กรุณากรอกเลข PO",
+    duplicatePoCancelled: "ยกเลิกการสร้างใบสั่งซื้อ เนื่องจากพบเลข PO ซ้ำ",
+    checkingStock: "กำลังตรวจสอบสต๊อก...",
+    creatingOrder: "กำลังสร้างใบสั่งซื้อ...",
+    orderCreated: "สร้างใบสั่งซื้อเรียบร้อยแล้ว",
+    downloadOrderHint: "กดปุ่มเพื่อดาวน์โหลดใบสั่งซื้อ",
+    createOrderError: "เกิดข้อผิดพลาดในการสร้างใบสั่งซื้อ",
+    orderCreatedTitle: "สร้างใบสั่งซื้อสำเร็จ",
+    orderId: "เลขที่ใบสั่งซื้อ",
+    orderSuccessNote: "ระบบบันทึกใบสั่งซื้อแล้ว และกำลังรอแอดมินตรวจสอบ/อนุมัติคำสั่งซื้อ",
+    downloadOrder: "ดาวน์โหลดใบสั่งซื้อ",
+    noLatestOrder: "ไม่พบบิลล่าสุด",
+    productNotFound: "ไม่พบสินค้า {name}",
+    stockCheckRemaining: "{name} คงเหลือ {stock} ชิ้น (คุณเลือก {qty})"
   },
   en: {
     langThai: "ไทย",
@@ -4277,7 +4317,47 @@ const UI_TEXT = {
     statusReadyPlus: "Ready · Can add more",
     statusShipping: "Shipping",
     statusWarehouse: "Warehouse",
-    statusOut: "Out of stock"
+    statusOut: "Out of stock",
+    close: "Close",
+    productGroupLabel: "Product group",
+    productDetails: "Product details",
+    remainingStock: "In stock",
+    totalItems: "Total items",
+    total: "Total",
+    itemUnit: "items",
+    pieceUnit: "pcs",
+    cart: "Cart",
+    cartEmpty: "Your cart is empty",
+    cartEmptyHint: "Select products and add them to cart to create an order.",
+    perPiece: "pc",
+    remove: "Remove",
+    createOrder: "Create order",
+    confirmOrder: "Confirm order",
+    poNumber: "PO number",
+    poPlaceholder: "Enter PO number",
+    confirmCreateOrder: "Confirm create order",
+    cancel: "Cancel",
+    quantityTitle: "Quantity",
+    desiredQuantity: "Desired quantity",
+    confirmQuantity: "Confirm quantity",
+    chooseQuantity: "Choose product quantity",
+    quantityMustBePositive: "Quantity must be a positive whole number",
+    addedToCart: "Added \"{name}\" to cart",
+    stockRemainingMessage: "Product \"{name}\" has {stock} pcs left",
+    poRequired: "Please enter PO number",
+    duplicatePoCancelled: "Order creation cancelled because this PO already exists",
+    checkingStock: "Checking stock...",
+    creatingOrder: "Creating order...",
+    orderCreated: "Order created successfully",
+    downloadOrderHint: "Tap the button to download the order",
+    createOrderError: "Could not create order",
+    orderCreatedTitle: "Order created successfully",
+    orderId: "Order ID",
+    orderSuccessNote: "The order has been saved and is waiting for admin review/approval.",
+    downloadOrder: "Download order",
+    noLatestOrder: "No latest order found",
+    productNotFound: "Product not found: {name}",
+    stockCheckRemaining: "{name} has {stock} pcs left (you selected {qty})"
   }
 };
 
@@ -4307,12 +4387,40 @@ function setCurrentLang(lang) {
   }
   if (state.mode === "viewer" && Array.isArray(state.products)) {
     renderProducts();
+    if (productSheet?.classList?.contains("show") && state.selectedProduct) {
+      renderProductSheet();
+    }
+    if (cartSheet?.classList?.contains("show")) {
+      renderCart();
+    }
+    if (confirmSheet?.classList?.contains("show") && state.cart.length > 0) {
+      renderConfirmSheet();
+    } else if (confirmSheet?.classList?.contains("show") && state.lastOrder) {
+      renderLastOrderSheet();
+    }
+    if (qtySheet?.classList?.contains("show")) {
+      const qtyTitle = document.getElementById("qtySheetTitle");
+      const qtyLabel = qtySheet.querySelector(".form-group label");
+      const qtyButton = qtySheet.querySelector(".qty-action .btn-primary");
+      const closeButton = qtySheet.querySelector(".sheet-nav-btn");
+      if (qtyTitle) qtyTitle.textContent = t("quantityTitle", "ระบุจำนวน");
+      if (qtyLabel) qtyLabel.textContent = t("desiredQuantity", "จำนวนที่ต้องการ");
+      if (qtyButton) qtyButton.textContent = t("confirmQuantity", "ยืนยันจำนวน");
+      if (closeButton) closeButton.setAttribute("aria-label", t("close", "ปิด"));
+    }
   }
 }
 
 function t(key, fallback = "") {
   const lang = getCurrentLang();
   return UI_TEXT[lang]?.[key] ?? UI_TEXT[DEFAULT_LANG]?.[key] ?? fallback;
+}
+
+function formatUiText(key, values = {}, fallback = "") {
+  return Object.entries(values).reduce(
+    (text, [name, value]) => text.replaceAll(`{${name}}`, String(value ?? "")),
+    t(key, fallback)
+  );
 }
 
 function getViewerStatusLabel(status) {
@@ -4436,7 +4544,7 @@ state.lastOrder = loadLastOrder();
 function renderLastOrderSheet() {
   const order = state.lastOrder;
   if (!order) {
-    showToast("ไม่พบบิลล่าสุด", "warning");
+    showToast(t("noLatestOrder", "ไม่พบบิลล่าสุด"), "warning");
     return;
   }
 
@@ -4449,11 +4557,11 @@ function renderLastOrderSheet() {
   const total = Number(order.total) || 0;
 
   confirmSheet.innerHTML = `
-    <h3 id="confirmSheetTitle">สร้างใบสั่งซื้อสำเร็จ</h3>
+    <h3 id="confirmSheetTitle">${t("orderCreatedTitle", "สร้างใบสั่งซื้อสำเร็จ")}</h3>
 
     <div class="order-success-card success-enter">
       <div class="summary-row">
-        <span>เลขที่ใบสั่งซื้อ</span>
+        <span>${t("orderId", "เลขที่ใบสั่งซื้อ")}</span>
         <strong>${escapeHtml(order.orderId)}</strong>
       </div>
       <div class="summary-row">
@@ -4461,23 +4569,23 @@ function renderLastOrderSheet() {
         <strong>${escapeHtml(order.poNumber || "-")}</strong>
       </div>
       <div class="summary-row">
-        <span>จำนวนรายการ</span>
-        <strong>${itemCount} รายการ / ${totalQty} ชิ้น</strong>
+        <span>${t("totalItems", "จำนวนรายการ")}</span>
+        <strong>${itemCount} ${t("itemUnit", "รายการ")} / ${totalQty} ${t("pieceUnit", "ชิ้น")}</strong>
       </div>
       <div class="summary-row">
-        <span>ยอดรวม</span>
+        <span>${t("total", "ยอดรวม")}</span>
         <strong>฿${total.toLocaleString("th-TH")}</strong>
       </div>
     </div>
 
     <div class="success-note">
-      ระบบบันทึกใบสั่งซื้อแล้ว และกำลังรอแอดมินตรวจสอบ/อนุมัติคำสั่งซื้อ
+      ${t("orderSuccessNote", "ระบบบันทึกใบสั่งซื้อแล้ว และกำลังรอแอดมินตรวจสอบ/อนุมัติคำสั่งซื้อ")}
     </div>
 
     <button class="btn btn-primary"
       style="margin-top:16px"
       onclick="exportOrderPrint()">
-      ดาวน์โหลดใบสั่งซื้อ
+      ${t("downloadOrder", "ดาวน์โหลดใบสั่งซื้อ")}
     </button>
     <button class="btn btn-outline"
       style="margin-top:8px"
@@ -4485,7 +4593,7 @@ function renderLastOrderSheet() {
         state.ui.backdropLocked = false;
         closeOverlay(confirmSheet);
       ">
-      ปิด
+      ${t("close", "ปิด")}
     </button>
   `;
 }
@@ -5202,13 +5310,20 @@ async function checkStockBeforeSubmit() {
     );
 
     if (!product) {
-      return { ok:false, message:`ไม่พบสินค้า ${item.name}` };
+      return {
+        ok:false,
+        message: formatUiText("productNotFound", { name: item.name }, `ไม่พบสินค้า ${item.name}`)
+      };
     }
 
     if (Number(product.stock) < Number(item.qty)) {
       return {
         ok:false,
-        message:`${item.name} คงเหลือ ${product.stock} ชิ้น (คุณเลือก ${item.qty})`
+        message: formatUiText(
+          "stockCheckRemaining",
+          { name: item.name, stock: product.stock, qty: item.qty },
+          `${item.name} คงเหลือ ${product.stock} ชิ้น (คุณเลือก ${item.qty})`
+        )
       };
     }
   }
@@ -5305,16 +5420,20 @@ function renderFloatingBar(){
   const itemCount = uniqueNames.length; // ✅ จำนวน "รายการ" (distinct) เช่น qty=3 ก็ยัง = 1 รายการ
   const preview = uniqueNames.slice(0, 2).join(", ");
   const more = uniqueNames.length - 2;
+  const itemUnit = t("itemUnit", "รายการ");
+  const moreText = getCurrentLang() === "en"
+    ? ` +${more} more`
+    : ` +อีก ${more} ${itemUnit}`;
   const listText = itemCount
-    ? `${itemCount} รายการ: ${preview}${more > 0 ? ` +อีก ${more} รายการ` : ""}`
-    : "0 รายการ";
+    ? `${itemCount} ${itemUnit}: ${preview}${more > 0 ? moreText : ""}`
+    : `0 ${itemUnit}`;
   
   bar.innerHTML = `
     ${renderCartBadge()}
     <div class="bar-left" style="width:100%;">
-      <div style="font-weight:700">ตะกร้า</div>
+      <div style="font-weight:700">${t("cart", "ตะกร้า")}</div>
       <div class="bar-subtext">
-        ${esc(listText)} • รวม ฿${money(total)}
+        ${esc(listText)} • ${t("total", "ยอดรวม")} ฿${money(total)}
       </div>
     </div>
   `;
@@ -6149,7 +6268,7 @@ function renderProductSheet(){
       <button
         class="sheet-close sheet-close-btn"
         onclick="closeProduct()"
-        aria-label="Close"
+        aria-label="${t("close", "ปิด")}"
       >
         ×
       </button>
@@ -6157,7 +6276,7 @@ function renderProductSheet(){
       <h3 id="productSheetTitle" class="product-title">${esc(p.displayName)}</h3>
 
       <div class="product-sku">
-        กลุ่มสินค้า: ${esc(p.parentProductId)}
+        ${t("productGroupLabel", "กลุ่มสินค้า")}: ${esc(p.parentProductId)}
       </div>
 
       <img
@@ -6168,13 +6287,13 @@ function renderProductSheet(){
       >
 
       <div class="price">${esc(getVariantGroupPriceLabel(p))}</div>
-      <div class="stock">สต็อกรวม ${getVariantGroupTotalStock(p)} ชิ้น</div>
+      <div class="stock">${t("totalStock", "สต็อกรวม")} ${getVariantGroupTotalStock(p)} ${t("pieceUnit", "ชิ้น")}</div>
 
       <div class="variant-selected-summary" data-variant-selected-summary="${escAttr(p.groupKey)}" data-variant-summary-mode="detail">
-        เลือกไซส์:
+        ${t("selectSize", "เลือกไซส์")}:
         ${selectedVariant
-          ? `${esc(selectedVariant.variantValue || "-")} · SKU ${esc(selectedVariant.productId || "-")} · เหลือ ${Number(selectedVariant.stock) || 0}`
-          : "กรุณาเลือกไซส์ก่อน"}
+          ? `${esc(selectedVariant.variantValue || "-")} · SKU ${esc(selectedVariant.productId || "-")} · ${t("remaining", "เหลือ")} ${Number(selectedVariant.stock) || 0}`
+          : t("selectSizeFirst", "กรุณาเลือกไซส์ก่อน")}
       </div>
       ${renderVariantSizeOptions(p)}
       ${renderViewerCopyInfoSection()}
@@ -6185,7 +6304,7 @@ function renderProductSheet(){
             <button
               class="btn btn-outline product-detail-btn"
               onclick="openProductInfoSheet(${selectedVariant ? "getSelectedVariantFromGroup(state.selectedProduct)" : "state.selectedProduct.variants[0]"})">
-              รายละเอียดสินค้า
+              ${t("productDetails", "รายละเอียดสินค้า")}
             </button>
           `
           : ""
@@ -6196,7 +6315,7 @@ function renderProductSheet(){
           class="btn btn-primary"
           onclick="openQtyForSelectedVariantFromDetail()"
         >
-          เพิ่มลงตะกร้า
+          ${t("addToCart", "เพิ่มลงตะกร้า")}
         </button>
       </div>
     `;
@@ -6208,7 +6327,7 @@ function renderProductSheet(){
  <button
    class="sheet-close sheet-close-btn"
    onclick="closeProduct()"
-   aria-label="Close"
+   aria-label="${t("close", "ปิด")}"
  >
       ×
     </button>
@@ -6216,7 +6335,7 @@ function renderProductSheet(){
     <h3 id="productSheetTitle" class="product-title">${esc(p.name)}</h3>
 
     <div class="product-sku">
-      รหัสสินค้า: ${esc(p.productId)}
+      ${t("productCode", "รหัส")}: ${esc(p.productId)}
     </div>
 
     <!-- ✅ FIX IMAGE -->
@@ -6228,7 +6347,7 @@ function renderProductSheet(){
  >
 
     <div class="price">฿${Number(p.price) || 0}</div>
-    <div class="stock">คงเหลือ ${Number(p.stock) || 0} ชิ้น</div>
+    <div class="stock">${t("remainingStock", "คงเหลือ")} ${Number(p.stock) || 0} ${t("pieceUnit", "ชิ้น")}</div>
     ${renderViewerCopyInfoSection()}
     
      ${
@@ -6237,7 +6356,7 @@ function renderProductSheet(){
           <button
             class="btn btn-outline product-detail-btn"
             onclick="openProductInfoSheet(state.selectedProduct)">
-            รายละเอียดสินค้า
+            ${t("productDetails", "รายละเอียดสินค้า")}
           </button>
         `
         : ""
@@ -6262,7 +6381,7 @@ function renderProductSheet(){
               class="btn btn-primary"
               onclick="openQtySheet()"
             >
-              เพิ่มลงตะกร้า
+              ${t("addToCart", "เพิ่มลงตะกร้า")}
             </button>
           </div>
         `
@@ -6307,8 +6426,8 @@ function renderCart(){
     <div class="sheet-topbar">
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closeCart()"
-        aria-label="ปิดตะกร้า">×</button>
-      <h3 id="cartSheetTitle">ตะกร้า</h3>
+        aria-label="${t("close", "ปิด")}">×</button>
+      <h3 id="cartSheetTitle">${t("cart", "ตะกร้า")}</h3>
       <div aria-hidden="true"></div>
     </div>
   `;
@@ -6316,8 +6435,8 @@ function renderCart(){
   if(state.cart.length===0){
     cartSheet.innerHTML+=`
       <div class="empty-state">
-        ยังไม่มีสินค้าในตะกร้า<br>
-        <span class="helper-text">เลือกสินค้าแล้วกดเพิ่มลงตะกร้าเพื่อเริ่มสร้างใบสั่งซื้อ</span>
+        ${t("cartEmpty", "ยังไม่มีสินค้าในตะกร้า")}<br>
+        <span class="helper-text">${t("cartEmptyHint", "เลือกสินค้าแล้วกดเพิ่มลงตะกร้าเพื่อเริ่มสร้างใบสั่งซื้อ")}</span>
       </div>
 `;
     return;
@@ -6330,18 +6449,18 @@ function renderCart(){
       <div class="cart-content">
         <div class="name">${esc(i.name)}</div>
         <div class="cart-meta">
-          รหัส: ${esc(i.productId)}
+          ${t("productCode", "รหัส")}: ${esc(i.productId)}
         </div>
-        <div class="price">฿${Number(i.price) || 0} / ชิ้น</div>
+        <div class="price">฿${Number(i.price) || 0} / ${t("perPiece", "ชิ้น")}</div>
       </div>
  <div class="cart-item-right">
    <div>
      <div class="cart-line-total">฿${(Number(i.price) || 0) * (Number(i.qty) || 0)}</div>
-     <div class="cart-qty">จำนวน ${Number(i.qty) || 1}</div>
+     <div class="cart-qty">${t("quantity", "จำนวน")} ${Number(i.qty) || 1}</div>
    </div>
    <button class="btn-remove"
      onclick="removeItem(${idx})">
-     ลบ
+     ${t("remove", "ลบ")}
    </button>
  </div>
     </div>`;
@@ -6355,18 +6474,18 @@ const total = state.cart.reduce(
 cartSheet.innerHTML += `
   <div class="cart-summary">
     <div class="summary-row">
-      <span>จำนวนรายการ</span>
+      <span>${t("totalItems", "จำนวนรายการ")}</span>
       <strong>${state.cart.length}</strong>
     </div>
     <div class="summary-row">
-      <span>ยอดรวม</span>
+      <span>${t("total", "ยอดรวม")}</span>
       <strong>฿${total}</strong>
     </div>
   </div>
   <div class="sheet-action-footer">
     <button class="btn btn-primary"
       onclick="openConfirm()">
-      สร้างใบสั่งซื้อ
+      ${t("createOrder", "สร้างใบสั่งซื้อ")}
     </button>
   </div>
 `;
@@ -6398,7 +6517,7 @@ function renderConfirmSheet(){
   if (!confirmSheet) return;
   let total = 0;
 
-  confirmSheet.innerHTML = '<h3 id="confirmSheetTitle">ยืนยันใบสั่งซื้อ</h3>';
+  confirmSheet.innerHTML = `<h3 id="confirmSheetTitle">${t("confirmOrder", "ยืนยันใบสั่งซื้อ")}</h3>`;
 
   state.cart.forEach(i=>{
     const sum = i.price * i.qty;
@@ -6409,8 +6528,8 @@ function renderConfirmSheet(){
         ${renderCartItemThumb(i)}
         <div class="cart-content">
           <div class="name">${esc(i.name)}</div>
-          <div class="cart-meta">รหัส: ${esc(i.productId)}</div>
-          <div class="cart-qty">จำนวน ${Number(i.qty) || 0}</div>
+          <div class="cart-meta">${t("productCode", "รหัส")}: ${esc(i.productId)}</div>
+          <div class="cart-qty">${t("quantity", "จำนวน")} ${Number(i.qty) || 0}</div>
         </div>
         <div class="cart-line-total">฿${Number(sum) || 0}</div>
       </div>
@@ -6420,21 +6539,21 @@ function renderConfirmSheet(){
   confirmSheet.innerHTML += `
     <div class="cart-summary">
       <div class="summary-row">
-        <span>จำนวนรายการ</span>
+        <span>${t("totalItems", "จำนวนรายการ")}</span>
         <strong>${state.cart.length}</strong>
       </div>
       <div class="summary-row">
-        <span>ยอดรวม</span>
+        <span>${t("total", "ยอดรวม")}</span>
         <strong>฿${total}</strong>
       </div>
     </div>
 
     <div class="form-group">
-     <label>เลข PO <span style="color:#ff3b30">*</span></label>
+     <label>${t("poNumber", "เลข PO")} <span style="color:#ff3b30">*</span></label>
       <input
         id="poInput"
         value="${escAttr(state.poNumber || "")}"
-        placeholder="กรอกเลข PO"
+        placeholder="${t("poPlaceholder", "กรอกเลข PO")}"
         required
         oninput="state.poNumber = this.value.trim()">
     </div>
@@ -6446,12 +6565,12 @@ function renderConfirmSheet(){
     ${state.isSubmitting ? "disabled" : ""}
     aria-busy="${state.isSubmitting ? "true" : "false"}"
     onclick="submitOrder()">
-    ยืนยันสร้างใบสั่งซื้อ
+    ${t("confirmCreateOrder", "ยืนยันสร้างใบสั่งซื้อ")}
   </button>
 
   <button class="btn btn-outline"
     onclick="cancelConfirm()">
-    ยกเลิก
+    ${t("cancel", "ยกเลิก")}
   </button>
 </div>
   `;
@@ -6996,13 +7115,13 @@ function openQtySheet(){
     <div class="sheet-topbar">
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closeQty()"
-        aria-label="ปิดหน้าระบุจำนวน">×</button>
-      <h3 id="qtySheetTitle">ระบุจำนวน</h3>
+        aria-label="${t("close", "ปิด")}">×</button>
+      <h3 id="qtySheetTitle">${t("quantityTitle", "ระบุจำนวน")}</h3>
       <div aria-hidden="true"></div>
     </div>
 
     <div class="form-group">
-      <label>จำนวนที่ต้องการ</label>
+      <label>${t("desiredQuantity", "จำนวนที่ต้องการ")}</label>
       <div class="qty-input">
         <input
           type="number"
@@ -7018,7 +7137,7 @@ function openQtySheet(){
       <button
         class="btn btn-primary"
         onclick="confirmAddToCart()">
-        ยืนยันจำนวน
+        ${t("confirmQuantity", "ยืนยันจำนวน")}
       </button>
     </div>
   `;
@@ -7026,7 +7145,7 @@ function openQtySheet(){
   // ✅ เปิดผ่าน Overlay Manager เท่านั้น
   openOverlay(qtySheet);
 
-  showToast("เลือกระบุจำนวนสินค้า", "info", 1500);
+  showToast(t("chooseQuantity", "เลือกระบุจำนวนสินค้า"), "info", 1500);
 
   setTimeout(() => {
     const input = qtySheet.querySelector("input");
@@ -7046,7 +7165,7 @@ function confirmAddToCart(){
 
   if (!Number.isInteger(qty) || qty <= 0) {
     showToast(
-      "จำนวนสินค้าต้องเป็นจำนวนเต็มมากกว่า 0",
+      t("quantityMustBePositive", "จำนวนสินค้าต้องเป็นจำนวนเต็มมากกว่า 0"),
       "warning"
     );
     return;
@@ -7062,7 +7181,7 @@ function confirmAddToCart(){
 
     // ✅ ใหม่: toast warning
     showToast(
-      `สินค้า "${p.name}" คงเหลือ ${p.stock} ชิ้น`,
+      formatUiText("stockRemainingMessage", { name: p.name, stock: p.stock }, `สินค้า "${p.name}" คงเหลือ ${p.stock} ชิ้น`),
       "warning"
     );
     return;
@@ -7086,7 +7205,7 @@ function confirmAddToCart(){
 
   // ✅ Feedback สำเร็จ (หัวใจของ STEP 2️⃣)
   showToast(
-    `เพิ่ม "${p.name}" ลงตะกร้าแล้ว`,
+    formatUiText("addedToCart", { name: p.name }, `เพิ่ม "${p.name}" ลงตะกร้าแล้ว`),
     "success"
   );
 
@@ -11359,7 +11478,7 @@ async function submitOrder(){
  
  const poNumber = String(state.poNumber || "").trim();
  if (!poNumber) {
-   showToast("กรุณากรอกเลข PO", "warning");
+   showToast(t("poRequired", "กรุณากรอกเลข PO"), "warning");
    const poInput = document.getElementById("poInput");
    if (poInput) poInput.focus();
    return;
@@ -11376,7 +11495,7 @@ async function submitOrder(){
 
   try {
     // ================= STEP 1: CHECK STOCK =================
-    showLoading('กำลังตรวจสอบสต๊อก...');
+    showLoading(t("checkingStock", "กำลังตรวจสอบสต๊อก..."));
     const stockCheck = await checkStockBeforeSubmit();
 
     if (!stockCheck.ok) {
@@ -11385,12 +11504,12 @@ async function submitOrder(){
     }
 
     if (!await confirmDuplicatePoBeforeCreateOrder(poNumber)) {
-      showToast("ยกเลิกการสร้างใบสั่งซื้อ เนื่องจากพบเลข PO ซ้ำ", "warning");
+      showToast(t("duplicatePoCancelled", "ยกเลิกการสร้างใบสั่งซื้อ เนื่องจากพบเลข PO ซ้ำ"), "warning");
       return;
     }
 
     // ================= STEP 2: CREATE ORDER =================
-    updateLoadingText('กำลังสร้างใบสั่งซื้อ...');
+    updateLoadingText(t("creatingOrder", "กำลังสร้างใบสั่งซื้อ..."));
     const res = await createOrder();
 
     if (!res || res.success !== true || !res.data?.orderId) {
@@ -11434,8 +11553,8 @@ async function submitOrder(){
    
     saveLastOrder();
 
-    showToast('สร้างใบสั่งซื้อเรียบร้อยแล้ว', 'success');
-    showToast("กดปุ่มเพื่อดาวน์โหลดใบสั่งซื้อ", "info", 3000);
+    showToast(t("orderCreated", "สร้างใบสั่งซื้อเรียบร้อยแล้ว"), 'success');
+    showToast(t("downloadOrderHint", "กดปุ่มเพื่อดาวน์โหลดใบสั่งซื้อ"), "info", 3000);
 
     renderLastOrderSheet();
    
@@ -11456,7 +11575,7 @@ async function submitOrder(){
     if (err && err.message === "STOCK_CHECK_FAILED") return;
 
     showToast(
-      err.message || 'เกิดข้อผิดพลาดในการสร้างใบสั่งซื้อ',
+      err.message || t("createOrderError", "เกิดข้อผิดพลาดในการสร้างใบสั่งซื้อ"),
       'error'
     );
   } finally {
