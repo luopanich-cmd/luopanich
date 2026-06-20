@@ -4286,6 +4286,31 @@ const UI_TEXT = {
     overview: "ภาพรวม",
     orders: "คำสั่งซื้อ",
     products: "สินค้า",
+    manageProduct: "จัดการสินค้า",
+    editProduct: "แก้ไขข้อมูลสินค้า",
+    adjustStock: "ปรับสต๊อก",
+    stockManagement: "จัดการสต๊อก",
+    stockRemaining: "คงเหลือ",
+    stockQtyNew: "จำนวน / ยอดคงเหลือใหม่",
+    stockActionHelp: "รับสินค้าเข้า = เพิ่มจำนวนจากยอดเดิม<br>ปรับยอดคงเหลือ = ตั้งค่ายอดใหม่แทนยอดเดิม",
+    exampleQty: "เช่น 10",
+    receiveStock: "รับสินค้าเข้า",
+    setStockBalance: "ปรับยอดคงเหลือ",
+    invalidQty: "จำนวนไม่ถูกต้อง",
+    stockInSuccess: "รับสต๊อกเข้าแล้ว",
+    stockInError: "ไม่สามารถรับสต๊อกได้",
+    stockAdjustSuccess: "ปรับสต๊อกแล้ว",
+    stockAdjustError: "ไม่สามารถปรับสต๊อกได้",
+    productStatus: "สถานะสินค้า",
+    sellPrice: "ราคาขาย",
+    costPriceAdmin: "ราคาต้นทุน",
+    productNoteAdmin: "หมายเหตุสินค้า (สำหรับแอดมิน)",
+    productDetailsForViewer: "รายละเอียดสินค้า (แสดงในปุ่มรายละเอียด)",
+    compareImages: "รูปเทียบสินค้า",
+    productImage: "รูปสินค้า",
+    productDeleted: "สินค้านี้ถูกลบแล้ว",
+    deleteProduct: "ลบสินค้า",
+    addContinueMode: "เพิ่มต่อเนื่อง (คัดลอกข้อมูลเดิม)",
     partners: "คู่ค้า",
     system: "ระบบ",
     stockTimeline: "ไทม์ไลน์สต๊อก",
@@ -4490,6 +4515,31 @@ const UI_TEXT = {
     overview: "Overview",
     orders: "Orders",
     products: "Products",
+    manageProduct: "Manage Product",
+    editProduct: "Edit Product",
+    adjustStock: "Adjust Stock",
+    stockManagement: "Stock Management",
+    stockRemaining: "Remaining",
+    stockQtyNew: "Quantity / new stock balance",
+    stockActionHelp: "Receive stock = add to the current stock<br>Adjust balance = set a new stock balance",
+    exampleQty: "Example: 10",
+    receiveStock: "Receive stock",
+    setStockBalance: "Set stock balance",
+    invalidQty: "Invalid quantity",
+    stockInSuccess: "Stock received",
+    stockInError: "Could not receive stock",
+    stockAdjustSuccess: "Stock adjusted",
+    stockAdjustError: "Could not adjust stock",
+    productStatus: "Product status",
+    sellPrice: "Selling price",
+    costPriceAdmin: "Cost price",
+    productNoteAdmin: "Product note (admin only)",
+    productDetailsForViewer: "Product details (shown in details button)",
+    compareImages: "Compare images",
+    productImage: "Product image",
+    productDeleted: "This product has been deleted",
+    deleteProduct: "Delete product",
+    addContinueMode: "Continue adding (copy previous data)",
     partners: "Partners",
     system: "System",
     stockTimeline: "Stock timeline",
@@ -6966,7 +7016,7 @@ function renderHeader(){
  <button
    class="search-btn"
    onclick="toggleAdminSearch(this)"
-   aria-label="เปิดการค้นหา"
+   aria-label="${t("search", "ค้นหา")}"
    aria-expanded="false"
    aria-controls="adminSearchInput">
           <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -6977,9 +7027,9 @@ function renderHeader(){
  <input
    id="adminSearchInput"
    class="search-input"
-   placeholder="ค้นหาสินค้า / รหัส"
+   placeholder="${t("productSearchPlaceholder", "ค้นหาสินค้า / รหัส")}"
    oninput="handleSearch(this.value)"
-   aria-label="ค้นหาสินค้า"
+   aria-label="${t("search", "ค้นหา")}"
  />
       </div>
     </div>
@@ -6992,7 +7042,7 @@ function renderHeader(){
       <div class="filter-wrap">
  <button class="filter-btn ${state.admin.filters.status !== "all" ? "has-active-filter" : ""}"
    onclick="toggleFilterDropdown(this)"
-   aria-label="กรองสินค้า"
+   aria-label="${t("filterStatus", "กรองสถานะ")}"
    aria-expanded="false"
    aria-controls="filterDropdown">
           <svg class="icon-sf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -7002,12 +7052,12 @@ function renderHeader(){
           </svg>
         </button>
 
- <div id="filterDropdown" class="filter-dropdown" role="menu" aria-label="ตัวกรองสินค้า">
-   <button type="button" class="filter-item ${state.admin.filters.status === "all" ? "active" : ""}" role="menuitem" onclick="selectFilter('all')">ทั้งหมด</button>
-   <button type="button" class="filter-item ${state.admin.filters.status === "ready" ? "active" : ""}" role="menuitem" onclick="selectFilter('ready')">พร้อมส่ง</button>
-   <button type="button" class="filter-item ${state.admin.filters.status === "shipping" ? "active" : ""}" role="menuitem" onclick="selectFilter('shipping')">ระหว่างจัดส่ง</button>
-   <button type="button" class="filter-item ${state.admin.filters.status === "warehouse" ? "active" : ""}" role="menuitem" onclick="selectFilter('warehouse')">โกดังไทย</button>
-   <button type="button" class="filter-item ${state.admin.filters.status === "out" ? "active" : ""}" role="menuitem" onclick="selectFilter('out')">หมด</button>
+ <div id="filterDropdown" class="filter-dropdown" role="menu" aria-label="${t("filterStatus", "กรองสถานะ")}">
+   <button type="button" class="filter-item ${state.admin.filters.status === "all" ? "active" : ""}" role="menuitem" onclick="selectFilter('all')">${t("allProducts", "ทั้งหมด")}</button>
+   <button type="button" class="filter-item ${state.admin.filters.status === "ready" ? "active" : ""}" role="menuitem" onclick="selectFilter('ready')">${getViewerStatusLabel("ready")}</button>
+   <button type="button" class="filter-item ${state.admin.filters.status === "shipping" ? "active" : ""}" role="menuitem" onclick="selectFilter('shipping')">${getViewerStatusLabel("shipping")}</button>
+   <button type="button" class="filter-item ${state.admin.filters.status === "warehouse" ? "active" : ""}" role="menuitem" onclick="selectFilter('warehouse')">${getViewerStatusLabel("warehouse")}</button>
+   <button type="button" class="filter-item ${state.admin.filters.status === "out" ? "active" : ""}" role="menuitem" onclick="selectFilter('out')">${getViewerStatusLabel("out")}</button>
  </div>
       </div>
 
@@ -10401,7 +10451,7 @@ async function submitStockIn(){
 
   // 🔍 validate
   if (!Number.isInteger(qty) || qty <= 0) {
-    showToast("จำนวนไม่ถูกต้อง", "warning");
+    showToast(t("invalidQty", "จำนวนไม่ถูกต้อง"), "warning");
     qtyInput.focus();
     return;
   }
@@ -10421,7 +10471,7 @@ async function submitStockIn(){
       throw new Error(res.error);
     }
 
-    showToast("รับสต๊อกเข้าแล้ว", "success");
+    showToast(t("stockInSuccess", "รับสต๊อกเข้าแล้ว"), "success");
 
     // 🔄 sync ข้อมูลหลัก + ข้อมูลย้อนหลังทันที
     await refreshProducts();
@@ -10439,7 +10489,7 @@ async function submitStockIn(){
 
   } catch (err) {
     console.error(err);
-    showToast(err.message || "ไม่สามารถรับสต๊อกได้", "error");
+    showToast(err.message || t("stockInError", "ไม่สามารถรับสต๊อกได้"), "error");
   } finally {
     // 🔓 เปิดปุ่มกลับทุกกรณี
     buttons.forEach(b => b.disabled = false);
@@ -10462,7 +10512,7 @@ async function submitStockAdjust(){
 
   // 🔍 validate
   if (!Number.isInteger(newQty) || newQty < 0) {
-    showToast("จำนวนไม่ถูกต้อง", "warning");
+    showToast(t("invalidQty", "จำนวนไม่ถูกต้อง"), "warning");
     qtyInput.focus();
     return;
   }
@@ -10482,7 +10532,7 @@ async function submitStockAdjust(){
       throw new Error(res.error);
     }
 
-    showToast("ปรับสต๊อกแล้ว", "success");
+    showToast(t("stockAdjustSuccess", "ปรับสต๊อกแล้ว"), "success");
 
     // 🔄 sync ข้อมูลหลัก + ข้อมูลย้อนหลังทันที
     await refreshProducts();
@@ -10502,7 +10552,7 @@ async function submitStockAdjust(){
 
   } catch (err) {
     console.error(err);
-    showToast(err.message || "ไม่สามารถปรับสต๊อกได้", "error");
+    showToast(err.message || t("stockAdjustError", "ไม่สามารถปรับสต๊อกได้"), "error");
   } finally {
     // 🔓 เปิดปุ่มกลับทุกกรณี
     buttons.forEach(b => b.disabled = false);
@@ -10517,11 +10567,11 @@ function openStockAction(p){
   const stockQty = Number(p.stock) || 0;
   const statusKey = normalizeProductStatus(p.status || (stockQty <= 0 ? "out" : "ready"));
   const statusLabelMap = {
-    ready: "พร้อมส่ง",
-    ready_plus: "พร้อมส่ง + เพิ่มได้",
-    shipping: "อยู่ระหว่างจัดส่ง",
-    warehouse: "อยู่โกดังไทย",
-    out: "หมด"
+    ready: t("statusReady", "พร้อมส่ง"),
+    ready_plus: t("statusReadyPlus", "พร้อมส่ง + เพิ่มได้"),
+    shipping: t("statusShipping", "อยู่ระหว่างจัดส่ง"),
+    warehouse: t("statusWarehouse", "อยู่โกดังไทย"),
+    out: t("statusOut", "หมด")
   };
   const statusBadgeClass = stockQty <= 0
     ? "status-rejected"
@@ -10535,8 +10585,8 @@ function openStockAction(p){
     <div class="sheet-topbar">
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closeOverlay(adminStockActionSheet)"
-        aria-label="ปิดหน้าจัดการสต็อก">×</button>
-      <h3 id="adminStockActionSheetTitle">จัดการสต็อก</h3>
+        aria-label="${t("close", "ปิด")}">×</button>
+      <h3 id="adminStockActionSheetTitle">${t("stockManagement", "จัดการสต๊อก")}</h3>
       <div aria-hidden="true"></div>
     </div>
     <div class="admin-detail-section">
@@ -10550,9 +10600,9 @@ function openStockAction(p){
           <div class="admin-detail-title">${esc(p.name || "-")}</div>
           <div class="admin-product-summary-meta">
             <span>SKU: ${esc(p.productId || "-")}</span>
-            <span>คงเหลือ ${stockQty} ชิ้น</span>
+            <span>${t("stockRemaining", "คงเหลือ")} ${stockQty} ${t("pieceUnit", "ชิ้น")}</span>
             <span class="status-badge compact ${statusBadgeClass}">
-              ${esc(statusLabelMap[statusKey] || "พร้อมส่ง")}
+              ${esc(statusLabelMap[statusKey] || t("statusReady", "พร้อมส่ง"))}
             </span>
           </div>
         </div>
@@ -10560,26 +10610,25 @@ function openStockAction(p){
     </div>
 
     <div class="form-group">
-      <label>จำนวน / ยอดคงเหลือใหม่</label>
+      <label>${t("stockQtyNew", "จำนวน / ยอดคงเหลือใหม่")}</label>
       <div class="helper-text" style="margin-bottom:8px">
-        รับสินค้าเข้า = เพิ่มจำนวนจากยอดเดิม<br>
-        ปรับยอดคงเหลือ = ตั้งค่ายอดใหม่แทนยอดเดิม
+        ${t("stockActionHelp", "รับสินค้าเข้า = เพิ่มจำนวนจากยอดเดิม<br>ปรับยอดคงเหลือ = ตั้งค่ายอดใหม่แทนยอดเดิม")}
       </div>
       <div class="qty-input">
         <input
           id="stockQty"
           type="number"
           min="0"
-          placeholder="เช่น 10"
+          placeholder="${t("exampleQty", "เช่น 10")}"
         >
       </div>
     </div>
 
     <div class="form-group">
-      <label>หมายเหตุ</label>
+      <label>${t("note", "หมายเหตุ")}</label>
       <input
         id="stockReason"
-        placeholder="ระบุเหตุผล ถ้ามี"
+        placeholder="${t("note", "หมายเหตุ")}"
       >
     </div>
 
@@ -10587,13 +10636,13 @@ function openStockAction(p){
       <button
         class="btn btn-success"
         onclick="submitStockIn()">
-        รับสินค้าเข้า
+        ${t("receiveStock", "รับสินค้าเข้า")}
       </button>
 
       <button
         class="btn btn-primary"
         onclick="submitStockAdjust()">
-        ปรับยอดคงเหลือ
+        ${t("setStockBalance", "ปรับยอดคงเหลือ")}
       </button>
     </div>
   `;
@@ -11459,69 +11508,69 @@ function openAddProduct(force = false){
     <div class="sheet-topbar">
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closeAddProduct()"
-        aria-label="ปิดหน้าเพิ่มสินค้า">×</button>
-      <h3 id="adminAddProductSheetTitle">➕ เพิ่มสินค้าใหม่</h3>
+        aria-label="${t("close", "ปิด")}">×</button>
+      <h3 id="adminAddProductSheetTitle">${t("addProduct", "เพิ่มสินค้าใหม่")}</h3>
       <div aria-hidden="true"></div>
     </div>
 
     <div class="admin-detail-section">
-      <div class="admin-detail-title">เพิ่มสินค้าใหม่</div>
+      <div class="admin-detail-title">${t("addProduct", "เพิ่มสินค้าใหม่")}</div>
       <div class="helper-text">
         กรอกข้อมูลหลักของสินค้าให้ครบก่อนบันทึก<br>
         ต้องมีรหัสสินค้า ชื่อสินค้า ราคา ต้นทุน จำนวน และสถานะ
       </div>
       <div class="admin-product-summary-meta" style="margin-top:10px">
-        <span>SKU ที่แนะนำ: ${esc(nextProductId || "-")}</span>
+        <span>SKU: ${esc(nextProductId || "-")}</span>
         <span>สินค้าใหม่จะเปิดใช้งานอัตโนมัติ</span>
         <span>บันทึกแล้วจะถูกเพิ่มใน Stock Timeline</span>
       </div>
     </div>
 
     <div class="admin-detail-section">
-      <div class="admin-detail-title">ข้อมูลหลัก</div>
+      <div class="admin-detail-title">${t("productDetails", "รายละเอียดสินค้า")}</div>
     <div class="form-group">
-      <label>รหัสสินค้า (SKU)</label>
+      <label>${t("productCode", "รหัส")} (SKU)</label>
       <input id="addProductId" value="${safeNextProductId}" placeholder="เช่น P002">
     </div>
 
     <div class="form-group">
-      <label>ชื่อสินค้า</label>
-      <input id="addName" value="${safeDraftName}" placeholder="ชื่อสินค้า">
+      <label>${t("productLabel", "สินค้า")}</label>
+      <input id="addName" value="${safeDraftName}" placeholder="${t("productLabel", "สินค้า")}">
     </div>
     </div>
 
     <div class="admin-detail-section">
-      <div class="admin-detail-title">ราคา</div>
+      <div class="admin-detail-title">${t("price", "ราคา")}</div>
     <div class="form-group">
-      <label>ราคาขาย</label>
+      <label>${t("sellPrice", "ราคาขาย")}</label>
       <input id="addPrice" type="number" value="${safeDraftPrice}" placeholder="0">
     </div>
 
     <div class="form-group">
-      <label>ราคาต้นทุน</label>
+      <label>${t("costPriceAdmin", "ราคาต้นทุน")}</label>
       <input id="addCostPrice" type="number" value="${safeDraftCostPrice}" placeholder="0">
     </div>
     </div>
 
     <div class="admin-detail-section">
-      <div class="admin-detail-title">สต็อก / สถานะ</div>
+      <div class="admin-detail-title">${t("stock", "สต๊อก")} / ${t("status", "สถานะ")}</div>
     <div class="form-group">
-      <label>จำนวน (สต๊อกเริ่มต้น)</label>
+      <label>${t("quantity", "จำนวน")}</label>
       <input id="addStock" type="number" value="${safeDraftStock}" placeholder="0">
     </div>
 
     <!-- 🔴 สถานะสินค้า (เพื่อแจ้งลูกค้า) -->
     <div class="form-group">
-      <label>สถานะสินค้า</label>
+      <label>${t("productStatus", "สถานะสินค้า")}</label>
       <select id="addStatus">
-        <option value="ready" ${draft.status==="ready"?"selected":""}>พร้อมส่ง</option>
+        <option value="ready" ${draft.status==="ready"?"selected":""}>${t("statusReady", "พร้อมส่ง")}</option>
  <option value="ready_plus"
    ${draft.status==="ready_plus"?"selected":""}>
-   พร้อมส่ง สามารถบวกเพิ่มได้
+   ${t("statusReadyPlus", "พร้อมส่ง สามารถบวกเพิ่มได้")}
  </option>
-        <option value="shipping" ${draft.status==="shipping"?"selected":""}>อยู่ระหว่างจัดส่ง</option>
-        <option value="warehouse" ${draft.status==="warehouse"?"selected":""}>อยู่โกดังไทย</option>
-        <option value="out" ${draft.status==="out"?"selected":""}>หมด</option>
+        <option value="shipping" ${draft.status==="shipping"?"selected":""}>${t("statusShipping", "อยู่ระหว่างจัดส่ง")}</option>
+        <option value="warehouse" ${draft.status==="warehouse"?"selected":""}>${t("statusWarehouse", "อยู่โกดังไทย")}</option>
+        <option value="out" ${draft.status==="out"?"selected":""}>${t("statusOut", "หมด")}</option>
       </select>
     </div>
     </div>
@@ -11530,9 +11579,9 @@ ${renderProductVariantFields("add", draftVariant)}
 
 <!-- 📝 NEW: NOTE FIELD -->
 <div class="admin-detail-section">
-  <div class="admin-detail-title">หมายเหตุ / รายละเอียด</div>
+  <div class="admin-detail-title">${t("note", "หมายเหตุ")} / ${t("productDetails", "รายละเอียดสินค้า")}</div>
 <div class="form-group">
-  <label>หมายเหตุสินค้า</label>
+  <label>${t("note", "หมายเหตุ")}</label>
   <textarea
     id="addNote"
     rows="3"
@@ -11565,19 +11614,19 @@ ${renderProductVariantFields("add", draftVariant)}
     <div class="form-group">
       <label class="continue-row">
         <input type="checkbox" id="addContinueMode">
-        <span class="continue-text">เพิ่มต่อเนื่อง (คัดลอกข้อมูลเดิม)</span>
+        <span class="continue-text">${t("addContinueMode", "เพิ่มต่อเนื่อง (คัดลอกข้อมูลเดิม)")}</span>
       </label>
     </div>
 
     <div class="sheet-action-footer">
-      <button class="btn btn-primary"
-        onclick="submitAddProduct(this)">
-        บันทึกสินค้า
-      </button>
+    <button class="btn btn-primary"
+      onclick="submitAddProduct(this)">
+        ${t("save", "บันทึก")}
+    </button>
 
       <button class="btn btn-outline"
         onclick="closeAddProduct()">
-        ยกเลิก
+        ${t("cancel", "ยกเลิก")}
       </button>
     </div>
   `;
@@ -11960,11 +12009,11 @@ function openProductEdit(p){
     latestProduct.status || (editStockQty <= 0 ? "out" : "ready")
   );
   const editStatusLabelMap = {
-    ready: "พร้อมส่ง",
-    ready_plus: "พร้อมส่ง + เพิ่มได้",
-    shipping: "อยู่ระหว่างจัดส่ง",
-    warehouse: "อยู่โกดังไทย",
-    out: "หมด"
+    ready: t("statusReady", "พร้อมส่ง"),
+    ready_plus: t("statusReadyPlus", "พร้อมส่ง + เพิ่มได้"),
+    shipping: t("statusShipping", "อยู่ระหว่างจัดส่ง"),
+    warehouse: t("statusWarehouse", "อยู่โกดังไทย"),
+    out: t("statusOut", "หมด")
   };
   const editStatusBadgeClass = editStockQty <= 0
     ? "status-rejected"
@@ -11980,8 +12029,8 @@ function openProductEdit(p){
     <div class="sheet-topbar">
       <button class="btn btn-outline sheet-nav-btn"
         onclick="closeProductEdit()"
-        aria-label="ปิดหน้าแก้ไขสินค้า">×</button>
-      <h3 id="adminProductEditSheetTitle">แก้ไขสินค้า</h3>
+        aria-label="${t("close", "ปิด")}">×</button>
+      <h3 id="adminProductEditSheetTitle">${t("editProduct", "แก้ไขข้อมูลสินค้า")}</h3>
       <div aria-hidden="true"></div>
     </div>
 
@@ -11996,60 +12045,60 @@ function openProductEdit(p){
           <div class="admin-detail-title">${esc(latestProduct.name || "-")}</div>
           <div class="admin-product-summary-meta">
             <span>SKU: ${esc(latestProduct.productId || "-")}</span>
-            <span>คงเหลือ ${editStockQty} ชิ้น</span>
+            <span>${t("stockRemaining", "คงเหลือ")} ${editStockQty} ${t("pieceUnit", "ชิ้น")}</span>
             <span class="status-badge compact ${editStatusBadgeClass}">
-              ${esc(editStatusLabelMap[editStatusKey] || "พร้อมส่ง")}
+              ${esc(editStatusLabelMap[editStatusKey] || t("statusReady", "พร้อมส่ง"))}
             </span>
-            <span>ขาย ฿${editPriceText}</span>
-            <span>ต้นทุน ฿${editCostText}</span>
+            <span>${t("sellPrice", "ราคาขาย")} ฿${editPriceText}</span>
+            <span>${t("costPriceAdmin", "ราคาต้นทุน")} ฿${editCostText}</span>
           </div>
         </div>
       </div>
     </div>
 
     <div class="form-group">
-      <label>รหัสสินค้า (SKU)</label>
+      <label>${t("productCode", "รหัส")} (SKU)</label>
       <input id="editProductId" value="${safeEditProductId}">
     </div>
 
     <div class="form-group">
-      <label>ชื่อสินค้า</label>
+      <label>${t("productLabel", "สินค้า")}</label>
       <input id="editName" value="${safeEditName}">
     </div>
 
     <div class="form-group">
-      <label>ราคาขาย</label>
+      <label>${t("sellPrice", "ราคาขาย")}</label>
       <input id="editPrice" type="number" value="${safeEditPrice}">
     </div>
     
     <div class="form-group">
-      <label>ราคาต้นทุน</label>
+      <label>${t("costPriceAdmin", "ราคาต้นทุน")}</label>
       <input id="editCostPrice" type="number" value="${safeEditCostPrice}">
     </div>
 
     <div class="form-group">
-      <label>จำนวน</label>
+      <label>${t("quantity", "จำนวน")}</label>
       <input id="editStock" type="number" value="${safeEditStock}">
     </div>
 
     <div class="form-group">
-      <label>สถานะสินค้า</label>
+      <label>${t("productStatus", "สถานะสินค้า")}</label>
       <select id="editStatus">
         <option value="ready" ${latestProduct.status === "ready" ? "selected" : ""}>
-          พร้อมส่ง
+          ${t("statusReady", "พร้อมส่ง")}
         </option>
      <option value="ready_plus"
        ${latestProduct.status === "ready_plus" ? "selected" : ""}>
-       พร้อมส่ง สามารถบวกเพิ่มได้
+       ${t("statusReadyPlus", "พร้อมส่ง สามารถบวกเพิ่มได้")}
      </option>    
         <option value="shipping" ${latestProduct.status === "shipping" ? "selected" : ""}>
-          อยู่ระหว่างจัดส่ง
+          ${t("statusShipping", "อยู่ระหว่างจัดส่ง")}
         </option>
         <option value="warehouse" ${latestProduct.status === "warehouse" ? "selected" : ""}>
-          อยู่โกดังไทย
+          ${t("statusWarehouse", "อยู่โกดังไทย")}
         </option>
         <option value="out" ${latestProduct.status === "out" ? "selected" : ""}>
-          หมด
+          ${t("statusOut", "หมด")}
         </option>
       </select>
     </div>
@@ -12058,7 +12107,7 @@ function openProductEdit(p){
 
     <!-- 📝 NEW: NOTE FIELD -->
     <div class="form-group">
-      <label>หมายเหตุสินค้า (สำหรับแอดมิน)</label>
+      <label>${t("productNoteAdmin", "หมายเหตุสินค้า (สำหรับแอดมิน)")}</label>
       <textarea
         id="editNote"
         rows="3"
@@ -12075,7 +12124,7 @@ function openProductEdit(p){
 
     <!-- 📄 PRODUCT DETAIL (VIEWER) -->
     <div class="form-group">
-      <label>รายละเอียดสินค้า (แสดงในปุ่มรายละเอียด)</label>
+      <label>${t("productDetailsForViewer", "รายละเอียดสินค้า (แสดงในปุ่มรายละเอียด)")}</label>
       <textarea
         id="editDetailsText"
         rows="4"
@@ -12084,7 +12133,7 @@ function openProductEdit(p){
     </div>
 
 <div class="form-group">
-  <label>รูปเทียบสินค้า</label>
+  <label>${t("compareImages", "รูปเทียบสินค้า")}</label>
 
   <!-- preview -->
   <div id="comparePreview"
@@ -12131,7 +12180,7 @@ function openProductEdit(p){
 
     <!-- รูปสินค้า -->
     <div class="form-group">
-      <label>รูปสินค้า</label>
+      <label>${t("productImage", "รูปสินค้า")}</label>
       <img id="imagePreview"
         src="${escAttr(p.image || "")}"
         style="width:100%;border-radius:12px;margin-bottom:6px">
@@ -12149,25 +12198,25 @@ function openProductEdit(p){
      color:var(--muted);
      text-align:center
    ">
-     ⛔ สินค้านี้ถูกลบแล้ว
+     ⛔ ${t("productDeleted", "สินค้านี้ถูกลบแล้ว")}
    </div>
  ` : `
    <button class="btn btn-danger"
      style="width:100%;margin-top:16px"
      onclick="confirmDeleteProduct()">
-     🗑️ ลบสินค้า
+     ${t("deleteProduct", "ลบสินค้า")}
    </button>
  `}
 
     <div class="sheet-action-footer">
       <button class="btn btn-primary"
         onclick="submitProductEdit()">
-        บันทึก
+        ${t("save", "บันทึก")}
       </button>
 
       <button class="btn btn-outline"
         onclick="closeProductEdit()">
-        ยกเลิก
+        ${t("cancel", "ยกเลิก")}
       </button>
     </div>
   `;
@@ -18688,14 +18737,14 @@ function openAdminProductAction(p){
   state.selectedProduct = p;
 
   adminProductActionSheet.innerHTML = `
-    <h3 id="adminProductActionSheetTitle">จัดการสินค้า</h3>
+    <h3 id="adminProductActionSheetTitle">${t("manageProduct", "จัดการสินค้า")}</h3>
 
     <div class="name">
       ${esc(p.name)}
     </div>
 
     <div class="cart-meta" style="margin-bottom:16px">
-      รหัสสินค้า: ${esc(p.productId)}
+      ${t("productCode", "รหัส")}: ${esc(p.productId)}
     </div>
 
     <!-- ✏️ EDIT PRODUCT -->
@@ -18705,7 +18754,7 @@ function openAdminProductAction(p){
         closeAdminProductAction();
         openProductEditById(${toInlineJsStringLiteral(p.productId)});
       ">
-      ✏️ แก้ไขข้อมูลสินค้า
+      ${t("editProduct", "แก้ไขข้อมูลสินค้า")}
     </button>
 
     <!-- 📦 STOCK -->
@@ -18715,13 +18764,13 @@ function openAdminProductAction(p){
         closeAdminProductAction();
         openStockAction(state.selectedProduct);
       ">
-      📦 ปรับสต๊อก
+      ${t("adjustStock", "ปรับสต๊อก")}
     </button>
 
     <!-- ❌ CANCEL -->
     <button class="btn btn-outline"
       onclick="closeAdminProductAction()">
-      ยกเลิก
+      ${t("cancel", "ยกเลิก")}
     </button>
   `;
 
