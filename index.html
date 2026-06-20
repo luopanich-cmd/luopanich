@@ -519,6 +519,116 @@ body[data-theme="cute"] .shop-subtitle{
   margin-bottom: 14px;
 }
 
+#adminDeliveryNoteSheet{
+  width:100%;
+  max-width:100vw;
+  overflow-x:hidden;
+}
+
+#adminDeliveryNoteSheet,
+#adminDeliveryNoteSheet *{
+  box-sizing:border-box;
+}
+
+#adminDeliveryNoteSheet .card,
+#adminDeliveryNoteSheet .delivery-note-items,
+#adminDeliveryNoteSheet .delivery-note-item-card{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+
+#adminDeliveryNoteSheet .action-row{
+  flex-wrap:wrap;
+}
+
+#adminDeliveryNoteSheet .action-row .btn{
+  flex:1 1 160px;
+  min-width:0;
+}
+
+.delivery-note-item-head{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
+
+.delivery-note-item-head input[type="checkbox"]{
+  flex:0 0 auto;
+  width:auto;
+  margin-top:4px;
+}
+
+.delivery-note-item-main{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  flex:1 1 auto;
+  min-width:0;
+  max-width:100%;
+}
+
+.delivery-note-thumb-col{
+  flex:0 0 46px;
+  width:46px;
+  max-width:46px;
+  text-align:center;
+}
+
+.delivery-note-thumb-col img{
+  width:42px;
+  max-width:100%;
+  height:42px;
+  object-fit:cover;
+  display:block;
+  margin:0 auto;
+}
+
+.delivery-note-item-info{
+  flex:1 1 auto;
+  min-width:0;
+  max-width:100%;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+
+#adminDeliveryNoteSheet .form-grid{
+  max-width:100%;
+  min-width:0;
+}
+
+#adminDeliveryNoteSheet .form-group,
+#adminDeliveryNoteSheet .form-group input,
+#adminDeliveryNoteSheet textarea{
+  max-width:100%;
+  min-width:0;
+}
+
+@media (max-width:480px){
+  #adminDeliveryNoteSheet{
+    padding-left:max(12px, env(safe-area-inset-left, 0px));
+    padding-right:max(12px, env(safe-area-inset-right, 0px));
+  }
+
+  #adminDeliveryNoteSheet .card{
+    padding:12px;
+  }
+
+  #adminDeliveryNoteSheet .form-grid{
+    display:grid;
+    grid-template-columns:minmax(0, 1fr);
+    gap:10px;
+  }
+
+  .delivery-note-item-main{
+    gap:8px;
+  }
+}
+
 .pagination{
   display:flex;
   align-items:center;
@@ -11820,13 +11930,13 @@ function renderDeliveryNoteItemRow(order, item, index) {
 
   return `
     <div class="card compact-card delivery-note-item-card">
-      <label style="display:flex;gap:10px;align-items:flex-start">
+      <label class="delivery-note-item-head">
         <input type="checkbox"
           ${checked ? "checked" : ""}
           onchange="toggleDeliveryNoteItem(${toInlineJsStringLiteral(key)}, this.checked)">
-        <span style="display:flex;gap:10px;align-items:flex-start;flex:1;min-width:0">
-          <span class="thumb-col" style="width:46px;min-width:46px;text-align:center">${imageCell}</span>
-          <span style="flex:1;min-width:0">
+        <span class="delivery-note-item-main">
+          <span class="delivery-note-thumb-col">${imageCell}</span>
+          <span class="delivery-note-item-info">
             <strong>${esc(productId)}</strong>
             <div class="stock">${esc(name || "-")}</div>
             <div class="stock">${t("orderedQty", "จำนวนสั่ง")}: ${orderedQty}</div>
