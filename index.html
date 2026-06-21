@@ -4131,6 +4131,7 @@ Object.assign(window, {
   setDeliveryNotePoPickerRange,
   toggleDeliveryNotePoSelection,
   buildDeliveryNoteFromPicker,
+  resetDeliveryNoteBuilderState,
   printDeliveryNote,
   copyDeliveryNote,
   prepareDeliveryNoteImageExport,
@@ -4573,6 +4574,7 @@ const UI_TEXT = {
     printDeliveryNote: "พิมพ์ใบส่งของ",
     copyDeliveryNote: "คัดลอกใบส่งของ",
     exportDeliveryNoteImages: "ส่งออกเป็นรูปภาพ",
+    resetDeliveryNote: "ล้างค่า / เริ่มใหม่",
     deliveryNoteImageExportPreparing: "กำลังเตรียมรูปภาพ...",
     deliveryNoteImageExporting: "กำลังส่งออกเป็นรูปภาพ...",
     deliveryNoteImageExportReady: "เตรียมรูปภาพแล้ว {count} หน้า",
@@ -5304,6 +5306,7 @@ const UI_TEXT = {
     printDeliveryNote: "Print Delivery Note",
     copyDeliveryNote: "Copy Delivery Note",
     exportDeliveryNoteImages: "Export images",
+    resetDeliveryNote: "Clear / Start over",
     deliveryNoteImageExportPreparing: "Preparing images...",
     deliveryNoteImageExporting: "Exporting images...",
     deliveryNoteImageExportReady: "Prepared {count} image pages",
@@ -12108,6 +12111,32 @@ function buildDeliveryNoteFromPicker() {
   prepareDeliveryNoteSearch();
 }
 
+function resetDeliveryNoteBuilderState() {
+  const noteState = getDeliveryNoteState();
+  revokeDeliveryNoteImageExportUrls(noteState);
+  Object.assign(noteState, {
+    poInput: "",
+    matchedOrders: [],
+    selectedItems: {},
+    itemQty: {},
+    itemNotes: {},
+    poNotes: {},
+    poPickerQuery: "",
+    poPickerRange: "last7",
+    selectedPoNumbers: [],
+    poPickerLoading: false,
+    poPickerError: "",
+    imageExportLoading: false,
+    imageExportError: "",
+    imageExportWarning: "",
+    imageExportDebug: null,
+    imageExportReady: false,
+    error: "",
+    isBuilding: false
+  });
+  renderDeliveryNoteSheet();
+}
+
 function getDeliveryNoteItemKey(order, item, index) {
   return [
     String(order?.orderId || "").trim(),
@@ -13920,6 +13949,9 @@ function renderDeliveryNoteMatchedOrders() {
       <button class="btn btn-outline" type="button" onclick="prepareDeliveryNoteImageExport()">
         ${noteState.imageExportLoading ? t("deliveryNoteImageExporting", "กำลังส่งออกเป็นรูปภาพ...") : t("exportDeliveryNoteImages", "ส่งออกเป็นรูปภาพ")}
       </button>
+      <button class="btn btn-outline" type="button" onclick="resetDeliveryNoteBuilderState()">
+        ${t("resetDeliveryNote", "ล้างค่า / เริ่มใหม่")}
+      </button>
     </div>
     ${renderDeliveryNoteImageExportStatus()}
     ${orders.map(order => {
@@ -13979,9 +14011,14 @@ function renderDeliveryNoteSheet() {
           placeholder="${escAttr(t("deliveryNotePoPlaceholder", "PO-12436\nPO-12436, PO-12452\nหรือวางหลายบรรทัด"))}"
           oninput="state.admin.deliveryNote.poInput = this.value">${esc(noteState.poInput || "")}</textarea>
       </div>
-      <button class="btn btn-primary" type="button" onclick="prepareDeliveryNoteSearch()">
-        ${noteState.isBuilding ? t("deliveryNoteSearching", "กำลังค้นหา PO...") : t("searchPo", "ค้นหา PO")}
-      </button>
+      <div class="action-row" style="margin-top:12px;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" type="button" onclick="prepareDeliveryNoteSearch()">
+          ${noteState.isBuilding ? t("deliveryNoteSearching", "กำลังค้นหา PO...") : t("searchPo", "ค้นหา PO")}
+        </button>
+        <button class="btn btn-outline" type="button" onclick="resetDeliveryNoteBuilderState()">
+          ${t("resetDeliveryNote", "ล้างค่า / เริ่มใหม่")}
+        </button>
+      </div>
     </div>
 
     <div id="deliveryNoteResults">${renderDeliveryNoteMatchedOrders()}</div>
