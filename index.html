@@ -12396,9 +12396,14 @@ function renderDeliveryNotePrintImage(imageUrl, altText) {
   return `<img class="delivery-note-thumb" src="${escAttr(cleanImageUrl)}" alt="${escAttr(altText || "")}" onerror="this.replaceWith(document.createTextNode('-'));">`;
 }
 
+function getDeliveryNoteLogoUrl() {
+  return new URL("assets/logo-luopanich-horizontal.png", window.location.href).href;
+}
+
 function buildDeliveryNotePrintHtml(data, options = {}) {
   const autoPrint = options.autoPrint !== false;
   const imageExportMode = options.imageExport === true;
+  const logoUrl = getDeliveryNoteLogoUrl();
   const printDateTime = new Date().toLocaleString("th-TH");
   const title = t("deliveryNote", "ใบส่งของ");
   const shopName = t("shopTitle", "ร้านค้า Luopanich");
@@ -12467,6 +12472,14 @@ function buildDeliveryNotePrintHtml(data, options = {}) {
           min-width:0;
         }
         .shop-name { font-size:15px; font-weight:800; }
+        .delivery-note-logo {
+          display:block;
+          width:150px;
+          max-width:42vw;
+          height:auto;
+          margin-bottom:5px;
+          object-fit:contain;
+        }
         .doc-meta {
           min-width:210px;
           max-width:100%;
@@ -12739,6 +12752,7 @@ function buildDeliveryNotePrintHtml(data, options = {}) {
           shopName: ${toInlineJsStringLiteral(shopName)},
           printedAt: ${toInlineJsStringLiteral(t("printedAt", "พิมพ์เมื่อ"))},
           printDateTime: ${toInlineJsStringLiteral(printDateTime)},
+          logoUrl: ${toInlineJsStringLiteral(logoUrl)},
           orderNumber: ${toInlineJsStringLiteral(orderNumberLabel)},
           note: ${toInlineJsStringLiteral(noteLabel)},
           columnHeaderHtml: ${toInlineJsStringLiteral(columnHeaderHtml)},
@@ -12786,6 +12800,7 @@ function buildDeliveryNotePrintHtml(data, options = {}) {
             '<div class="delivery-note-page-head">' +
               '<div class="doc-header">' +
                 '<div>' +
+                  '<img class="delivery-note-logo" src="' + escapePrintHtml(cfg.logoUrl) + '" alt="Luopanich" loading="eager" decoding="sync" onerror="this.remove();">' +
                   '<div class="shop-name">' + escapePrintHtml(cfg.shopName) + '</div>' +
                   '<h1>' + escapePrintHtml(cfg.title) + '</h1>' +
                 '</div>' +
