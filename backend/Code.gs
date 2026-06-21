@@ -2689,6 +2689,12 @@ function doPost(e) {
       });
     }
 
+    if (action === "deliveryNoteImageDataUrls") {
+      return json(
+        deliveryNoteImageDataUrls(params, auth)
+      );
+    }
+
     /* ========= ADMIN WRITE ========= */
 
     if (action === "approveOrder") {
@@ -2825,6 +2831,181 @@ function doPost(e) {
   }
 }
 
+
+
+
+const DELIVERY_NOTE_IMAGE_MAX_URLS = 30;
+const DELIVERY_NOTE_IMAGE_MAX_BYTES = 1.5 * 1024 * 1024;
+
+function deliveryNoteImageDataUrls(params, auth) {
+  if (!auth || !auth.username) {
+    throw new Error("Unauthorized");
+  }
+
+  const urls = parseDeliveryNoteImageUrls_(params && params.urls);
+  if (!urls.length) {
+    throw new Error("No image URLs provided");
+  }
+
+  if (urls.length > DELIVERY_NOTE_IMAGE_MAX_URLS) {
+    throw new Error("Too many image URLs (max " + DELIVERY_NOTE_IMAGE_MAX_URLS + ")");
+  }
+
+  const results = urls.map(url => {
+    try {
+      return fetchDeliveryNoteImageDataUrl_(url);
+    } catch (err) {
+      return {
+        url,
+        ok: false,
+        dataUrl: "",
+        error: err.message || "Image fetch failed"
+      };
+    }
+  });
+
+  return {
+    ok: true,
+    results
+  };
+}
+
+function parseDeliveryNoteImageUrls_(rawUrls) {
+  let parsed = rawUrls;
+
+  if (typeof rawUrls === "string") {
+    try {
+      parsed = JSON.parse(rawUrls);
+    } catch (err) {
+      throw new Error("Invalid image URL payload");
+    }
+  }
+
+  if (!Array.isArray(parsed)) {
+    throw new Error("Image URLs must be an array");
+  }
+
+  const seen = {};
+  const urls = [];
+
+  parsed.forEach(value => {
+    const url = String(value || "").trim();
+    if (!url || seen[url]) return;
+    seen[url] = true;
+    urls.push(url);
+  });
+
+  return urls;
+}
+
+function fetchDeliveryNoteImageDataUrl_(url) {
+  validateDeliveryNoteImageUrl_(url);
+
+  const response = UrlFetchApp.fetch(url, {
+    muteHttpExceptions: true,
+    followRedirects: true
+  });
+  const status = Number(response.getResponseCode());
+  if (status < 200 || status >= 300) {
+    throw new Error("Image fetch failed (" + status + ")");
+  }
+
+  const headers = response.getHeaders() || {};
+  const contentType = getDeliveryNoteImageContentType_(headers);
+  if (!/^image\//i.test(contentType)) {
+    throw new Error("URL did not return an image");
+  }
+
+  const bytes = response.getContent();
+  if (!bytes || !bytes.length) {
+    throw new Error("Image response was empty");
+  }
+  if (bytes.length > DELIVERY_NOTE_IMAGE_MAX_BYTES) {
+    throw new Error("Image too large");
+  }
+
+  return {
+    url,
+    ok: true,
+    dataUrl: "data:" + contentType + ";base64," + Utilities.base64Encode(bytes),
+    error: ""
+  };
+}
+
+function getDeliveryNoteImageContentType_(headers) {
+  const keys = Object.keys(headers || {});
+  for (let i = 0; i < keys.length; i++) {
+    if (String(keys[i]).toLowerCase() === "content-type") {
+      return String(headers[keys[i]] || "").split(";")[0].trim();
+    }
+  }
+  return "";
+}
+
+function validateDeliveryNoteImageUrl_(url) {
+  const parsed = parseDeliveryNoteImageUrl_(url);
+  if (!parsed) {
+    throw new Error("Invalid image URL");
+  }
+
+  if (parsed.protocol !== "http" && parsed.protocol !== "https") {
+    throw new Error("Image URL must use http or https");
+  }
+
+  if (isBlockedDeliveryNoteImageHost_(parsed.host)) {
+    throw new Error("Image URL host is not allowed");
+  }
+}
+
+function parseDeliveryNoteImageUrl_(url) {
+  const value = String(url || "").trim();
+  const match = value.match(/^(https?):\/\/([^\/?#:]+|\[[^\]]+\])(?::\d+)?(?:[\/?#]|$)/i);
+  if (!match) return null;
+
+  let host = String(match[2] || "").trim().toLowerCase();
+  if (host.charAt(0) === "[" && host.charAt(host.length - 1) === "]") {
+    host = host.slice(1, -1);
+  }
+  if (host.endsWith(".")) {
+    host = host.slice(0, -1);
+  }
+  if (!host) return null;
+
+  return {
+    protocol: String(match[1] || "").toLowerCase(),
+    host
+  };
+}
+
+function isBlockedDeliveryNoteImageHost_(host) {
+  if (
+    host === "localhost" ||
+    host === "::1" ||
+    host === "0.0.0.0" ||
+    host === "127.0.0.1" ||
+    host.indexOf(":") !== -1 ||
+    host.endsWith(".localhost") ||
+    host.endsWith(".local")
+  ) {
+    return true;
+  }
+
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
+    const parts = host.split(".").map(Number);
+    if (parts.some(part => !Number.isInteger(part) || part < 0 || part > 255)) {
+      return true;
+    }
+    return (
+      parts[0] === 10 ||
+      parts[0] === 127 ||
+      (parts[0] === 169 && parts[1] === 254) ||
+      (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||
+      (parts[0] === 192 && parts[1] === 168)
+    );
+  }
+
+  return false;
+}
 
 
 
@@ -5948,4 +6129,11 @@ function generateOrderPDF(token, orderId) {
     url: file.getDownloadUrl(),
     fileId: file.getId()
   };
+}
+
+function authorizeUrlFetchForImageProxy_() {
+  const res = UrlFetchApp.fetch("https://www.google.com", {
+    muteHttpExceptions: true
+  });
+  Logger.log("UrlFetch authorization OK: " + res.getResponseCode());
 }

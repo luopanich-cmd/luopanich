@@ -5,6 +5,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
  <meta name="color-scheme" content="dark">
  <meta name="theme-color" content="#0f0f12">
+ <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
  <title>ร้านค้า Luopanich</title>
 
 <!-- ================= UI STYLE ================= -->
@@ -4133,6 +4134,8 @@ Object.assign(window, {
   printDeliveryNote,
   copyDeliveryNote,
   prepareDeliveryNoteImageExport,
+  openDeliveryNoteExportImage,
+  downloadDeliveryNoteExportImage,
   toggleDeliveryNoteItem,
   updateDeliveryNoteItemQty,
   updateDeliveryNoteItemNote,
@@ -4215,7 +4218,9 @@ const state = {
       poPickerError: "",
       imageExportLoading: false,
       imageExportError: "",
-      imageExportPages: 0,
+      imageExportWarning: "",
+      imageExportDebug: null,
+      imageExportPages: [],
       imageExportReady: false,
       error: "",
       isBuilding: false
@@ -4569,10 +4574,52 @@ const UI_TEXT = {
     copyDeliveryNote: "คัดลอกใบส่งของ",
     exportDeliveryNoteImages: "ส่งออกเป็นรูปภาพ",
     deliveryNoteImageExportPreparing: "กำลังเตรียมรูปภาพ...",
+    deliveryNoteImageExporting: "กำลังส่งออกเป็นรูปภาพ...",
     deliveryNoteImageExportReady: "เตรียมรูปภาพแล้ว {count} หน้า",
+    deliveryNoteImageExportDone: "ส่งออกรูปภาพสำเร็จ {count} หน้า",
     deliveryNoteImageExportNextStep: "จะเปิดใช้งานในขั้นถัดไป",
-    deliveryNoteImageExportFailed: "ไม่สามารถเตรียมรูปภาพได้",
+    deliveryNoteImageExportFailed: "ไม่สามารถส่งออกเป็นรูปภาพได้",
+    deliveryNoteImageExportCorsHint: "อาจเกิดจากรูปสินค้าบางรูปไม่รองรับการแปลงเป็นภาพ",
+    deliveryNoteImageExportImageWarning: "รูปสินค้าบางรูปอาจไม่แสดงในไฟล์ภาพ",
+    deliveryNoteImageExportDataUrlNotRenderedWarning: "แปลงรูปสินค้าได้แล้ว แต่เบราว์เซอร์ยังไม่แสดงรูปก่อนจับภาพ",
+    deliveryNoteImageSaveInstruction: "กดค้างที่รูป หรือใช้ปุ่มแชร์ เพื่อบันทึกรูปภาพ",
+    deliveryNoteImageBackToDeliveryNote: "← กลับไปใบส่งของ",
+    deliveryNoteImageProxyDebugTitle: "รายละเอียดการแปลงรูปสินค้า",
+    deliveryNoteImageProxyFound: "พบรูปสินค้า",
+    deliveryNoteImageProxyAttempted: "ส่งเข้า proxy",
+    deliveryNoteImageProxyBackendOk: "backend ตอบกลับปกติ",
+    deliveryNoteImageProxySucceeded: "สำเร็จ",
+    deliveryNoteImageProxyFailed: "ล้มเหลว",
+    deliveryNoteImageProxyApplied: "แทนรูปด้วย data URL",
+    deliveryNoteImageProxyRendered: "รูป data URL ที่แสดงผลแล้ว",
+    deliveryNoteImageNaturalSizeFailed: "รูป data URL ที่ไม่มีขนาดจริง",
+    deliveryNoteImageRepaintWaited: "รอ repaint ก่อนจับภาพ",
+    deliveryNoteImageWaitFailed: "รูปที่โหลดไม่สำเร็จหลังรอ",
+    deliveryNoteImageRenderReason: "สาเหตุการแสดงผล",
+    deliveryNoteImageFirstReason: "สาเหตุแรก",
+    deliveryNotePaperMeasureTitle: "รายละเอียดตำแหน่งกระดาษ",
+    deliveryNotePaperMeasureInterpretation: "การวิเคราะห์",
+    deliveryNotePaperMeasurePaper: "กระดาษ",
+    deliveryNotePaperMeasureFrame: "กรอบเนื้อหา",
+    deliveryNotePaperMeasureHead: "ส่วนหัว",
+    deliveryNotePaperMeasureBody: "เนื้อหา",
+    deliveryNotePaperMeasureFooter: "ท้ายหน้า",
+    deliveryNotePaperMeasureDocHeader: "หัวเอกสาร",
+    deliveryNotePaperMeasureDocMeta: "กล่องวันที่",
+    deliveryNotePaperMeasureTableHeader: "หัวตาราง",
+    deliveryNotePaperMeasureFirstRow: "แถวแรก",
+    deliveryNotePaperMeasureTableWrapper: "กรอบตาราง",
+    deliveryNotePaperMeasureTableLeftGap: "ช่องว่างซ้ายตาราง",
+    deliveryNotePaperMeasureTableRightGap: "ช่องว่างขวาตาราง",
+    deliveryNotePaperMeasureFrameLeftGap: "ช่องว่างซ้ายกรอบ",
+    deliveryNotePaperMeasureFrameRightGap: "ช่องว่างขวากรอบ",
+    deliveryNotePaperMeasureTableExceeds: "ตารางกว้างเกินกรอบ/กระดาษ",
+    deliveryNotePaperMeasureCapture: "ขนาดจับภาพ",
+    yes: "ใช่",
+    no: "ไม่",
     deliveryNoteImagePage: "รูปหน้า {page}",
+    openDeliveryNoteImagePage: "เปิดรูปหน้า {page}",
+    downloadDeliveryNoteImagePage: "ดาวน์โหลดหน้า {page}",
     deliveryNoteNoSelectedItems: "กรุณาเลือกรายการที่มีจำนวนส่งมากกว่า 0 อย่างน้อย 1 รายการ",
     deliveryNoteCopied: "คัดลอกใบส่งของแล้ว",
     deliveryNoteCopyFailed: "คัดลอกใบส่งของไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
@@ -5258,10 +5305,52 @@ const UI_TEXT = {
     copyDeliveryNote: "Copy Delivery Note",
     exportDeliveryNoteImages: "Export images",
     deliveryNoteImageExportPreparing: "Preparing images...",
+    deliveryNoteImageExporting: "Exporting images...",
     deliveryNoteImageExportReady: "Prepared {count} image pages",
+    deliveryNoteImageExportDone: "Exported {count} image pages",
     deliveryNoteImageExportNextStep: "Enabled in next step",
-    deliveryNoteImageExportFailed: "Could not prepare images",
+    deliveryNoteImageExportFailed: "Unable to export images",
+    deliveryNoteImageExportCorsHint: "Some product images may not support image export",
+    deliveryNoteImageExportImageWarning: "Some product images may not appear in exported images",
+    deliveryNoteImageExportDataUrlNotRenderedWarning: "Product images were converted, but the browser did not render them before capture",
+    deliveryNoteImageSaveInstruction: "Long-press the image or use Share to save it",
+    deliveryNoteImageBackToDeliveryNote: "← Back to Delivery Note",
+    deliveryNoteImageProxyDebugTitle: "Product image proxy details",
+    deliveryNoteImageProxyFound: "Product images found",
+    deliveryNoteImageProxyAttempted: "Proxy attempted",
+    deliveryNoteImageProxyBackendOk: "Backend response ok",
+    deliveryNoteImageProxySucceeded: "Succeeded",
+    deliveryNoteImageProxyFailed: "Failed",
+    deliveryNoteImageProxyApplied: "Data URLs applied",
+    deliveryNoteImageProxyRendered: "Data URL images rendered",
+    deliveryNoteImageNaturalSizeFailed: "Data URL natural size failures",
+    deliveryNoteImageRepaintWaited: "Pre-capture repaint waited",
+    deliveryNoteImageWaitFailed: "Image wait failed",
+    deliveryNoteImageRenderReason: "Render reason",
+    deliveryNoteImageFirstReason: "First reason",
+    deliveryNotePaperMeasureTitle: "Paper layout measurements",
+    deliveryNotePaperMeasureInterpretation: "Interpretation",
+    deliveryNotePaperMeasurePaper: "Paper",
+    deliveryNotePaperMeasureFrame: "Content frame",
+    deliveryNotePaperMeasureHead: "Head",
+    deliveryNotePaperMeasureBody: "Body",
+    deliveryNotePaperMeasureFooter: "Footer",
+    deliveryNotePaperMeasureDocHeader: "Doc header",
+    deliveryNotePaperMeasureDocMeta: "Date box",
+    deliveryNotePaperMeasureTableHeader: "Table header",
+    deliveryNotePaperMeasureFirstRow: "First row",
+    deliveryNotePaperMeasureTableWrapper: "Table wrapper",
+    deliveryNotePaperMeasureTableLeftGap: "Table left gap",
+    deliveryNotePaperMeasureTableRightGap: "Table right gap",
+    deliveryNotePaperMeasureFrameLeftGap: "Frame left gap",
+    deliveryNotePaperMeasureFrameRightGap: "Frame right gap",
+    deliveryNotePaperMeasureTableExceeds: "Table exceeds frame/paper",
+    deliveryNotePaperMeasureCapture: "Capture sizing",
+    yes: "yes",
+    no: "no",
     deliveryNoteImagePage: "Image page {page}",
+    openDeliveryNoteImagePage: "Open image page {page}",
+    downloadDeliveryNoteImagePage: "Download page {page}",
     deliveryNoteNoSelectedItems: "Select at least one item with delivery qty greater than 0",
     deliveryNoteCopied: "Delivery note copied",
     deliveryNoteCopyFailed: "Could not copy delivery note. Please try again",
@@ -11871,7 +11960,9 @@ function getDeliveryNoteState() {
   if (noteState.poPickerError === undefined) noteState.poPickerError = "";
   if (noteState.imageExportLoading === undefined) noteState.imageExportLoading = false;
   if (noteState.imageExportError === undefined) noteState.imageExportError = "";
-  if (noteState.imageExportPages === undefined) noteState.imageExportPages = 0;
+  if (noteState.imageExportWarning === undefined) noteState.imageExportWarning = "";
+  if (noteState.imageExportDebug === undefined) noteState.imageExportDebug = null;
+  if (!Array.isArray(noteState.imageExportPages)) noteState.imageExportPages = [];
   if (noteState.imageExportReady === undefined) noteState.imageExportReady = false;
   return state.admin.deliveryNote;
 }
@@ -12307,6 +12398,7 @@ function renderDeliveryNotePrintImage(imageUrl, altText) {
 
 function buildDeliveryNotePrintHtml(data, options = {}) {
   const autoPrint = options.autoPrint !== false;
+  const imageExportMode = options.imageExport === true;
   const printDateTime = new Date().toLocaleString("th-TH");
   const title = t("deliveryNote", "ใบส่งของ");
   const shopName = t("shopTitle", "ร้านค้า Luopanich");
@@ -12314,7 +12406,6 @@ function buildDeliveryNotePrintHtml(data, options = {}) {
   const orderNumberLabel = t("orderNumber", "เลขออเดอร์");
   const columnHeaderHtml = `
     <div class="delivery-note-column-header">
-      <div>#</div>
       <div>${t("imageLabel", "รูป")}</div>
       <div>SKU</div>
       <div>${t("productLabel", "สินค้า")}</div>
@@ -12326,8 +12417,7 @@ function buildDeliveryNotePrintHtml(data, options = {}) {
     const displayRows = buildDeliveryNoteDisplayRows(order.items);
     const itemRows = displayRows.map((item, index) => `
       <div class="delivery-note-source-row delivery-note-print-row">
-        <div>${index + 1}</div>
-        <div class="thumb-col">${renderDeliveryNotePrintImage(item.imageUrl, item.name || item.productId)}</div>
+        <div class="thumb-col"><span class="delivery-note-row-badge">${index + 1}</span>${renderDeliveryNotePrintImage(item.imageUrl, item.name || item.productId)}</div>
         <div>${esc(item.displayText || "-")}</div>
         <div>${esc(item.name || "-")}</div>
         <div class="num">${esc(item.deliveryQty)}</div>
@@ -12373,10 +12463,14 @@ function buildDeliveryNotePrintHtml(data, options = {}) {
           padding-bottom:14px;
           border-bottom:2px solid #111827;
           margin-bottom:14px;
+          max-width:100%;
+          min-width:0;
         }
         .shop-name { font-size:15px; font-weight:800; }
         .doc-meta {
           min-width:210px;
+          max-width:100%;
+          flex:0 0 auto;
           border:1px solid #D1D5DB;
           border-radius:10px;
           overflow:hidden;
@@ -12387,6 +12481,11 @@ function buildDeliveryNotePrintHtml(data, options = {}) {
           gap:8px;
           padding:7px 9px;
           border-bottom:1px solid #E5E7EB;
+          min-width:0;
+        }
+        .doc-meta span {
+          min-width:0;
+          overflow-wrap:anywhere;
         }
         .doc-meta div:last-child { border-bottom:0; }
         .delivery-note-print-page {
@@ -12395,34 +12494,62 @@ function buildDeliveryNotePrintHtml(data, options = {}) {
           min-height:244mm;
           height:244mm;
           margin:0 auto;
+          padding:10mm 10mm 7mm;
           display:flex;
           flex-direction:column;
           page-break-after:always;
           break-after:page;
-          overflow:hidden;
+          overflow:visible;
+          background:#fff;
         }
         .delivery-note-print-page:last-child {
           page-break-after:auto;
           break-after:auto;
         }
+        body.delivery-note-image-export-mode .delivery-note-print-page {
+          width:210mm;
+          max-width:210mm;
+          min-height:0;
+          height:auto;
+          padding:10mm 12mm 12mm 10mm;
+        }
+        .delivery-note-content-frame {
+          width:100%;
+          max-width:100%;
+          margin:0 auto;
+          overflow:visible;
+          box-sizing:border-box;
+          display:flex;
+          flex:1 1 auto;
+          min-height:0;
+          flex-direction:column;
+        }
         .delivery-note-page-head {
           break-inside:avoid-page;
           page-break-inside:avoid;
+          width:100%;
+          max-width:100%;
+          padding:0;
         }
         .delivery-note-page-body {
           flex:1 1 auto;
           min-height:0;
-          overflow:hidden;
+          overflow:visible;
+          width:100%;
+          max-width:100%;
+          padding:0;
         }
         .delivery-note-page-footer {
           margin-top:8px;
-          padding-top:6px;
+          padding:6px 0 0;
           border-top:1px solid #E5E7EB;
           color:#6B7280;
           font-size:11px;
           text-align:right;
           break-inside:avoid-page;
           page-break-inside:avoid;
+          width:100%;
+          max-width:100%;
         }
         .delivery-note-source-order {
           display:none;
@@ -12430,21 +12557,26 @@ function buildDeliveryNotePrintHtml(data, options = {}) {
         .po-section {
           break-inside:avoid-page;
           page-break-inside:avoid;
+          max-width:100%;
         }
         .po-heading {
           display:flex;
           justify-content:space-between;
           gap:12px;
           margin-bottom:8px;
+          max-width:100%;
+          min-width:0;
           break-after:avoid;
           page-break-after:avoid;
         }
         .delivery-note-column-header,
         .delivery-note-print-row {
           display:grid;
-          grid-template-columns:42px 56px minmax(74px, 1fr) minmax(94px, 1.2fr) 64px minmax(76px, 1fr);
+          grid-template-columns:50px minmax(74px, 1fr) minmax(94px, 1.2fr) 64px minmax(76px, 1fr);
           align-items:stretch;
           width:100%;
+          max-width:100%;
+          min-width:0;
           break-inside:avoid-page;
           page-break-inside:avoid;
         }
@@ -12483,7 +12615,27 @@ function buildDeliveryNotePrintHtml(data, options = {}) {
         .delivery-note-column-header + .delivery-note-print-row > div {
           border-top:0;
         }
-        .thumb-col { width:52px; text-align:center; }
+        .thumb-col {
+          position:relative;
+          width:50px;
+          text-align:center;
+        }
+        .delivery-note-row-badge {
+          position:absolute;
+          top:3px;
+          left:3px;
+          min-width:15px;
+          height:15px;
+          padding:0 3px;
+          border-radius:999px;
+          background:rgba(17,24,39,.88);
+          color:#fff;
+          font-size:9px;
+          line-height:15px;
+          font-weight:800;
+          text-align:center;
+          z-index:1;
+        }
         .delivery-note-thumb {
           width:42px;
           max-width:42px;
@@ -12572,7 +12724,7 @@ function buildDeliveryNotePrintHtml(data, options = {}) {
         }
       </style>
     </head>
-    <body>
+    <body${imageExportMode ? ' class="delivery-note-image-export-mode"' : ""}>
       <div class="print-screen-toolbar">
         <button type="button" onclick="closePrintPage()">${t("returnToSystem", "กลับระบบ")}</button>
         <button type="button" class="secondary" onclick="window.print()">${t("printAgain", "พิมพ์อีกครั้ง")}</button>
@@ -12630,6 +12782,7 @@ function buildDeliveryNotePrintHtml(data, options = {}) {
           var page = document.createElement("section");
           page.className = "delivery-note-print-page";
           page.innerHTML =
+            '<div class="delivery-note-content-frame">' +
             '<div class="delivery-note-page-head">' +
               '<div class="doc-header">' +
                 '<div>' +
@@ -12653,7 +12806,8 @@ function buildDeliveryNotePrintHtml(data, options = {}) {
               cfg.columnHeaderHtml +
             '</div>' +
             '<div class="delivery-note-page-body"></div>' +
-            '<div class="delivery-note-page-footer">' + escapePrintHtml(cfg.pageLabel) + ' <span class="page-current">' + pageNumber + '</span> ' + escapePrintHtml(cfg.ofLabel) + ' <span class="page-total">?</span></div>';
+            '<div class="delivery-note-page-footer">' + escapePrintHtml(cfg.pageLabel) + ' <span class="page-current">' + pageNumber + '</span> ' + escapePrintHtml(cfg.ofLabel) + ' <span class="page-total">?</span></div>' +
+            '</div>';
           return {
             page: page,
             body: page.querySelector(".delivery-note-page-body")
@@ -12769,6 +12923,365 @@ function copyDeliveryNote() {
   );
 }
 
+function revokeDeliveryNoteImageExportUrls(noteState = getDeliveryNoteState()) {
+  (Array.isArray(noteState.imageExportPages) ? noteState.imageExportPages : []).forEach(page => {
+    if (page?.objectUrl) {
+      URL.revokeObjectURL(page.objectUrl);
+    }
+  });
+  noteState.imageExportPages = [];
+}
+
+function getSafeDeliveryNoteImageFilePart(value) {
+  return String(value || "")
+    .trim()
+    .replace(/[^a-zA-Z0-9ก-๙_-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "") || "delivery-note";
+}
+
+function getDeliveryNoteImageExportBaseName(data) {
+  const poNumbers = [];
+  const seen = new Set();
+
+  (Array.isArray(data?.orders) ? data.orders : []).forEach(order => {
+    const poNumber = String(order?.poNumber || "").trim();
+    const key = normalizePoNumberForCompare(poNumber);
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    poNumbers.push(poNumber);
+  });
+
+  if (poNumbers.length === 1) {
+    return `delivery-note-${getSafeDeliveryNoteImageFilePart(poNumbers[0])}`;
+  }
+
+  return `delivery-note-${new Date().toISOString().slice(0, 10)}`;
+}
+
+function waitForAnimationFrames(count = 2) {
+  return new Promise(resolve => {
+    const next = remaining => {
+      if (remaining <= 0) {
+        resolve();
+        return;
+      }
+      if (typeof requestAnimationFrame === "function") {
+        requestAnimationFrame(() => next(remaining - 1));
+      } else {
+        setTimeout(() => next(remaining - 1), 16);
+      }
+    };
+    next(Math.max(1, Number(count) || 1));
+  });
+}
+
+async function waitForDeliveryNotePreCaptureRepaint() {
+  await waitForAnimationFrames(2);
+  await new Promise(resolve => setTimeout(resolve, 80));
+}
+
+function isDeliveryNoteImageRendered(img) {
+  return !!(
+    img &&
+    img.complete === true &&
+    Number(img.naturalWidth || 0) > 0 &&
+    Number(img.naturalHeight || 0) > 0
+  );
+}
+
+function getDeliveryNoteImageRenderFailureReason(img, index) {
+  const label = `image ${index + 1}`;
+  if (!img) return `${label}: missing image node`;
+  if (img.complete !== true) return `${label}: not complete`;
+  if (!Number(img.naturalWidth || 0) || !Number(img.naturalHeight || 0)) {
+    return `${label}: natural size is 0`;
+  }
+  return "";
+}
+
+async function waitForDeliveryNoteImageRender(img, index) {
+  const waitForLoad = () => new Promise(resolve => {
+    if (!img || img.complete) {
+      resolve();
+      return;
+    }
+    const done = () => {
+      img.removeEventListener("load", done);
+      img.removeEventListener("error", done);
+      resolve();
+    };
+    img.addEventListener("load", done, { once: true });
+    img.addEventListener("error", done, { once: true });
+    setTimeout(done, 2500);
+  });
+
+  await waitForLoad();
+
+  if (img && typeof img.decode === "function") {
+    try {
+      await img.decode();
+    } catch (err) {
+      // A decode rejection can happen for failed images; natural size below decides success.
+    }
+  }
+
+  await waitForAnimationFrames(1);
+
+  const ok = isDeliveryNoteImageRendered(img);
+  return {
+    ok,
+    reason: ok ? "" : getDeliveryNoteImageRenderFailureReason(img, index),
+    isDataUrl: /^data:image\//i.test(String(img?.getAttribute("src") || img?.src || ""))
+  };
+}
+
+async function waitForDeliveryNoteExportImages(doc) {
+  const images = Array.from(doc?.querySelectorAll("img") || []);
+  const results = await Promise.all(images.map(waitForDeliveryNoteImageRender));
+  const dataUrlResults = results.filter(result => result.isDataUrl);
+  return {
+    failedCount: results.filter(result => !result.ok).length,
+    renderedDataUrlCount: dataUrlResults.filter(result => result.ok).length,
+    dataUrlNaturalSizeFailCount: dataUrlResults.filter(result => !result.ok).length,
+    failureReasons: results
+      .filter(result => !result.ok && result.reason)
+      .map(result => result.reason)
+      .slice(0, 3)
+  };
+}
+
+function isDeliveryNoteImageExportCorsRisk(src) {
+  const value = String(src || "").trim();
+  if (!value || /^(data:|blob:)/i.test(value)) return false;
+  try {
+    return new URL(value, window.location.href).origin !== window.location.origin;
+  } catch (err) {
+    return true;
+  }
+}
+
+function collectDeliveryNoteExportImageUrls(doc) {
+  const seen = new Set();
+  const urls = [];
+
+  Array.from(doc?.querySelectorAll(".delivery-note-thumb") || []).forEach(img => {
+    const src = String(img?.currentSrc || img?.src || img?.getAttribute("src") || "").trim();
+    if (!src || /^(data:|blob:)/i.test(src) || seen.has(src)) return;
+    seen.add(src);
+    urls.push(src);
+  });
+
+  return urls;
+}
+
+function createDeliveryNoteImageExportDebug() {
+  return {
+    imageUrlCount: 0,
+    proxyAttempted: false,
+    backendOk: false,
+    proxySuccessCount: 0,
+    proxyFailureCount: 0,
+    dataUrlAppliedCount: 0,
+    dataUrlRenderedCount: 0,
+    dataUrlNaturalSizeFailCount: 0,
+    preCaptureRepaintWaited: false,
+    imageWaitFailedCount: 0,
+    failureReasons: [],
+    renderFailureReasons: [],
+    backendError: "",
+    actionUnavailable: false,
+    paperLayout: null
+  };
+}
+
+function roundDeliveryNoteLayoutValue(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.round(number * 10) / 10;
+}
+
+function getDeliveryNoteLayoutMetrics(node) {
+  if (!node) return null;
+  const rect = node.getBoundingClientRect();
+  return {
+    left: roundDeliveryNoteLayoutValue(rect.left),
+    right: roundDeliveryNoteLayoutValue(rect.right),
+    width: roundDeliveryNoteLayoutValue(rect.width),
+    scrollWidth: roundDeliveryNoteLayoutValue(node.scrollWidth || 0),
+    offsetWidth: roundDeliveryNoteLayoutValue(node.offsetWidth || 0),
+    rectWidth: roundDeliveryNoteLayoutValue(rect.width)
+  };
+}
+
+function interpretDeliveryNotePaperLayout(layout) {
+  if (!layout?.paper) return "UNKNOWN";
+  if (layout.tableExceedsFrame || layout.tableExceedsPaper) return "TABLE_OVERFLOWS_FRAME";
+  if (layout.captureWidthExpanded) return "CAPTURE_WIDTH_EXPANDED";
+  if (Math.abs(Number(layout.frameLeftGap || 0) - Number(layout.frameRightGap || 0)) > 8) return "FRAME_OFFSET";
+  if (Number(layout.tableLeftGap || 0) > Number(layout.tableRightGap || 0) + 12) return "LEFT_GAP_LARGER";
+  if (Number(layout.tableRightGap || 0) < 8) return "RIGHT_GAP_SMALL";
+  return "UNKNOWN";
+}
+
+function measureDeliveryNotePaperLayout(doc) {
+  const page = doc?.querySelector(".delivery-note-print-page");
+  if (!page) return { interpretation: "UNKNOWN" };
+
+  const contentFrame = page.querySelector(".delivery-note-content-frame");
+  const head = page.querySelector(".delivery-note-page-head");
+  const body = page.querySelector(".delivery-note-page-body");
+  const footer = page.querySelector(".delivery-note-page-footer");
+  const docHeader = page.querySelector(".doc-header");
+  const docMeta = page.querySelector(".doc-meta");
+  const tableHeader = page.querySelector(".delivery-note-column-header");
+  const firstRow = page.querySelector(".delivery-note-print-row");
+  const tableWrapper = tableHeader?.closest(".po-section") ||
+    tableHeader?.parentElement ||
+    body;
+
+  const paper = getDeliveryNoteLayoutMetrics(page);
+  const frame = getDeliveryNoteLayoutMetrics(contentFrame);
+  const table = getDeliveryNoteLayoutMetrics(tableHeader);
+  const fixedPaperWidth = Math.max(Number(page.offsetWidth || 0), Number(paper?.rectWidth || 0));
+  const layout = {
+    paper,
+    contentFrame: frame,
+    head: getDeliveryNoteLayoutMetrics(head),
+    body: getDeliveryNoteLayoutMetrics(body),
+    footer: getDeliveryNoteLayoutMetrics(footer),
+    docHeader: getDeliveryNoteLayoutMetrics(docHeader),
+    docMeta: getDeliveryNoteLayoutMetrics(docMeta),
+    tableHeader: table,
+    firstRow: getDeliveryNoteLayoutMetrics(firstRow),
+    tableWrapper: getDeliveryNoteLayoutMetrics(tableWrapper),
+    tableLeftGap: paper && table ? roundDeliveryNoteLayoutValue(table.left - paper.left) : 0,
+    tableRightGap: paper && table ? roundDeliveryNoteLayoutValue(paper.right - table.right) : 0,
+    frameLeftGap: paper && frame ? roundDeliveryNoteLayoutValue(frame.left - paper.left) : 0,
+    frameRightGap: paper && frame ? roundDeliveryNoteLayoutValue(paper.right - frame.right) : 0,
+    tableExceedsFrame: !!(table && frame && (
+      table.width > frame.width + 1 ||
+      table.scrollWidth > frame.width + 1
+    )),
+    tableExceedsPaper: !!(table && paper && (
+      table.width > paper.width + 1 ||
+      table.scrollWidth > paper.width + 1
+    )),
+    pageScrollWidth: roundDeliveryNoteLayoutValue(page.scrollWidth || 0),
+    pageOffsetWidth: roundDeliveryNoteLayoutValue(page.offsetWidth || 0),
+    pageRectWidth: roundDeliveryNoteLayoutValue(paper?.rectWidth || 0),
+    captureWidthExpanded: !!(
+      fixedPaperWidth &&
+      Number(page.scrollWidth || 0) > fixedPaperWidth + 1
+    )
+  };
+  layout.interpretation = interpretDeliveryNotePaperLayout(layout);
+  return layout;
+}
+
+function getDeliveryNoteProxyFailureReason(result) {
+  const message = String(result?.error || result?.message || "").trim();
+  if (message) return message.slice(0, 120);
+  return result?.ok ? "" : "Image proxy failed";
+}
+
+function isDeliveryNoteProxyActionUnavailable(error) {
+  const message = String(error?.message || error || "").toLowerCase();
+  return message.includes("invalid action") ||
+    message.includes("unknown action") ||
+    message.includes("deliverynoteimagedataurls");
+}
+
+async function fetchDeliveryNoteImageDataUrls(urls) {
+  if (!Array.isArray(urls) || !urls.length) return [];
+  if (!state.admin?.token) {
+    throw new Error("Missing admin token");
+  }
+
+  const form = new URLSearchParams();
+  form.append("action", "deliveryNoteImageDataUrls");
+  form.append("token", state.admin.token);
+  form.append("urls", JSON.stringify(urls));
+
+  const json = await postFormAction(form);
+  return {
+    ok: json?.ok !== false,
+    results: Array.isArray(json?.results) ? json.results : []
+  };
+}
+
+function applyDeliveryNoteImageDataUrls(doc, results) {
+  const dataUrlsByUrl = new Map();
+
+  (Array.isArray(results) ? results : []).forEach(result => {
+    const url = String(result?.url || "").trim();
+    const dataUrl = String(result?.dataUrl || "").trim();
+    if (result?.ok && url && /^data:image\//i.test(dataUrl)) {
+      dataUrlsByUrl.set(url, dataUrl);
+    }
+  });
+
+  let applied = 0;
+  Array.from(doc?.querySelectorAll(".delivery-note-thumb") || []).forEach(img => {
+    const src = String(img?.currentSrc || img?.src || img?.getAttribute("src") || "").trim();
+    const dataUrl = dataUrlsByUrl.get(src);
+    if (!dataUrl) return;
+    img.removeAttribute("crossorigin");
+    img.removeAttribute("onerror");
+    try { img.crossOrigin = null; } catch (err) {}
+    img.onerror = null;
+    img.loading = "eager";
+    img.decoding = "sync";
+    img.style.display = img.style.display || "block";
+    img.style.visibility = "visible";
+    img.style.opacity = "1";
+    img.src = dataUrl;
+    applied += 1;
+  });
+
+  return applied;
+}
+
+function getDeliveryNoteImageWaitFailedCount(doc) {
+  return Array.from(doc?.querySelectorAll(".delivery-note-thumb") || [])
+    .filter(img => !img.complete || !img.naturalWidth || !img.naturalHeight)
+    .length;
+}
+
+function prepareDeliveryNoteExportImageNodes(doc) {
+  const images = Array.from(doc?.querySelectorAll(".delivery-note-thumb") || []);
+  images.forEach(img => {
+    const src = img.getAttribute("src");
+    if (!src || /^(data:|blob:)/i.test(src) || img.getAttribute("crossorigin")) return;
+    img.setAttribute("crossorigin", "anonymous");
+    img.crossOrigin = "anonymous";
+    img.src = src;
+  });
+}
+
+function hasDeliveryNoteExportImageWarning(doc) {
+  return Array.from(doc?.querySelectorAll(".delivery-note-thumb") || [])
+    .some(img => {
+      const src = img.getAttribute("src") || "";
+      return !img.complete ||
+        !img.naturalWidth ||
+        !img.naturalHeight ||
+        isDeliveryNoteImageExportCorsRisk(src);
+    });
+}
+
+function getDeliveryNoteExportPageSize(pageNode) {
+  const rect = pageNode.getBoundingClientRect();
+  const fixedWidth = Math.max(pageNode.offsetWidth, rect.width);
+  const width = Math.ceil(fixedWidth || pageNode.scrollWidth);
+  const height = Math.ceil(Math.max(
+    pageNode.scrollHeight,
+    pageNode.offsetHeight,
+    rect.height
+  ));
+  return { width, height };
+}
+
 function prepareDeliveryNoteImageExport() {
   const data = getValidatedDeliveryNoteData();
   if (!data) return;
@@ -12776,9 +13289,18 @@ function prepareDeliveryNoteImageExport() {
   const noteState = getDeliveryNoteState();
   noteState.imageExportLoading = true;
   noteState.imageExportError = "";
-  noteState.imageExportPages = 0;
+  noteState.imageExportWarning = "";
+  noteState.imageExportDebug = createDeliveryNoteImageExportDebug();
+  revokeDeliveryNoteImageExportUrls(noteState);
   noteState.imageExportReady = false;
   renderDeliveryNoteSheet();
+
+  if (!window.htmlToImage || typeof window.htmlToImage.toBlob !== "function") {
+    noteState.imageExportLoading = false;
+    noteState.imageExportError = t("deliveryNoteImageExportFailed", "ไม่สามารถส่งออกเป็นรูปภาพได้");
+    renderDeliveryNoteSheet();
+    return;
+  }
 
   const frame = document.createElement("iframe");
   frame.title = "Delivery Note image export preview";
@@ -12797,23 +13319,122 @@ function prepareDeliveryNoteImageExport() {
   };
 
   frame.onload = () => {
-    window.setTimeout(() => {
+    window.setTimeout(async () => {
       try {
         const doc = frame.contentDocument || frame.contentWindow?.document;
         const pages = doc
-          ? doc.querySelectorAll(".delivery-note-print-page").length
-          : 0;
+          ? Array.from(doc.querySelectorAll(".delivery-note-print-page"))
+          : [];
 
-        noteState.imageExportPages = pages;
-        noteState.imageExportReady = pages > 0;
-        noteState.imageExportError = pages
-          ? ""
-          : t("deliveryNoteImageExportFailed", "ไม่สามารถเตรียมรูปภาพได้");
+        if (!pages.length) {
+          throw new Error(t("deliveryNoteImageExportFailed", "ไม่สามารถส่งออกเป็นรูปภาพได้"));
+        }
+
+        let imageWarning = false;
+        const debug = createDeliveryNoteImageExportDebug();
+        const imageUrls = collectDeliveryNoteExportImageUrls(doc);
+        debug.imageUrlCount = imageUrls.length;
+        if (imageUrls.length) {
+          debug.proxyAttempted = true;
+          try {
+            const proxyResponse = await fetchDeliveryNoteImageDataUrls(imageUrls);
+            const proxyResults = Array.isArray(proxyResponse?.results) ? proxyResponse.results : [];
+            debug.backendOk = proxyResponse?.ok !== false;
+            debug.proxySuccessCount = proxyResults.filter(result => !!result?.ok).length;
+            debug.proxyFailureCount = Math.max(0, imageUrls.length - debug.proxySuccessCount);
+            debug.failureReasons = proxyResults
+              .filter(result => !result?.ok)
+              .map(getDeliveryNoteProxyFailureReason)
+              .filter(Boolean)
+              .slice(0, 3);
+            const appliedCount = applyDeliveryNoteImageDataUrls(doc, proxyResults);
+            debug.dataUrlAppliedCount = appliedCount;
+            imageWarning = debug.proxyFailureCount > 0 ||
+              appliedCount < imageUrls.length;
+          } catch (err) {
+            console.warn("delivery note image proxy unavailable:", err);
+            debug.backendError = String(err?.message || err || "").slice(0, 160);
+            debug.actionUnavailable = isDeliveryNoteProxyActionUnavailable(err);
+            debug.proxyFailureCount = imageUrls.length;
+            debug.failureReasons = debug.backendError ? [debug.backendError] : [];
+            imageWarning = true;
+          }
+        }
+
+        prepareDeliveryNoteExportImageNodes(doc);
+        const imageWaitSummary = await waitForDeliveryNoteExportImages(doc);
+        debug.imageWaitFailedCount = Number(imageWaitSummary.failedCount || 0);
+        debug.dataUrlRenderedCount = Number(imageWaitSummary.renderedDataUrlCount || 0);
+        debug.dataUrlNaturalSizeFailCount = Number(imageWaitSummary.dataUrlNaturalSizeFailCount || 0);
+        debug.renderFailureReasons = Array.isArray(imageWaitSummary.failureReasons)
+          ? imageWaitSummary.failureReasons.slice(0, 3)
+          : [];
+        await waitForDeliveryNotePreCaptureRepaint();
+        debug.preCaptureRepaintWaited = true;
+        imageWarning = imageWarning || hasDeliveryNoteExportImageWarning(doc);
+        debug.paperLayout = measureDeliveryNotePaperLayout(doc);
+
+        const baseName = getDeliveryNoteImageExportBaseName(data);
+        const exportedPages = [];
+
+        for (const [index, pageNode] of pages.entries()) {
+          pageNode.style.overflow = "visible";
+          pageNode.style.maxWidth = "none";
+          pageNode.style.background = "#ffffff";
+          const pageBody = pageNode.querySelector(".delivery-note-page-body");
+          if (pageBody) pageBody.style.overflow = "visible";
+          const pageSize = getDeliveryNoteExportPageSize(pageNode);
+          const blob = await window.htmlToImage.toBlob(pageNode, {
+            backgroundColor: "#ffffff",
+            pixelRatio: 2,
+            cacheBust: true,
+            width: pageSize.width,
+            height: pageSize.height,
+            style: {
+              width: `${pageSize.width}px`,
+              height: `${pageSize.height}px`,
+              maxWidth: "none",
+              overflow: "visible",
+              background: "#ffffff"
+            }
+          });
+
+          if (!blob) {
+            throw new Error(t("deliveryNoteImageExportFailed", "ไม่สามารถส่งออกเป็นรูปภาพได้"));
+          }
+
+          exportedPages.push({
+            pageNumber: index + 1,
+            fileName: `${baseName}-page-${index + 1}.png`,
+            blob,
+            objectUrl: URL.createObjectURL(blob)
+          });
+        }
+
+        noteState.imageExportPages = exportedPages;
+        noteState.imageExportReady = exportedPages.length > 0;
+        noteState.imageExportError = "";
+        noteState.imageExportDebug = debug;
+        if (debug.dataUrlAppliedCount > 0 && debug.dataUrlRenderedCount === 0) {
+          noteState.imageExportWarning = t(
+            "deliveryNoteImageExportDataUrlNotRenderedWarning",
+            "แปลงรูปสินค้าได้แล้ว แต่เบราว์เซอร์ยังไม่แสดงรูปก่อนจับภาพ"
+          );
+        } else {
+          noteState.imageExportWarning = imageWarning
+            ? t("deliveryNoteImageExportImageWarning", "รูปสินค้าบางรูปอาจไม่แสดงในไฟล์ภาพ")
+            : "";
+        }
       } catch (err) {
         console.error("delivery note image export prepare failed:", err);
-        noteState.imageExportError = err.message || t("deliveryNoteImageExportFailed", "ไม่สามารถเตรียมรูปภาพได้");
+        revokeDeliveryNoteImageExportUrls(noteState);
+        noteState.imageExportError = [
+          err.message || t("deliveryNoteImageExportFailed", "ไม่สามารถส่งออกเป็นรูปภาพได้"),
+          t("deliveryNoteImageExportCorsHint", "อาจเกิดจากรูปสินค้าบางรูปไม่รองรับการแปลงเป็นภาพ")
+        ].filter(Boolean).join(" ");
         noteState.imageExportReady = false;
-        noteState.imageExportPages = 0;
+        noteState.imageExportWarning = "";
+        noteState.imageExportDebug = noteState.imageExportDebug || createDeliveryNoteImageExportDebug();
       } finally {
         noteState.imageExportLoading = false;
         cleanup();
@@ -12822,36 +13443,336 @@ function prepareDeliveryNoteImageExport() {
     }, 250);
   };
 
-  frame.srcdoc = buildDeliveryNotePrintHtml(data, { autoPrint: false });
+  frame.srcdoc = buildDeliveryNotePrintHtml(data, { autoPrint: false, imageExport: true });
   document.body.appendChild(frame);
+}
+
+function getDeliveryNoteExportPage(pageNumber) {
+  return (Array.isArray(getDeliveryNoteState().imageExportPages)
+    ? getDeliveryNoteState().imageExportPages
+    : []
+  ).find(page => Number(page?.pageNumber) === Number(pageNumber)) || null;
+}
+
+function openDeliveryNoteExportImage(pageNumber) {
+  const page = getDeliveryNoteExportPage(pageNumber);
+  if (!page?.objectUrl) return;
+  const viewer = window.open("", "_blank");
+  if (!viewer) {
+    window.open(page.objectUrl, "_blank", "noopener");
+    return;
+  }
+
+  try {
+    viewer.opener = null;
+  } catch (err) {}
+
+  const title = page.fileName || `delivery-note-page-${pageNumber}.png`;
+  const instruction = t("deliveryNoteImageSaveInstruction", "กดค้างที่รูป หรือใช้ปุ่มแชร์ เพื่อบันทึกรูปภาพ");
+  const backLabel = t("deliveryNoteImageBackToDeliveryNote", "← กลับไปใบส่งของ");
+  viewer.document.open();
+  viewer.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+      <title>${esc(title)}</title>
+      <style>
+        * { box-sizing: border-box; }
+        html, body {
+          margin: 0;
+          min-height: 100%;
+          overflow-x: hidden;
+          background: #111827;
+          color: #F9FAFB;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        body {
+          width: 100%;
+          max-width: 100vw;
+        }
+        .topbar {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px;
+          border-bottom: 1px solid rgba(255, 255, 255, .14);
+          background: rgba(17, 24, 39, .94);
+          backdrop-filter: blur(8px);
+        }
+        .back-btn {
+          appearance: none;
+          border: 1px solid rgba(255, 255, 255, .25);
+          border-radius: 999px;
+          background: rgba(255, 255, 255, .96);
+          color: #111827;
+          min-height: 38px;
+          padding: 7px 12px;
+          font: inherit;
+          font-weight: 700;
+        }
+        .title {
+          min-width: 0;
+          flex: 1;
+          color: #D1D5DB;
+          font-size: 12px;
+          text-align: right;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .viewer {
+          width: 100%;
+          max-width: 100vw;
+          min-height: calc(100vh - 59px);
+          padding: 12px 10px calc(22px + env(safe-area-inset-bottom, 0px));
+          background:
+            radial-gradient(circle at top, rgba(75, 85, 99, .42), transparent 38%),
+            #111827;
+        }
+        .hint {
+          margin: 0 auto 12px;
+          max-width: 900px;
+          color: #E5E7EB;
+          font-size: 14px;
+          line-height: 1.4;
+          text-align: center;
+        }
+        .preview-stage {
+          width: 100%;
+          max-width: min(100vw, 960px);
+          margin: 0 auto;
+          padding: 10px;
+          border-radius: 18px;
+          background: rgba(255, 255, 255, .08);
+          border: 1px solid rgba(255, 255, 255, .12);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+          overflow: visible;
+        }
+        .paper-wrap {
+          width: 100%;
+          max-width: min(calc(100vw - 40px), 820px);
+          margin: 0 auto;
+          overflow: visible;
+          background: #fff;
+          border: 1px solid rgba(17, 24, 39, .18);
+          border-radius: 10px;
+          box-shadow: 0 18px 48px rgba(0, 0, 0, .45);
+          padding: 0;
+        }
+        img {
+          display: block;
+          width: 100%;
+          max-width: 100%;
+          height: auto;
+          margin: 0 auto;
+          object-fit: contain;
+          box-sizing: border-box;
+          background: #fff;
+          border: 0;
+          border-radius: 10px;
+        }
+        @media (max-width: 480px) {
+          .viewer { padding-left: 6px; padding-right: 6px; }
+          .preview-stage {
+            padding: 7px;
+            border-radius: 14px;
+          }
+          .paper-wrap {
+            max-width: calc(100vw - 26px);
+            border-radius: 8px;
+          }
+          img { border-radius: 8px; }
+        }
+      </style>
+      <script>
+        function closeDeliveryNoteImageViewer() {
+          try {
+            window.close();
+          } catch (err) {}
+          setTimeout(function() {
+            if (!window.closed) {
+              try {
+                history.back();
+              } catch (err) {}
+            }
+          }, 80);
+        }
+      <\/script>
+    </head>
+    <body>
+      <header class="topbar">
+        <button class="back-btn" type="button" onclick="closeDeliveryNoteImageViewer()">${esc(backLabel)}</button>
+        <div class="title">${esc(title)}</div>
+      </header>
+      <main class="viewer">
+        <p class="hint">${esc(instruction)}</p>
+        <div class="preview-stage">
+          <div class="paper-wrap">
+            <img src="${escAttr(page.objectUrl)}" alt="${escAttr(title)}">
+          </div>
+        </div>
+      </main>
+    </body>
+    </html>
+  `);
+  viewer.document.close();
+}
+
+function downloadDeliveryNoteExportImage(pageNumber) {
+  const page = getDeliveryNoteExportPage(pageNumber);
+  if (!page?.objectUrl) return;
+
+  const link = document.createElement("a");
+  link.href = page.objectUrl;
+  link.download = page.fileName || `delivery-note-page-${pageNumber}.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function formatDeliveryNoteLayoutMetric(metric) {
+  if (!metric) return "-";
+  return `L ${metric.left}px / R ${metric.right}px / W ${metric.width}px / scroll ${metric.scrollWidth}px / offset ${metric.offsetWidth}px / rect ${metric.rectWidth}px`;
+}
+
+function renderDeliveryNotePaperLayoutDebug(debug) {
+  const layout = debug?.paperLayout;
+  if (!layout) return "";
+
+  const yesText = t("yes", "ใช่");
+  const noText = t("no", "ไม่");
+  const rows = [
+    [t("deliveryNotePaperMeasureInterpretation", "การวิเคราะห์"), layout.interpretation || "UNKNOWN"],
+    [t("deliveryNotePaperMeasurePaper", "กระดาษ"), formatDeliveryNoteLayoutMetric(layout.paper)],
+    [t("deliveryNotePaperMeasureFrame", "กรอบเนื้อหา"), formatDeliveryNoteLayoutMetric(layout.contentFrame)],
+    [t("deliveryNotePaperMeasureHead", "ส่วนหัว"), formatDeliveryNoteLayoutMetric(layout.head)],
+    [t("deliveryNotePaperMeasureBody", "เนื้อหา"), formatDeliveryNoteLayoutMetric(layout.body)],
+    [t("deliveryNotePaperMeasureFooter", "ท้ายหน้า"), formatDeliveryNoteLayoutMetric(layout.footer)],
+    [t("deliveryNotePaperMeasureDocHeader", "หัวเอกสาร"), formatDeliveryNoteLayoutMetric(layout.docHeader)],
+    [t("deliveryNotePaperMeasureDocMeta", "กล่องวันที่"), formatDeliveryNoteLayoutMetric(layout.docMeta)],
+    [t("deliveryNotePaperMeasureTableHeader", "หัวตาราง"), formatDeliveryNoteLayoutMetric(layout.tableHeader)],
+    [t("deliveryNotePaperMeasureFirstRow", "แถวแรก"), formatDeliveryNoteLayoutMetric(layout.firstRow)],
+    [t("deliveryNotePaperMeasureTableWrapper", "กรอบตาราง"), formatDeliveryNoteLayoutMetric(layout.tableWrapper)],
+    [t("deliveryNotePaperMeasureTableLeftGap", "ช่องว่างซ้ายตาราง"), `${layout.tableLeftGap}px`],
+    [t("deliveryNotePaperMeasureTableRightGap", "ช่องว่างขวาตาราง"), `${layout.tableRightGap}px`],
+    [t("deliveryNotePaperMeasureFrameLeftGap", "ช่องว่างซ้ายกรอบ"), `${layout.frameLeftGap}px`],
+    [t("deliveryNotePaperMeasureFrameRightGap", "ช่องว่างขวากรอบ"), `${layout.frameRightGap}px`],
+    [t("deliveryNotePaperMeasureTableExceeds", "ตารางกว้างเกินกรอบ/กระดาษ"), `${layout.tableExceedsFrame || layout.tableExceedsPaper ? yesText : noText}`],
+    [
+      t("deliveryNotePaperMeasureCapture", "ขนาดจับภาพ"),
+      `scroll ${layout.pageScrollWidth}px / offset ${layout.pageOffsetWidth}px / rect ${layout.pageRectWidth}px / expanded ${layout.captureWidthExpanded ? yesText : noText}`
+    ]
+  ];
+
+  return `
+    <div style="margin-top:12px">
+      <strong>${t("deliveryNotePaperMeasureTitle", "รายละเอียดตำแหน่งกระดาษ")}</strong>
+      <div style="display:grid;grid-template-columns:minmax(120px,1fr) 1fr;gap:4px 10px;margin-top:8px">
+        ${rows.map(([label, value]) => `
+          <span>${esc(label)}</span>
+          <span>${esc(value)}</span>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderDeliveryNoteImageExportDebug() {
+  const debug = getDeliveryNoteState().imageExportDebug;
+  if (!debug) return "";
+
+  const yesText = t("yes", "ใช่");
+  const noText = t("no", "ไม่");
+  const reasons = Array.isArray(debug.failureReasons)
+    ? debug.failureReasons.filter(Boolean).slice(0, 3)
+    : [];
+  const backendError = String(debug.backendError || "").trim();
+  const detailRows = [
+    [t("deliveryNoteImageProxyFound", "พบรูปสินค้า"), Number(debug.imageUrlCount || 0)],
+    [t("deliveryNoteImageProxyAttempted", "ส่งเข้า proxy"), debug.proxyAttempted ? yesText : noText],
+    [t("deliveryNoteImageProxyBackendOk", "backend ตอบกลับปกติ"), debug.backendOk ? yesText : noText],
+    [
+      `${t("deliveryNoteImageProxySucceeded", "สำเร็จ")} / ${t("deliveryNoteImageProxyFailed", "ล้มเหลว")}`,
+      `${Number(debug.proxySuccessCount || 0)} / ${Number(debug.proxyFailureCount || 0)}`
+    ],
+    [t("deliveryNoteImageProxyApplied", "แทนรูปด้วย data URL"), Number(debug.dataUrlAppliedCount || 0)],
+    [t("deliveryNoteImageProxyRendered", "รูป data URL ที่แสดงผลแล้ว"), Number(debug.dataUrlRenderedCount || 0)],
+    [t("deliveryNoteImageNaturalSizeFailed", "รูป data URL ที่ไม่มีขนาดจริง"), Number(debug.dataUrlNaturalSizeFailCount || 0)],
+    [t("deliveryNoteImageRepaintWaited", "รอ repaint ก่อนจับภาพ"), debug.preCaptureRepaintWaited ? yesText : noText],
+    [t("deliveryNoteImageWaitFailed", "รูปที่โหลดไม่สำเร็จหลังรอ"), Number(debug.imageWaitFailedCount || 0)]
+  ];
+
+  const reasonRows = reasons.map(reason => [
+    t("deliveryNoteImageFirstReason", "สาเหตุแรก"),
+    reason
+  ]);
+  const renderReasons = Array.isArray(debug.renderFailureReasons)
+    ? debug.renderFailureReasons.filter(Boolean).slice(0, 3)
+    : [];
+  const renderReasonRows = renderReasons.map(reason => [
+    t("deliveryNoteImageRenderReason", "สาเหตุการแสดงผล"),
+    reason
+  ]);
+  const backendRows = backendError ? [[
+    debug.actionUnavailable ? "Apps Script action" : "Backend error",
+    backendError
+  ]] : [];
+
+  return `
+    <details class="helper-text" style="margin-top:10px">
+      <summary><strong>${t("deliveryNoteImageProxyDebugTitle", "รายละเอียดการแปลงรูปสินค้า")}</strong></summary>
+      <div style="display:grid;grid-template-columns:minmax(120px,1fr) 1fr;gap:4px 10px;margin-top:8px">
+        ${detailRows.concat(reasonRows, renderReasonRows, backendRows).map(([label, value]) => `
+          <span>${esc(label)}</span>
+          <span>${esc(value)}</span>
+        `).join("")}
+      </div>
+      ${renderDeliveryNotePaperLayoutDebug(debug)}
+    </details>
+  `;
 }
 
 function renderDeliveryNoteImageExportStatus() {
   const noteState = getDeliveryNoteState();
 
   if (noteState.imageExportLoading) {
-    return `<div class="helper-text" style="margin-top:10px">${t("deliveryNoteImageExportPreparing", "กำลังเตรียมรูปภาพ...")}</div>`;
+    return `<div class="helper-text" style="margin-top:10px">${t("deliveryNoteImageExporting", "กำลังส่งออกเป็นรูปภาพ...")}</div>`;
   }
 
   if (noteState.imageExportError) {
-    return `<div class="error-text" style="margin-top:10px">${esc(noteState.imageExportError)}</div>`;
+    return `
+      <div class="error-text" style="margin-top:10px">${esc(noteState.imageExportError)}</div>
+      ${renderDeliveryNoteImageExportDebug()}
+    `;
   }
 
-  if (!noteState.imageExportReady || !noteState.imageExportPages) {
+  const pages = Array.isArray(noteState.imageExportPages) ? noteState.imageExportPages : [];
+  if (!noteState.imageExportReady || !pages.length) {
     return "";
   }
 
-  const pageButtons = Array.from({ length: noteState.imageExportPages }, (_, index) => `
-    <button class="btn btn-outline" type="button" disabled
-      title="${escAttr(t("deliveryNoteImageExportNextStep", "จะเปิดใช้งานในขั้นถัดไป"))}">
-      ${formatUiText("deliveryNoteImagePage", { page: index + 1 }, "รูปหน้า {page}")}
+  const pageButtons = pages.map(page => `
+    <button class="btn btn-outline" type="button"
+      onclick="openDeliveryNoteExportImage(${Number(page.pageNumber) || 0})">
+      ${formatUiText("openDeliveryNoteImagePage", { page: page.pageNumber }, "เปิดรูปหน้า {page}")}
+    </button>
+    <button class="btn btn-outline" type="button"
+      onclick="downloadDeliveryNoteExportImage(${Number(page.pageNumber) || 0})">
+      ${formatUiText("downloadDeliveryNoteImagePage", { page: page.pageNumber }, "ดาวน์โหลดหน้า {page}")}
     </button>
   `).join("");
 
   return `
     <div class="card compact-card" style="margin-top:12px">
-      <strong>${formatUiText("deliveryNoteImageExportReady", { count: noteState.imageExportPages }, "เตรียมรูปภาพแล้ว {count} หน้า")}</strong>
-      <div class="helper-text" style="margin-top:6px">${t("deliveryNoteImageExportNextStep", "จะเปิดใช้งานในขั้นถัดไป")}</div>
+      <strong>${formatUiText("deliveryNoteImageExportDone", { count: pages.length }, "ส่งออกรูปภาพสำเร็จ {count} หน้า")}</strong>
+      ${noteState.imageExportWarning ? `<div class="helper-text" style="margin-top:6px">${esc(noteState.imageExportWarning)}</div>` : ""}
+      ${renderDeliveryNoteImageExportDebug()}
       <div class="action-row" style="margin-top:10px;gap:8px;flex-wrap:wrap">${pageButtons}</div>
     </div>
   `;
@@ -12982,7 +13903,7 @@ function renderDeliveryNoteMatchedOrders() {
         ${t("copyDeliveryNote", "คัดลอกใบส่งของ")}
       </button>
       <button class="btn btn-outline" type="button" onclick="prepareDeliveryNoteImageExport()">
-        ${noteState.imageExportLoading ? t("deliveryNoteImageExportPreparing", "กำลังเตรียมรูปภาพ...") : t("exportDeliveryNoteImages", "ส่งออกเป็นรูปภาพ")}
+        ${noteState.imageExportLoading ? t("deliveryNoteImageExporting", "กำลังส่งออกเป็นรูปภาพ...") : t("exportDeliveryNoteImages", "ส่งออกเป็นรูปภาพ")}
       </button>
     </div>
     ${renderDeliveryNoteImageExportStatus()}
