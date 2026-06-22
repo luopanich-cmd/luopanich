@@ -2939,12 +2939,33 @@ textarea {
   background: var(--sheet-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  padding: 20px 24px;
+  padding: 18px 24px 20px;
   border-radius: 12px;
   box-shadow: var(--shadow-float);
   text-align: center;
   min-width: 200px;
   animation: loading-pop var(--motion-duration-normal) var(--motion-ease-standard);
+}
+
+.global-loading-lottie {
+  display: block;
+  width: 108px;
+  height: 108px;
+  margin: -4px auto 2px;
+}
+
+.loading-box .spinner {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+  margin: 0 auto 10px;
+  opacity: .42;
+}
+
+#loading-text {
+  color: var(--text);
+  font-weight: 700;
+  line-height: 1.45;
 }
 
 @keyframes loading-fade-in {
@@ -23966,6 +23987,13 @@ window.testBarHide = function testBarHide(){
   aria-busy="false"
   aria-hidden="true">
   <div class="loading-box">
+    <dotlottie-player class="global-loading-lottie"
+      src="assets/cat-playing-animation.lottie"
+      background="transparent"
+      speed="1"
+      loop
+      autoplay
+      aria-hidden="true"></dotlottie-player>
     <div class="spinner"></div>
     <div id="loading-text">กำลังดำเนินการ...</div>
   </div>
