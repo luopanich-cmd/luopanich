@@ -6,6 +6,7 @@
  <meta name="color-scheme" content="dark">
  <meta name="theme-color" content="#0f0f12">
  <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.min.js"></script>
+ <script type="module" src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs"></script>
  <title>ร้านค้า Luopanich</title>
 
 <!-- ================= UI STYLE ================= -->
@@ -652,6 +653,22 @@ body[data-theme="cute"] .shop-subtitle{
 .delivery-note-item-error{
   flex:1 1 100%;
   padding-left:42px;
+}
+
+.delivery-note-export-loading-visual{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  text-align:center;
+}
+
+.delivery-note-export-lottie{
+  width:110px;
+  height:110px;
+  max-width:38vw;
+  display:block;
 }
 
 .delivery-note-po-card{
@@ -14308,8 +14325,16 @@ function renderDeliveryNoteImageExportStatus() {
   if (noteState.imageExportLoading) {
     return `
       <div class="card compact-card" style="margin-top:12px">
-        <strong>${esc(getDeliveryNoteImageExportProgressText(noteState))}</strong>
-        <div class="helper-text" style="margin-top:6px">${t("deliveryNoteImageExporting", "กำลังส่งออกเป็นรูปภาพ...")}</div>
+        <div class="delivery-note-export-loading-visual">
+          <dotlottie-player class="delivery-note-export-lottie"
+            src="assets/cat-playing-animation.lottie"
+            background="transparent"
+            speed="1"
+            loop
+            autoplay></dotlottie-player>
+          <strong>${esc(getDeliveryNoteImageExportProgressText(noteState))}</strong>
+          <div class="helper-text">${t("deliveryNoteImageExporting", "กำลังส่งออกเป็นรูปภาพ...")}</div>
+        </div>
       </div>
     `;
   }
