@@ -119,6 +119,15 @@
    --ease-chrome:var(--motion-ease-standard);
  }
 
+.lottie-loading-preload{
+  position:absolute;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  opacity:0;
+  pointer-events:none;
+}
+
 body[data-theme="dark"] {
   --bg: #0f0f12;
   --bg-soft: #161618;
@@ -655,6 +664,7 @@ body[data-theme="cute"] .shop-subtitle{
   padding-left:42px;
 }
 
+.lottie-loading-ui,
 .delivery-note-export-loading-visual{
   display:flex;
   flex-direction:column;
@@ -664,6 +674,7 @@ body[data-theme="cute"] .shop-subtitle{
   text-align:center;
 }
 
+.lottie-loading-player,
 .delivery-note-export-lottie{
   width:110px;
   height:110px;
@@ -2673,6 +2684,11 @@ textarea:focus-visible {
   animation: dots 1.4s infinite;
 }
 
+.loading.has-lottie::after {
+  content: "";
+  animation: none;
+}
+
 @keyframes dots {
   0%   { content: ""; }
   33%  { content: "."; }
@@ -3956,6 +3972,13 @@ textarea.input{
 
 
 <div id="app" class="container"></div>
+<dotlottie-player class="lottie-loading-preload"
+  src="assets/cat-playing-animation.lottie"
+  background="transparent"
+  speed="1"
+  loop
+  autoplay
+  aria-hidden="true"></dotlottie-player>
 
 <!-- ✅ GLOBAL BACKDROP (มีตัวเดียวพอ) -->
  <div
@@ -6178,6 +6201,27 @@ function escapeHtml(value = "") {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 } 
+
+function renderLottieLoading(message, options = {}) {
+  const safeMessage = escapeHtml(message || t("loading", "กำลังโหลด..."));
+  const detail = options.detail ? `<div class="helper-text">${escapeHtml(options.detail)}</div>` : "";
+  const size = Math.max(72, Math.min(140, Number(options.size) || 110));
+  const className = options.className ? ` ${escapeHtml(options.className)}` : "";
+
+  return `
+    <div class="lottie-loading-ui${className}">
+      <dotlottie-player class="lottie-loading-player delivery-note-export-lottie"
+        src="assets/cat-playing-animation.lottie"
+        background="transparent"
+        speed="1"
+        loop
+        autoplay
+        style="width:${size}px;height:${size}px"></dotlottie-player>
+      <strong>${safeMessage}</strong>
+      ${detail}
+    </div>
+  `;
+}
 
 function saveCart() {
   try {
@@ -9437,7 +9481,7 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
 
   adminDashboardSheet.innerHTML = `
     <h3 id="adminDashboardSheetTitle">${t("dashboard", "แดชบอร์ดแอดมิน")}</h3>
-    <div class="loading">${t("loadingData", "กำลังโหลดข้อมูล")}</div>
+    <div class="loading has-lottie">${renderLottieLoading(t("loadingData", "กำลังโหลดข้อมูล"))}</div>
   `;
 
   openOverlay(adminDashboardSheet);
@@ -14325,16 +14369,10 @@ function renderDeliveryNoteImageExportStatus() {
   if (noteState.imageExportLoading) {
     return `
       <div class="card compact-card" style="margin-top:12px">
-        <div class="delivery-note-export-loading-visual">
-          <dotlottie-player class="delivery-note-export-lottie"
-            src="assets/cat-playing-animation.lottie"
-            background="transparent"
-            speed="1"
-            loop
-            autoplay></dotlottie-player>
-          <strong>${esc(getDeliveryNoteImageExportProgressText(noteState))}</strong>
-          <div class="helper-text">${t("deliveryNoteImageExporting", "กำลังส่งออกเป็นรูปภาพ...")}</div>
-        </div>
+        ${renderLottieLoading(getDeliveryNoteImageExportProgressText(noteState), {
+          detail: t("deliveryNoteImageExporting", "กำลังส่งออกเป็นรูปภาพ..."),
+          className: "delivery-note-export-loading-visual"
+        })}
       </div>
     `;
   }
@@ -14603,9 +14641,7 @@ function openPendingDeliverySheet() {
 
     <div id="pendingDeliveryList">
       <div class="card">
-        <div style="font-weight:600;">
-          ${t("loading", "กำลังโหลด...")}
-        </div>
+        ${renderLottieLoading(t("loading", "กำลังโหลด..."))}
       </div>
     </div>
   `;
