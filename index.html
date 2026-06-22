@@ -6202,6 +6202,49 @@ function escapeHtml(value = "") {
     .replace(/'/g, "&#39;");
 } 
 
+function blurActiveElementForMobileKeyboard() {
+  try {
+    document.activeElement?.blur?.();
+  } catch (_) {}
+}
+
+function waitForMobileViewportSettle() {
+  return new Promise(resolve => {
+    requestAnimationFrame(() => setTimeout(resolve, 50));
+  });
+}
+
+function waitForAnimationFrames(count = 1) {
+  return new Promise(resolve => {
+    let remaining = Math.max(1, Number(count) || 1);
+    const step = () => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        resolve();
+        return;
+      }
+      requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+async function repairMobileViewportAfterAdminLogin() {
+  blurActiveElementForMobileKeyboard();
+  await waitForAnimationFrames(2);
+  await new Promise(resolve => setTimeout(resolve, 150));
+  window.dispatchEvent(new Event("resize"));
+  await waitForAnimationFrames(1);
+
+  if (window.visualViewport || window.innerWidth <= 768) {
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    } catch (_) {
+      window.scrollTo(0, 0);
+    }
+  }
+}
+
 function renderLottieLoading(message, options = {}) {
   const safeMessage = escapeHtml(message || t("loading", "กำลังโหลด..."));
   const detail = options.detail ? `<div class="helper-text">${escapeHtml(options.detail)}</div>` : "";
@@ -9144,6 +9187,9 @@ async function handleAdminLogin(btn){
   }
   if (cancelBtn) cancelBtn.disabled = true;
 
+  blurActiveElementForMobileKeyboard();
+  await waitForMobileViewportSettle();
+
   showLoading("กำลังเข้าสู่ระบบแอดมิน...");
   // ================= UX END ===================
 
@@ -9182,6 +9228,7 @@ async function handleAdminLogin(btn){
 
     // 🚀 ENTER ADMIN MODE
     await enterAdmin();
+    await repairMobileViewportAfterAdminLogin();
 
   } catch (err) {
     console.error(err);
@@ -10459,7 +10506,7 @@ async function openStockTimeline(force = false, options = {}) {
 
   targetSheet.innerHTML = `
     <h3 id="${stockTimelineTitleId}">${stockTimelineTitle}</h3>
-    <div class="loading">${t("loading", "กำลังโหลด...")}</div>
+    <div class="loading has-lottie">${renderLottieLoading(t("loading", "กำลังโหลด..."))}</div>
   `;
 
   openOverlay(targetSheet);
@@ -14435,7 +14482,7 @@ function renderDeliveryNotePoPicker() {
   const selectedCount = selectedKeys.size;
 
   const orderCards = noteState.poPickerLoading
-    ? `<div class="loading">${t("deliveryNotePickerLoading", "กำลังโหลดออเดอร์...")}</div>`
+    ? `<div class="loading has-lottie">${renderLottieLoading(t("deliveryNotePickerLoading", "กำลังโหลดออเดอร์..."))}</div>`
     : noteState.poPickerError
       ? `<div class="error-text">${esc(noteState.poPickerError)}</div>`
       : orders.length
@@ -14507,7 +14554,7 @@ function renderDeliveryNoteMatchedOrders() {
   const orders = Array.isArray(noteState.matchedOrders) ? noteState.matchedOrders : [];
 
   if (noteState.isBuilding) {
-    return `<div class="card"><div class="loading">${t("deliveryNoteSearching", "กำลังค้นหา PO...")}</div></div>`;
+    return `<div class="card"><div class="loading has-lottie">${renderLottieLoading(t("deliveryNoteSearching", "กำลังค้นหา PO..."))}</div></div>`;
   }
 
   if (noteState.error && !orders.length) {
