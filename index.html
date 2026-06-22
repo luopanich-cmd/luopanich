@@ -340,6 +340,7 @@ header.scrolled{
 
   display: inline-flex;
   align-items: center;
+  max-width: 100%;
   padding: 6px 11px;
   border-radius: 999px;
   position: relative;
@@ -362,6 +363,26 @@ header.scrolled{
   text-shadow: 0 1px 0 rgba(0,0,0,.35);
 
   z-index: 0;
+}
+
+.brand-title-text{
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+}
+
+.brand-lottie{
+  display: block;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  margin-left: 6px;
+  pointer-events: none;
+  position: relative;
+  z-index: 1;
 }
 
 /* ✅ Glass highlight (top-left glare) */
@@ -8398,7 +8419,16 @@ function renderHeader(){
     h.innerHTML = `
       <div class="header-left">
       <div class="header-stack">
-        <div class="shop-title">${t("shopTitle", "ร้านค้า Luopanich")}</div>
+        <div class="shop-title">
+          <span class="brand-title-text">${t("shopTitle", "ร้านค้า Luopanich")}</span>
+          <dotlottie-player class="brand-lottie"
+            src="assets/dog-wagging-tail.lottie"
+            background="transparent"
+            speed="1"
+            loop
+            autoplay
+            aria-hidden="true"></dotlottie-player>
+        </div>
         <div class="shop-subtitle">${t("shopSubtitle", "ค้นหา · กรองสถานะ · เพิ่มลงตะกร้า")}</div>
 
         <!-- 🔍 SEARCH ICON + EXPAND -->
