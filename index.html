@@ -6313,6 +6313,35 @@ function clearCartStorage() {
   localStorage.removeItem(CART_KEY);
 }  
  
+function sanitizePublicOrderItemForViewer(item) {
+  const cleanItem = {
+    productId: String(item?.productId || "").trim(),
+    name: String(item?.name || "").trim(),
+    qty: Number(item?.qty) || 0,
+    price: Number(item?.price) || 0
+  };
+
+  if (item?.image) {
+    cleanItem.image = String(item.image);
+  }
+
+  return cleanItem;
+}
+
+function sanitizePublicLastOrderForViewer(order) {
+  if (!order || !order.orderId) return null;
+
+  return {
+    orderId: order.orderId,
+    items: Array.isArray(order.items)
+      ? order.items.map(sanitizePublicOrderItemForViewer)
+      : [],
+    total: Number(order.total) || 0,
+    createdAt: order.createdAt || "",
+    poNumber: order.poNumber || ""
+  };
+}
+
 state.lastOrder = loadLastOrder();
 
 function renderLastOrderSheet() {
@@ -6396,7 +6425,10 @@ function reopenLastOrderSheet() {
 function saveLastOrder() {
   try {
     if (!state.lastOrder) return;
-    localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(state.lastOrder));
+    const cleanOrder = sanitizePublicLastOrderForViewer(state.lastOrder);
+    if (!cleanOrder) return;
+    state.lastOrder = cleanOrder;
+    localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(cleanOrder));
   } catch (e) {
     console.warn("saveLastOrder failed", e);
   }
@@ -6409,7 +6441,11 @@ function loadLastOrder() {
 
     const parsed = JSON.parse(raw);
     if (!parsed || !parsed.orderId) return null;
-    return parsed;
+    const cleanOrder = sanitizePublicLastOrderForViewer(parsed);
+    if (cleanOrder) {
+      localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(cleanOrder));
+    }
+    return cleanOrder;
   } catch (e) {
     console.warn("loadLastOrder failed", e);
     return null;
@@ -15876,9 +15912,8 @@ async function submitOrder(){
 
     state.lastOrder = {
       orderId: res.data.orderId,
-      items: JSON.parse(JSON.stringify(
-        hasValidBackendItems ? backendItems : localItems
-      )),
+      items: (hasValidBackendItems ? backendItems : localItems)
+        .map(sanitizePublicOrderItemForViewer),
       total: hasValidBackendTotal ? backendTotal : localTotal,
  createdAt: new Date(),
  poNumber: state.poNumber || ""

@@ -3747,11 +3747,18 @@ function createOrder(data) {
     poNumber     // poNumber
   ]);
 
+  const publicItems = cleanItems.map(item => ({
+    productId: item.productId,
+    name: item.name,
+    qty: item.qty,
+    price: item.price
+  }));
+
   return {
     success: true,
     orderId,
     total,
-    items: cleanItems
+    items: publicItems
   };
   } finally {
     lock.releaseLock();
