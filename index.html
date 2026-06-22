@@ -3936,6 +3936,7 @@ textarea.input{
  <div id="adminBulkProductUpdateSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBulkProductUpdateSheetTitle" tabindex="-1"></div>
  <div id="adminLandedCostSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminLandedCostSheetTitle" tabindex="-1"></div>
  <div id="adminDeliveryNoteSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminDeliveryNoteSheetTitle" tabindex="-1"></div>
+ <div id="deliveryNoteImageWarningPopupRoot"></div>
  <div id="adminPartnersSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminPartnersSheetTitle" tabindex="-1"></div>
  <div id="adminPartnerCatalogSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminPartnerCatalogSheetTitle" tabindex="-1"></div>
  <div id="adminPartnerRequestsSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminPartnerRequestsSheetTitle" tabindex="-1"></div>
@@ -3983,6 +3984,8 @@ const adminLandedCostSheet =
   document.getElementById("adminLandedCostSheet");
 const adminDeliveryNoteSheet =
   document.getElementById("adminDeliveryNoteSheet");
+const deliveryNoteImageWarningPopupRoot =
+  document.getElementById("deliveryNoteImageWarningPopupRoot");
 const adminPartnersSheet =
   document.getElementById("adminPartnersSheet");
 const adminPartnerCatalogSheet =
@@ -4132,6 +4135,7 @@ Object.assign(window, {
   toggleDeliveryNotePoSelection,
   buildDeliveryNoteFromPicker,
   resetDeliveryNoteBuilderState,
+  dismissDeliveryNoteImageWarningPopup,
   printDeliveryNote,
   copyDeliveryNote,
   prepareDeliveryNoteImageExport,
@@ -4220,10 +4224,14 @@ const state = {
       imageExportLoading: false,
       imageExportError: "",
       imageExportWarning: "",
+      imageExportWarningSessionId: 0,
       imageExportDebug: null,
       imageExportPhase: "",
       imageExportProgress: null,
       imageExportSessionId: 0,
+      imageExportWarningPopupDismissedSessionId: 0,
+      imageExportWarningPopupShown: false,
+      imageExportWarningPopupActiveSessionId: 0,
       imageExportPages: [],
       imageExportReady: false,
       error: "",
@@ -4592,6 +4600,10 @@ const UI_TEXT = {
     deliveryNoteImageProgressConverting: "กำลังแปลงรูปสินค้า {done}/{total} รูป",
     deliveryNoteImageProgressCapturing: "กำลังสร้างไฟล์ภาพ หน้า {page}/{total}",
     deliveryNoteImageIncompleteWarning: "รูปสินค้าบางรูปโหลดไม่สำเร็จ {failed} รูป จาก {total} รูป กรุณาลองส่งออกใหม่",
+    deliveryNoteImageWarningPopupTitle: "รูปสินค้ายังโหลดไม่ครบ",
+    deliveryNoteImageWarningPopupBody: "ระบบพบว่ารูปสินค้าบางรูปยังโหลดไม่สำเร็จ ไฟล์ภาพที่ส่งออกอาจแสดงรูปไม่ครบ กรุณากดปุ่ม “ลองส่งออกใหม่” ก่อนเปิดหรือดาวน์โหลดรูปภาพ",
+    deliveryNoteImageWarningPopupCount: "โหลดไม่สำเร็จ {failed} รูป จาก {total} รูป",
+    deliveryNoteImageWarningPopupClose: "เข้าใจแล้ว",
     retryDeliveryNoteImageExport: "ลองส่งออกใหม่",
     deliveryNoteImageSaveInstruction: "กดค้างที่รูป หรือใช้ปุ่มแชร์ เพื่อบันทึกรูปภาพ",
     deliveryNoteImageBackToDeliveryNote: "← กลับไปใบส่งของ",
@@ -5330,6 +5342,10 @@ const UI_TEXT = {
     deliveryNoteImageProgressConverting: "Converting product images {done}/{total}",
     deliveryNoteImageProgressCapturing: "Creating image page {page}/{total}",
     deliveryNoteImageIncompleteWarning: "{failed} of {total} product images did not load. Please try exporting again.",
+    deliveryNoteImageWarningPopupTitle: "Product images are not fully loaded",
+    deliveryNoteImageWarningPopupBody: "Some product images did not load successfully. The exported image may be incomplete. Please press “Try export again” before opening or downloading images.",
+    deliveryNoteImageWarningPopupCount: "{failed} of {total} images failed to load",
+    deliveryNoteImageWarningPopupClose: "Got it",
     retryDeliveryNoteImageExport: "Try export again",
     deliveryNoteImageSaveInstruction: "Long-press the image or use Share to save it",
     deliveryNoteImageBackToDeliveryNote: "← Back to Delivery Note",
@@ -11979,10 +11995,14 @@ function getDeliveryNoteState() {
   if (noteState.imageExportLoading === undefined) noteState.imageExportLoading = false;
   if (noteState.imageExportError === undefined) noteState.imageExportError = "";
   if (noteState.imageExportWarning === undefined) noteState.imageExportWarning = "";
+  if (noteState.imageExportWarningSessionId === undefined) noteState.imageExportWarningSessionId = 0;
   if (noteState.imageExportDebug === undefined) noteState.imageExportDebug = null;
   if (noteState.imageExportPhase === undefined) noteState.imageExportPhase = "";
   if (noteState.imageExportProgress === undefined) noteState.imageExportProgress = null;
   if (noteState.imageExportSessionId === undefined) noteState.imageExportSessionId = 0;
+  if (noteState.imageExportWarningPopupDismissedSessionId === undefined) noteState.imageExportWarningPopupDismissedSessionId = 0;
+  if (noteState.imageExportWarningPopupShown === undefined) noteState.imageExportWarningPopupShown = false;
+  if (noteState.imageExportWarningPopupActiveSessionId === undefined) noteState.imageExportWarningPopupActiveSessionId = 0;
   if (!Array.isArray(noteState.imageExportPages)) noteState.imageExportPages = [];
   if (noteState.imageExportReady === undefined) noteState.imageExportReady = false;
   return state.admin.deliveryNote;
@@ -12005,6 +12025,9 @@ function openDeliveryNoteSheet() {
 }
 
 function closeDeliveryNoteSheet() {
+  if (deliveryNoteImageWarningPopupRoot) {
+    deliveryNoteImageWarningPopupRoot.innerHTML = "";
+  }
   closeOverlay(adminDeliveryNoteSheet);
 }
 
@@ -12147,14 +12170,26 @@ function resetDeliveryNoteBuilderState() {
     imageExportLoading: false,
     imageExportError: "",
     imageExportWarning: "",
+    imageExportWarningSessionId: 0,
     imageExportDebug: null,
     imageExportPhase: "",
     imageExportProgress: null,
     imageExportSessionId: Number(noteState.imageExportSessionId || 0) + 1,
+    imageExportWarningPopupDismissedSessionId: Number(noteState.imageExportSessionId || 0) + 1,
+    imageExportWarningPopupShown: false,
+    imageExportWarningPopupActiveSessionId: 0,
     imageExportReady: false,
     error: "",
     isBuilding: false
   });
+  renderDeliveryNoteSheet();
+}
+
+function dismissDeliveryNoteImageWarningPopup() {
+  const noteState = getDeliveryNoteState();
+  noteState.imageExportWarningPopupDismissedSessionId = Number(noteState.imageExportSessionId || 0);
+  noteState.imageExportWarningPopupShown = true;
+  noteState.imageExportWarningPopupActiveSessionId = 0;
   renderDeliveryNoteSheet();
 }
 
@@ -13001,6 +13036,7 @@ function resetDeliveryNoteImageExportState(noteState = getDeliveryNoteState(), p
   revokeDeliveryNoteImageExportUrls(noteState);
   noteState.imageExportError = "";
   noteState.imageExportWarning = "";
+  noteState.imageExportWarningSessionId = 0;
   noteState.imageExportDebug = null;
   noteState.imageExportProgress = null;
   noteState.imageExportReady = false;
@@ -13018,6 +13054,24 @@ function updateDeliveryNoteImageExportProgress(noteState, progress = {}) {
     ...(noteState.imageExportProgress || {}),
     ...progress
   };
+}
+
+function setDeliveryNoteImageExportWarning(noteState, warning, sessionId = 0) {
+  if (!noteState) return;
+  noteState.imageExportWarning = String(warning || "");
+  noteState.imageExportWarningSessionId = noteState.imageExportWarning
+    ? Number(sessionId || noteState.imageExportSessionId || 0)
+    : 0;
+}
+
+function getDeliveryNoteCurrentImageExportWarning(noteState = getDeliveryNoteState()) {
+  const warning = String(noteState?.imageExportWarning || "");
+  if (!warning) return "";
+  const warningSessionId = Number(noteState?.imageExportWarningSessionId || 0);
+  if (warningSessionId && warningSessionId !== Number(noteState?.imageExportSessionId || 0)) {
+    return "";
+  }
+  return warning;
 }
 
 function isDeliveryNoteImageExportSessionActive(noteState, sessionId) {
@@ -13167,8 +13221,9 @@ function collectDeliveryNoteExportImageUrls(doc) {
   return urls;
 }
 
-function createDeliveryNoteImageExportDebug() {
+function createDeliveryNoteImageExportDebug(sessionId = 0) {
   return {
+    sessionId: Number(sessionId || 0),
     imageUrlCount: 0,
     proxyAttempted: false,
     backendOk: false,
@@ -13181,12 +13236,31 @@ function createDeliveryNoteImageExportDebug() {
     captureRetryCount: 0,
     captureUnstableBeforeRetry: false,
     imageWaitFailedCount: 0,
+    finalProductImageCount: 0,
+    finalProductImageReadyCount: 0,
+    finalProductImageFailedCount: 0,
+    finalProductImageDataUrlCount: 0,
+    finalProductImageDataUrlReadyCount: 0,
+    exportPageCount: 0,
+    validExportPageCount: 0,
+    pngImageSafe: false,
     failureReasons: [],
     renderFailureReasons: [],
+    finalProductImageFailureReasons: [],
     backendError: "",
     actionUnavailable: false,
     paperLayout: null
   };
+}
+
+function getDeliveryNoteCurrentImageExportDebug(noteState = getDeliveryNoteState()) {
+  const debug = noteState?.imageExportDebug || null;
+  if (!debug) return null;
+  const debugSessionId = Number(debug.sessionId || 0);
+  if (debugSessionId && debugSessionId !== Number(noteState?.imageExportSessionId || 0)) {
+    return null;
+  }
+  return debug;
 }
 
 function roundDeliveryNoteLayoutValue(value) {
@@ -13364,6 +13438,61 @@ function hasDeliveryNoteExportImageWarning(doc) {
     });
 }
 
+function getDeliveryNoteFinalProductImageStatus(doc) {
+  const images = Array.from(doc?.querySelectorAll(".delivery-note-thumb") || []);
+  const details = images.map((img, index) => {
+    const src = String(img?.getAttribute("src") || img?.src || "");
+    const isDataUrl = /^data:image\//i.test(src);
+    const isReady = isDeliveryNoteImageRendered(img);
+    return {
+      img,
+      isDataUrl,
+      isReady,
+      reason: isReady ? "" : getDeliveryNoteImageRenderFailureReason(img, index)
+    };
+  });
+  const failures = details.filter(item => item.reason);
+  const dataUrlImages = details.filter(item => item.isDataUrl);
+  return {
+    total: images.length,
+    ready: images.length - failures.length,
+    failed: failures.length,
+    dataUrlCount: dataUrlImages.length,
+    dataUrlReady: dataUrlImages.filter(item => item.isReady).length,
+    failureReasons: failures.map(item => item.reason).slice(0, 3)
+  };
+}
+
+function applyDeliveryNoteFinalProductImageStatus(debug, doc) {
+  const status = getDeliveryNoteFinalProductImageStatus(doc);
+  if (debug) {
+    debug.finalProductImageCount = status.total;
+    debug.finalProductImageReadyCount = status.ready;
+    debug.finalProductImageFailedCount = status.failed;
+    debug.finalProductImageDataUrlCount = status.dataUrlCount;
+    debug.finalProductImageDataUrlReadyCount = status.dataUrlReady;
+    debug.finalProductImageFailureReasons = status.failureReasons;
+  }
+  return status;
+}
+
+function isDeliveryNoteProductImagesSafeForPng(debug, sessionId = 0) {
+  if (!debug) return false;
+  const expectedSessionId = Number(sessionId || 0);
+  const debugSessionId = Number(debug.sessionId || 0);
+  if (expectedSessionId && debugSessionId && expectedSessionId !== debugSessionId) return false;
+  const finalTotal = Number(debug.finalProductImageCount || 0);
+  const validExportPages = Number(debug.validExportPageCount || 0);
+  if (!finalTotal) return true;
+  if (!validExportPages || Number(debug.finalProductImageFailedCount || 0) !== 0) return false;
+  const finalDataUrlsReady =
+    Number(debug.finalProductImageDataUrlCount || 0) === finalTotal &&
+    Number(debug.finalProductImageDataUrlReadyCount || 0) === finalTotal;
+  return Number(debug.imageUrlCount || 0) > 0 &&
+    Number(debug.proxyFailureCount || 0) === 0 &&
+    finalDataUrlsReady;
+}
+
 function isDeliveryNoteExportPageStable(pageNode) {
   const images = Array.from(pageNode?.querySelectorAll("img") || []);
   return images.every(isDeliveryNoteImageRendered);
@@ -13433,7 +13562,7 @@ function prepareDeliveryNoteImageExport() {
   noteState.imageExportLoading = true;
   resetDeliveryNoteImageExportState(noteState, "preparing");
   updateDeliveryNoteImageExportProgress(noteState, { step: "preparing" });
-  noteState.imageExportDebug = createDeliveryNoteImageExportDebug();
+  noteState.imageExportDebug = createDeliveryNoteImageExportDebug(sessionId);
   renderDeliveryNoteSheet();
 
   if (!window.htmlToImage || typeof window.htmlToImage.toBlob !== "function") {
@@ -13475,7 +13604,7 @@ function prepareDeliveryNoteImageExport() {
         }
 
         let imageWarning = false;
-        const debug = createDeliveryNoteImageExportDebug();
+        const debug = createDeliveryNoteImageExportDebug(sessionId);
         noteState.imageExportDebug = debug;
         const imageUrls = collectDeliveryNoteExportImageUrls(doc);
         debug.imageUrlCount = imageUrls.length;
@@ -13591,27 +13720,61 @@ function prepareDeliveryNoteImageExport() {
           });
           return;
         }
+        const finalProductImageStatus = applyDeliveryNoteFinalProductImageStatus(debug, doc);
+        debug.exportPageCount = exportedPages.length;
+        debug.validExportPageCount = exportedPages
+          .filter(page => page?.blob && page?.objectUrl)
+          .length;
+        debug.pngImageSafe = isDeliveryNoteProductImagesSafeForPng(debug, sessionId);
         noteState.imageExportPages = exportedPages;
         noteState.imageExportReady = exportedPages.length > 0;
         setDeliveryNoteImageExportPhase(noteState, noteState.imageExportReady ? "ready" : "failed");
         updateDeliveryNoteImageExportProgress(noteState, {
           step: noteState.imageExportReady ? "ready" : "failed",
           capturePage: exportedPages.length,
-          captureTotal: pages.length
+          captureTotal: pages.length,
+          imageTotal: finalProductImageStatus.total || imageUrls.length,
+          imageConverted: finalProductImageStatus.ready || debug.dataUrlRenderedCount || debug.proxySuccessCount,
+          imageFailed: finalProductImageStatus.failed
         });
         noteState.imageExportError = "";
         noteState.imageExportDebug = debug;
-        if (debug.dataUrlAppliedCount > 0 && debug.dataUrlRenderedCount === 0) {
-          noteState.imageExportWarning = getDeliveryNoteImageIncompleteWarning(debug) ||
+        const latestIncompleteWarning = getDeliveryNoteImageIncompleteWarning(debug, sessionId);
+        const productImagesSafeForPng = debug.pngImageSafe === true;
+        const finalProductImagesDomReady = finalProductImageStatus.total > 0 &&
+          finalProductImageStatus.failed === 0;
+        if (!noteState.imageExportReady) {
+          setDeliveryNoteImageExportWarning(noteState, "", sessionId);
+        } else if (productImagesSafeForPng) {
+          setDeliveryNoteImageExportWarning(noteState, "", sessionId);
+        } else if (latestIncompleteWarning) {
+          setDeliveryNoteImageExportWarning(noteState, latestIncompleteWarning, sessionId);
+        } else if (finalProductImagesDomReady) {
+          setDeliveryNoteImageExportWarning(
+            noteState,
+            t(
+              "deliveryNoteImageExportImageEmbedWarning",
+              "รูปสินค้าบางรูปอาจยังไม่ถูกฝังในไฟล์ภาพ กรุณาลองส่งออกใหม่"
+            ),
+            sessionId
+          );
+        } else if (debug.dataUrlAppliedCount > 0 && debug.dataUrlRenderedCount === 0) {
+          setDeliveryNoteImageExportWarning(
+            noteState,
             t(
               "deliveryNoteImageExportDataUrlNotRenderedWarning",
               "แปลงรูปสินค้าได้แล้ว แต่เบราว์เซอร์ยังไม่แสดงรูปก่อนจับภาพ"
-            );
+            ),
+            sessionId
+          );
         } else {
-          noteState.imageExportWarning = imageWarning
-            ? (getDeliveryNoteImageIncompleteWarning(debug) ||
-              t("deliveryNoteImageExportImageWarning", "รูปสินค้าบางรูปอาจไม่แสดงในไฟล์ภาพ"))
-            : "";
+          setDeliveryNoteImageExportWarning(
+            noteState,
+            imageWarning
+              ? t("deliveryNoteImageExportImageWarning", "รูปสินค้าบางรูปอาจไม่แสดงในไฟล์ภาพ")
+              : "",
+            sessionId
+          );
         }
       } catch (err) {
         console.error("delivery note image export prepare failed:", err);
@@ -13624,8 +13787,9 @@ function prepareDeliveryNoteImageExport() {
         noteState.imageExportReady = false;
         setDeliveryNoteImageExportPhase(noteState, "failed");
         updateDeliveryNoteImageExportProgress(noteState, { step: "failed" });
-        noteState.imageExportWarning = "";
-        noteState.imageExportDebug = noteState.imageExportDebug || createDeliveryNoteImageExportDebug();
+        setDeliveryNoteImageExportWarning(noteState, "", sessionId);
+        noteState.imageExportDebug = getDeliveryNoteCurrentImageExportDebug(noteState) ||
+          createDeliveryNoteImageExportDebug(sessionId);
       } finally {
         if (isDeliveryNoteImageExportSessionActive(noteState, sessionId)) {
           noteState.imageExportLoading = false;
@@ -13877,7 +14041,7 @@ function renderDeliveryNotePaperLayoutDebug(debug) {
 }
 
 function renderDeliveryNoteImageExportDebug() {
-  const debug = getDeliveryNoteState().imageExportDebug;
+  const debug = getDeliveryNoteCurrentImageExportDebug();
   if (!debug) return "";
 
   const yesText = t("yes", "ใช่");
@@ -13975,27 +14139,106 @@ function getDeliveryNoteImageExportProgressText(noteState) {
   return t("deliveryNoteImageProgressPreparing", "กำลังเตรียมใบส่งของ...");
 }
 
-function getDeliveryNoteImageIncompleteWarning(debug) {
-  const total = Number(debug?.imageUrlCount || 0);
+function getDeliveryNoteImageIncompleteWarning(debug, sessionId = 0) {
+  const counts = getDeliveryNoteImageIncompleteCounts(debug, sessionId);
+  const total = counts.total;
   if (!total) return "";
-  const converted = Number(debug?.proxySuccessCount || 0);
-  const rendered = Number(debug?.dataUrlRenderedCount || 0);
-  const explicitFailures = Math.max(
-    Number(debug?.proxyFailureCount || 0),
-    Number(debug?.dataUrlNaturalSizeFailCount || 0),
-    Number(debug?.imageWaitFailedCount || 0),
-    Math.max(0, total - Math.max(converted, rendered))
-  );
-  if (!explicitFailures) return "";
+  if (!counts.failed) return "";
   return formatUiText(
     "deliveryNoteImageIncompleteWarning",
-    { failed: explicitFailures, total },
+    { failed: counts.failed, total },
     "รูปสินค้าบางรูปโหลดไม่สำเร็จ {failed} รูป จาก {total} รูป กรุณาลองส่งออกใหม่"
   );
 }
 
+function getDeliveryNoteImageIncompleteCounts(debug, sessionId = 0) {
+  if (!debug) return { failed: 0, total: 0 };
+  const expectedSessionId = Number(sessionId || 0);
+  const debugSessionId = Number(debug.sessionId || 0);
+  if (expectedSessionId && debugSessionId && expectedSessionId !== debugSessionId) {
+    return { failed: 0, total: 0 };
+  }
+  const finalTotal = Number(debug?.finalProductImageCount || 0);
+  if (finalTotal) {
+    if (isDeliveryNoteProductImagesSafeForPng(debug, sessionId)) {
+      return { failed: 0, total: finalTotal };
+    }
+    const dataUrlReady = Number(debug?.finalProductImageDataUrlReadyCount || 0);
+    return {
+      failed: Math.max(
+        Number(debug?.finalProductImageFailedCount || 0),
+        Math.max(0, finalTotal - dataUrlReady)
+      ),
+      total: finalTotal
+    };
+  }
+  const total = Number(debug?.imageUrlCount || 0);
+  const converted = Number(debug?.proxySuccessCount || 0);
+  const rendered = Number(debug?.dataUrlRenderedCount || 0);
+  const failed = total ? Math.max(
+    Number(debug?.proxyFailureCount || 0),
+    Number(debug?.dataUrlNaturalSizeFailCount || 0),
+    Number(debug?.imageWaitFailedCount || 0),
+    Math.max(0, total - Math.max(converted, rendered))
+  ) : 0;
+  return { failed, total };
+}
+
+function shouldShowDeliveryNoteImageWarningPopup(noteState) {
+  if (!noteState || noteState.imageExportLoading) return false;
+  if (noteState.imageExportPhase !== "ready" && !noteState.imageExportReady) return false;
+  if (!getDeliveryNoteCurrentImageExportWarning(noteState)) return false;
+  const sessionId = Number(noteState.imageExportSessionId || 0);
+  if (Number(noteState.imageExportWarningPopupDismissedSessionId || 0) === sessionId) return false;
+  if (
+    noteState.imageExportWarningPopupShown &&
+    Number(noteState.imageExportWarningPopupActiveSessionId || 0) !== sessionId
+  ) return false;
+  return true;
+}
+
+function renderDeliveryNoteImageWarningPopup() {
+  const noteState = getDeliveryNoteState();
+  if (!shouldShowDeliveryNoteImageWarningPopup(noteState)) return "";
+  noteState.imageExportWarningPopupShown = true;
+  noteState.imageExportWarningPopupActiveSessionId = Number(noteState.imageExportSessionId || 0);
+  const counts = getDeliveryNoteImageIncompleteCounts(
+    getDeliveryNoteCurrentImageExportDebug(noteState),
+    noteState.imageExportSessionId
+  );
+  const countText = counts.failed && counts.total
+    ? formatUiText(
+        "deliveryNoteImageWarningPopupCount",
+        { failed: counts.failed, total: counts.total },
+        "โหลดไม่สำเร็จ {failed} รูป จาก {total} รูป"
+      )
+    : "";
+
+  return `
+    <div class="delivery-note-warning-popup" role="dialog" aria-modal="true" aria-labelledby="deliveryNoteImageWarningTitle"
+      style="position:fixed;inset:0;z-index:100000;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;overscroll-behavior:contain">
+      <div class="card" style="width:min(420px,100%);max-height:calc(100vh - 36px);overflow:auto;box-shadow:0 20px 45px rgba(15,23,42,.22);border:1px solid rgba(245,158,11,.35)">
+        <div id="deliveryNoteImageWarningTitle" class="admin-detail-title">${t("deliveryNoteImageWarningPopupTitle", "รูปสินค้ายังโหลดไม่ครบ")}</div>
+        <div class="helper-text" style="margin-top:8px">${t("deliveryNoteImageWarningPopupBody", "ระบบพบว่ารูปสินค้าบางรูปยังโหลดไม่สำเร็จ ไฟล์ภาพที่ส่งออกอาจแสดงรูปไม่ครบ กรุณากดปุ่ม “ลองส่งออกใหม่” ก่อนเปิดหรือดาวน์โหลดรูปภาพ")}</div>
+        ${countText ? `<div class="error-text" style="margin-top:10px">${esc(countText)}</div>` : ""}
+        <div class="action-row" style="justify-content:flex-end;margin-top:14px">
+          <button class="btn btn-primary" type="button" onclick="dismissDeliveryNoteImageWarningPopup()">
+            ${t("deliveryNoteImageWarningPopupClose", "เข้าใจแล้ว")}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderDeliveryNoteImageWarningPopupRoot() {
+  if (!deliveryNoteImageWarningPopupRoot) return;
+  deliveryNoteImageWarningPopupRoot.innerHTML = renderDeliveryNoteImageWarningPopup();
+}
+
 function renderDeliveryNoteImageExportStatus() {
   const noteState = getDeliveryNoteState();
+  const currentWarning = getDeliveryNoteCurrentImageExportWarning(noteState);
 
   if (noteState.imageExportLoading) {
     return `
@@ -14036,8 +14279,8 @@ function renderDeliveryNoteImageExportStatus() {
   return `
     <div class="card compact-card" style="margin-top:12px">
       <strong>${formatUiText("deliveryNoteImageExportDone", { count: pages.length }, "ส่งออกรูปภาพสำเร็จ {count} หน้า")}</strong>
-      ${noteState.imageExportWarning ? `<div class="helper-text" style="margin-top:6px">${esc(noteState.imageExportWarning)}</div>` : ""}
-      ${noteState.imageExportWarning ? `
+      ${currentWarning ? `<div class="helper-text" style="margin-top:6px">${esc(currentWarning)}</div>` : ""}
+      ${currentWarning ? `
         <button class="btn btn-outline" type="button" style="margin-top:8px" onclick="prepareDeliveryNoteImageExport()">
           ${t("retryDeliveryNoteImageExport", "ลองส่งออกใหม่")}
         </button>
@@ -14249,6 +14492,7 @@ function renderDeliveryNoteSheet() {
 
     <div id="deliveryNoteResults">${renderDeliveryNoteMatchedOrders()}</div>
   `;
+  renderDeliveryNoteImageWarningPopupRoot();
 }
 
 function openPendingDeliverySheet() {
