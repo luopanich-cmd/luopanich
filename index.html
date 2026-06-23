@@ -385,6 +385,12 @@ header.scrolled{
   z-index: 1;
 }
 
+.admin-badge-lottie{
+  flex-basis: 26px;
+  width: 26px;
+  height: 26px;
+}
+
 /* ✅ Glass highlight (top-left glare) */
 .shop-title::before,
 .admin-title::before{
@@ -543,6 +549,29 @@ body[data-theme="cute"] .shop-subtitle{
   text-align: center;
   color: var(--muted);
   line-height: 1.45;
+}
+
+.empty-state-lottie-ui{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin-top:24px;
+  text-align:center;
+  color:var(--muted);
+  line-height:1.45;
+}
+
+.empty-state-lottie-player{
+  width:118px;
+  height:118px;
+  max-width:42vw;
+  display:block;
+}
+
+.empty-state-lottie-ui strong{
+  color:var(--text);
 }
 
 .action-row{
@@ -6308,6 +6337,27 @@ function renderLottieLoading(message, options = {}) {
   `;
 }
 
+function renderEmptyStateLottie(message, detail = "", options = {}) {
+  const safeMessage = escapeHtml(message || t("noProductsToShow", "ไม่พบข้อมูล"));
+  const safeDetail = detail ? `<div class="helper-text">${escapeHtml(detail)}</div>` : "";
+  const size = Math.max(96, Math.min(140, Number(options.size) || 118));
+  const className = options.className ? ` ${escapeHtml(options.className)}` : "";
+
+  return `
+    <div class="empty-state-lottie-ui${className}" role="status">
+      <dotlottie-player class="empty-state-lottie-player"
+        src="assets/empty-state-animation.lottie"
+        background="transparent"
+        speed="1"
+        loop
+        autoplay
+        style="width:${size}px;height:${size}px"></dotlottie-player>
+      <strong>${safeMessage}</strong>
+      ${safeDetail}
+    </div>
+  `;
+}
+
 function saveCart() {
   try {
     localStorage.setItem(CART_KEY, JSON.stringify(state.cart));
@@ -8002,16 +8052,10 @@ function renderProducts(){
         ? t("noFilterResults", "ไม่มีสินค้าที่ตรงกับตัวกรอง")
         : t("noProductsToShow", "ยังไม่มีสินค้าให้แสดง");
 
-    app.innerHTML = `
-      <div role="status" style="
-        text-align:center;
-        color:var(--muted);
-        margin-top:40px;
-        font-size:15px;
-      ">
-        ${emptyMessage}
-      </div>
-    `;
+    app.innerHTML = renderEmptyStateLottie(emptyMessage, "", {
+      className: "product-empty-state",
+      size: 118
+    });
     return;   
   }
 
@@ -8515,8 +8559,15 @@ function renderHeader(){
     <div class="header-left">
       <div class="header-stack">
         <div class="admin-title">
-          ${t("adminTitle", "การจัดการสินค้า")}
+          <span class="brand-title-text">${t("adminTitle", "การจัดการสินค้า")}</span>
           <span class="badge" style="margin-left:8px;">${t("adminBadge", "แอดมิน")}</span>
+          <dotlottie-player class="brand-lottie admin-badge-lottie"
+            src="assets/dog-wagging-tail.lottie"
+            background="transparent"
+            speed="1"
+            loop
+            autoplay
+            aria-hidden="true"></dotlottie-player>
           <!-- 🔴 CHANGED: เพิ่ม Mode Indicator (badge) ให้ชัด -->
         </div>
         <div class="shop-subtitle">${t("adminSubtitle", "แอดมิน · แก้ไข · ปรับสต๊อก · ตรวจออเดอร์")}</div>
@@ -9699,11 +9750,10 @@ async function openAdminDashboard(mode = "SUMMARY", force = false) {
                   </div>
                 </div>
               `).join("")
-            : `
-              <div class="empty-state">
-                ${t("noPendingOrders", "ไม่มีออเดอร์รอดำเนินการ")}
-              </div>
-            `
+            : renderEmptyStateLottie(t("noPendingOrders", "ยังไม่มีออเดอร์รออนุมัติ"), "", {
+                className: "pending-orders-empty-state",
+                size: 118
+              })
         }
       `;
       return;
@@ -14567,6 +14617,7 @@ function renderDeliveryNotePoPicker() {
   );
   const orders = getDeliveryNotePickerOrders();
   const selectedCount = selectedKeys.size;
+  const query = String(noteState.poPickerQuery || "").trim();
 
   const orderCards = noteState.poPickerLoading
     ? `<div class="loading has-lottie">${renderLottieLoading(t("deliveryNotePickerLoading", "กำลังโหลดออเดอร์..."))}</div>`
@@ -14602,7 +14653,16 @@ function renderDeliveryNotePoPicker() {
               </label>
             `;
           }).join("")
-        : `<div class="empty-state">${t("deliveryNoteNoPickerOrders", "ไม่พบออเดอร์สำหรับเลือก")}</div>`;
+        : renderEmptyStateLottie(
+            query
+              ? t("deliveryNotePoNotFoundEmpty", "ไม่พบ PO นี้")
+              : t("deliveryNoteNoPickerOrders", "ไม่พบออเดอร์สำหรับเลือก"),
+            "",
+            {
+              className: "delivery-note-po-empty-state",
+              size: 112
+            }
+          );
 
   return `
     <div class="card">
@@ -14639,13 +14699,20 @@ function renderDeliveryNotePoPicker() {
 function renderDeliveryNoteMatchedOrders() {
   const noteState = getDeliveryNoteState();
   const orders = Array.isArray(noteState.matchedOrders) ? noteState.matchedOrders : [];
+  const hasManualPoQuery = parseDeliveryNotePoInput(noteState.poInput || "").length > 0;
 
   if (noteState.isBuilding) {
     return `<div class="card"><div class="loading has-lottie">${renderLottieLoading(t("deliveryNoteSearching", "กำลังค้นหา PO..."))}</div></div>`;
   }
 
   if (noteState.error && !orders.length) {
-    return `<div class="card"><div class="error-text">${esc(noteState.error)}</div></div>`;
+    const isPoNotFound = hasManualPoQuery && /PO/i.test(String(noteState.error || ""));
+    return isPoNotFound
+      ? `<div class="card">${renderEmptyStateLottie(t("deliveryNotePoNotFoundEmpty", "ไม่พบ PO นี้"), noteState.error, {
+          className: "delivery-note-po-empty-state",
+          size: 112
+        })}</div>`
+      : `<div class="card"><div class="error-text">${esc(noteState.error)}</div></div>`;
   }
 
   if (!orders.length) {
@@ -14992,9 +15059,10 @@ function renderPendingDeliveries(list) {
   if (!Array.isArray(list) || !list.length) {
     container.innerHTML = `
       <div class="card admin-card">
-        <div class="name">
-          ${t("noPendingDeliveries", "ไม่มีรายการค้างส่ง")}
-        </div>
+        ${renderEmptyStateLottie(t("noPendingDeliveries", "ยังไม่มีรายการค้างส่ง"), "", {
+          className: "pending-deliveries-empty-state",
+          size: 118
+        })}
       </div>
     `;
     return;
