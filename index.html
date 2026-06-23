@@ -1047,6 +1047,23 @@ body:has(.side-menu.show){
   overflow: hidden;
 }
 
+body.overlay-scroll-locked{
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+body.admin-sheet-viewport-repairing{
+  overflow: auto !important;
+}
+
+body.admin-sheet-viewport-repairing #app,
+body.admin-sheet-viewport-repairing #appHeader{
+  transform: translateZ(0);
+}
+
  #confirmSheet.show{
    z-index:9999;
  }
@@ -6316,6 +6333,61 @@ async function repairMobileViewportAfterAdminLogin() {
   }
 }
 
+let adminSheetViewportRepairTimer = 0;
+
+async function repairMobileViewportAfterAdminSheetClose() {
+  blurActiveElementForMobileKeyboard();
+  await waitForAnimationFrames(2);
+  resetAdminRootAfterSheetClose();
+  syncOverlayBackdropState();
+
+  const activeOverlayCount = document.querySelectorAll(".sheet.show, .side-menu.show").length;
+  const shouldForceRootReflow = !activeOverlayCount && (window.visualViewport || window.innerWidth <= 768);
+  if (shouldForceRootReflow) {
+    document.body.classList.add("admin-sheet-viewport-repairing");
+  }
+
+  const appRoot = document.getElementById("app");
+  const header = document.getElementById("appHeader");
+  void document.documentElement.clientHeight;
+  void document.body.offsetHeight;
+  void appRoot?.getBoundingClientRect?.();
+  void header?.getBoundingClientRect?.();
+
+  window.dispatchEvent(new Event("resize"));
+  await new Promise(resolve => setTimeout(resolve, 120));
+  await waitForAnimationFrames(1);
+
+  if (window.visualViewport || window.innerWidth <= 768) {
+    const currentY = Math.max(0, Number(window.scrollY || window.pageYOffset || 0));
+    try {
+      window.scrollTo({ top: currentY, left: 0, behavior: "auto" });
+    } catch (_) {
+      window.scrollTo(0, currentY);
+    }
+  }
+
+  if (shouldForceRootReflow) {
+    await waitForAnimationFrames(1);
+    document.body.classList.remove("admin-sheet-viewport-repairing");
+    void document.body.offsetHeight;
+    window.dispatchEvent(new Event("resize"));
+  }
+}
+
+function scheduleAdminSheetViewportRepair() {
+  if (state.mode !== "admin") return;
+  if (adminSheetViewportRepairTimer) {
+    clearTimeout(adminSheetViewportRepairTimer);
+  }
+  adminSheetViewportRepairTimer = setTimeout(() => {
+    adminSheetViewportRepairTimer = 0;
+    repairMobileViewportAfterAdminSheetClose().catch(err => {
+      console.warn("admin sheet viewport repair failed", err);
+    });
+  }, 0);
+}
+
 function renderLottieLoading(message, options = {}) {
   const safeMessage = escapeHtml(message || t("loading", "กำลังโหลด..."));
   const detail = options.detail ? `<div class="helper-text">${escapeHtml(options.detail)}</div>` : "";
@@ -6966,8 +7038,34 @@ async function createOrder() {
   return json;
 }
 
+let overlayScrollLockY = 0;
+
+function lockBodyScrollForOverlay() {
+  if (document.body.classList.contains("overlay-scroll-locked")) return;
+  overlayScrollLockY = Math.max(0, Number(window.scrollY || window.pageYOffset || 0));
+  document.body.style.top = `-${overlayScrollLockY}px`;
+  document.body.classList.add("overlay-scroll-locked");
+}
+
+function unlockBodyScrollForOverlay() {
+  if (!document.body.classList.contains("overlay-scroll-locked")) return;
+  const restoreY = overlayScrollLockY;
+  document.body.classList.remove("overlay-scroll-locked");
+  document.body.style.top = "";
+  overlayScrollLockY = 0;
+  try {
+    window.scrollTo({ top: restoreY, left: 0, behavior: "auto" });
+  } catch (_) {
+    window.scrollTo(0, restoreY);
+  }
+}
+
 function openOverlay(el){
   if (!el || el.classList.contains("show")) return;
+
+  if (state.ui.overlayCount === 0) {
+    lockBodyScrollForOverlay();
+  }
 
   el.classList.add("show");
   state.ui.overlayCount++;
@@ -6987,6 +7085,7 @@ function closeOverlay(el){
 
   if (state.ui.overlayCount === 0 && !state.ui.backdropLocked) {
     backdrop.style.display = "none";
+    unlockBodyScrollForOverlay();
 
     // 🔴 FIX: reset floating bar momentum state
     const bar = document.getElementById("floatingBar");
@@ -8876,6 +8975,7 @@ function handleBackdropClick(){
    const openEls = document.querySelectorAll(".sheet.show, .side-menu.show");
    openEls.forEach(el => el.classList.remove("show"));
    state.ui.overlayCount = 0;
+   unlockBodyScrollForOverlay();
 
     safeHideLoading();   // ✅ ไม่มีทาง error
     showToast(t("operationCancelled", "ยกเลิกการดำเนินการ"), "warning", 1200);
@@ -9897,6 +9997,7 @@ function getPendingOrdersCount() {
 function backToAdminMainMenu() {
   closeOverlay(adminDashboardSheet);
   openMainMenu(document.querySelector(".menu-btn"));
+  scheduleAdminSheetViewportRepair();
 } 
 
 function ensureAdminUiContext() {
@@ -9913,6 +10014,25 @@ function ensureAdminUiContext() {
   state.search = "";
   renderHeader();
   renderProducts();
+  return true;
+}
+
+function resetAdminRootAfterSheetClose() {
+  if (
+    !state.admin.loggedIn ||
+    !state.admin.token ||
+    isAdminSessionExpired()
+  ) {
+    exitAdmin();
+    return false;
+  }
+
+  state.mode = "admin";
+  renderHeader();
+  renderProducts();
+  syncOverlayBackdropState();
+  void document.getElementById("app")?.getBoundingClientRect?.();
+  void document.getElementById("appHeader")?.getBoundingClientRect?.();
   return true;
 }
 
@@ -10044,12 +10164,14 @@ function renderAdminMenuInStockSheet() {
 function closeStockTimelineSheet() {
   if (state.admin.ui.activeSheet === "stockTimelineReturnToMenu") {
     renderAdminMenuInStockSheet();
+    scheduleAdminSheetViewportRepair();
     return;
   }
 
   state.admin.ui.activeSheet = null;
   closeOverlay(adminStockSheet);
   adminStockSheet.classList.remove("stock-menu-return-side");
+  scheduleAdminSheetViewportRepair();
 }
  
 function handleOpenDashboard() {
@@ -11162,6 +11284,7 @@ function closeAdminOrderSheet() {
     state.admin.dashboardMode || "SUMMARY",
     true
   );
+  scheduleAdminSheetViewportRepair();
 } 
 
  function openBulkPendingDeliverySheet() {
@@ -12339,6 +12462,7 @@ function closeDeliveryNoteSheet() {
     deliveryNoteImageWarningPopupRoot.innerHTML = "";
   }
   closeOverlay(adminDeliveryNoteSheet);
+  scheduleAdminSheetViewportRepair();
 }
 
 function parseDeliveryNotePoInput(value) {
@@ -15388,6 +15512,7 @@ async function markPendingDelivered(
  
 function closePendingDeliverySheet() {
   closeOverlay(pendingDeliverySheet);
+  scheduleAdminSheetViewportRepair();
 } 
  
 function openMainMenu(triggerEl){
@@ -23577,6 +23702,7 @@ function exitAdmin(opts = {}){
   sheets.forEach(el => el.classList.remove("show"));
   state.ui.overlayCount = 0;
   backdrop.style.display = "none";
+  unlockBodyScrollForOverlay();
 
   // 3) ล้าง session (จุดเดียว)
   clearAdminSession();
@@ -23627,6 +23753,7 @@ window.forceUnlockUI = function(){
 
   // hide backdrop
   if (backdrop) backdrop.style.display = "none";
+  unlockBodyScrollForOverlay();
 
   showToast(t("systemResetDone", "รีเซ็ตระบบเรียบร้อย"), "info");
 };
