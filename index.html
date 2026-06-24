@@ -4145,6 +4145,7 @@ textarea.input{
  <div id="adminBulkProductUpdateSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBulkProductUpdateSheetTitle" tabindex="-1"></div>
  <div id="adminLandedCostSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminLandedCostSheetTitle" tabindex="-1"></div>
  <div id="adminDeliveryNoteSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminDeliveryNoteSheetTitle" tabindex="-1"></div>
+ <div id="adminBillingNoteSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminBillingNoteSheetTitle" tabindex="-1"></div>
  <div id="deliveryNoteImageWarningPopupRoot"></div>
  <div id="adminPartnersSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminPartnersSheetTitle" tabindex="-1"></div>
  <div id="adminPartnerCatalogSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="adminPartnerCatalogSheetTitle" tabindex="-1"></div>
@@ -4193,6 +4194,8 @@ const adminLandedCostSheet =
   document.getElementById("adminLandedCostSheet");
 const adminDeliveryNoteSheet =
   document.getElementById("adminDeliveryNoteSheet");
+const adminBillingNoteSheet =
+  document.getElementById("adminBillingNoteSheet");
 const deliveryNoteImageWarningPopupRoot =
   document.getElementById("deliveryNoteImageWarningPopupRoot");
 const adminPartnersSheet =
@@ -4221,6 +4224,7 @@ const ADMIN_SHEETS = Object.freeze({
   bulkProductUpdate: adminBulkProductUpdateSheet,
   landedCost: adminLandedCostSheet,
   deliveryNote: adminDeliveryNoteSheet,
+  billingNote: adminBillingNoteSheet,
   partners: adminPartnersSheet,
   partnerCatalog: adminPartnerCatalogSheet,
   partnerRequests: adminPartnerRequestsSheet,
@@ -4335,6 +4339,10 @@ Object.assign(window, {
   backToAdminMenuFromBulkImport,
   openPendingDeliverySheet,
   closePendingDeliverySheet,
+  openBillingNoteSheet,
+  closeBillingNoteSheet,
+  renderBillingNoteSheet,
+  resetBillingNoteBuilderState,
   openDeliveryNoteSheet,
   closeDeliveryNoteSheet,
   renderDeliveryNoteSheet,
@@ -4445,6 +4453,18 @@ const state = {
       imageExportWarningPopupActiveSessionId: 0,
       imageExportPages: [],
       imageExportReady: false,
+      error: "",
+      isBuilding: false
+    },
+    billingNote: {
+      poInput: "",
+      matchedOrders: [],
+      selectedItems: {},
+      itemQty: {},
+      itemNotes: {},
+      poNotes: {},
+      imageExportLoading: false,
+      imageExportPages: [],
       error: "",
       isBuilding: false
     },
@@ -12419,6 +12439,91 @@ async function refreshProductsWithFeedback({
   }
 }
 
+function getBillingNoteState() {
+  if (!state.admin.billingNote) {
+    state.admin.billingNote = {};
+  }
+
+  const billingState = state.admin.billingNote;
+  if (billingState.poInput === undefined) billingState.poInput = "";
+  if (!Array.isArray(billingState.matchedOrders)) billingState.matchedOrders = [];
+  if (!billingState.selectedItems || typeof billingState.selectedItems !== "object") billingState.selectedItems = {};
+  if (!billingState.itemQty || typeof billingState.itemQty !== "object") billingState.itemQty = {};
+  if (!billingState.itemNotes || typeof billingState.itemNotes !== "object") billingState.itemNotes = {};
+  if (!billingState.poNotes || typeof billingState.poNotes !== "object") billingState.poNotes = {};
+  if (billingState.imageExportLoading === undefined) billingState.imageExportLoading = false;
+  if (!Array.isArray(billingState.imageExportPages)) billingState.imageExportPages = [];
+  if (billingState.error === undefined) billingState.error = "";
+  if (billingState.isBuilding === undefined) billingState.isBuilding = false;
+  return billingState;
+}
+
+function resetBillingNoteBuilderState() {
+  const billingState = getBillingNoteState();
+  Object.assign(billingState, {
+    poInput: "",
+    matchedOrders: [],
+    selectedItems: {},
+    itemQty: {},
+    itemNotes: {},
+    poNotes: {},
+    imageExportLoading: false,
+    imageExportPages: [],
+    error: "",
+    isBuilding: false
+  });
+  renderBillingNoteSheet();
+}
+
+function renderBillingNoteSheet() {
+  getBillingNoteState();
+  adminBillingNoteSheet.innerHTML = `
+    <div class="admin-sheet-topbar">
+      <button class="btn btn-outline back-btn" type="button" onclick="closeBillingNoteSheet()">
+        ${t("back", "กลับ")}
+      </button>
+      <h3 id="adminBillingNoteSheetTitle">
+        <span class="dashboard-title-main">${t("billingNote", "ใบวางบิล")}</span>
+      </h3>
+    </div>
+
+    <div class="card">
+      <div class="admin-detail-title">${t("billingNoteSystem", "ระบบใบวางบิล")}</div>
+      <div class="helper-text" style="margin-top:8px">
+        ${t("billingNoteShellIntro", "ขั้นตอนนี้เป็นโครงหน้าจอเริ่มต้นสำหรับใบวางบิล")}
+      </div>
+      <div class="helper-text" style="margin-top:6px">
+        ${t("billingNoteShellNext", "จะใช้รูปแบบการค้นหา PO และเลือกรายการสินค้าเหมือนใบส่งของในขั้นตอนถัดไป")}
+      </div>
+      <div class="action-row" style="margin-top:12px;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline" type="button" onclick="resetBillingNoteBuilderState()">
+          ${t("resetDeliveryNote", "ล้างค่า / เริ่มใหม่")}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function openBillingNoteSheet() {
+  if (
+    state.mode !== "admin" ||
+    !state.admin.loggedIn ||
+    !state.admin.token ||
+    isAdminSessionExpired()
+  ) {
+    exitAdmin();
+    return;
+  }
+
+  renderBillingNoteSheet();
+  openOverlay(adminBillingNoteSheet);
+}
+
+function closeBillingNoteSheet() {
+  closeOverlay(adminBillingNoteSheet);
+  scheduleAdminSheetViewportRepair();
+}
+
 function getDeliveryNoteState() {
   if (!state.admin.deliveryNote) {
     state.admin.deliveryNote = {
@@ -15623,6 +15728,11 @@ function openMainMenu(triggerEl){
                  <button class="btn btn-secondary"
                    onclick="closeMainMenu(); openDeliveryNoteSheet();">
                    ${t("deliveryNote", "ใบส่งของ")}
+                 </button>
+
+                 <button class="btn btn-secondary"
+                   onclick="closeMainMenu(); openBillingNoteSheet();">
+                   ${t("billingNote", "ใบวางบิล")}
                  </button>
 
                 ${
