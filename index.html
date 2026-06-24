@@ -714,6 +714,18 @@ body[data-theme="cute"] .shop-subtitle{
   padding-left:42px;
 }
 
+.delivery-note-bulk-select-row{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:8px;
+  margin:10px 0;
+}
+
+.delivery-note-bulk-select-row .btn{
+  width:100%;
+  min-width:0;
+}
+
 .lottie-loading-ui,
 .delivery-note-export-loading-visual{
   display:flex;
@@ -809,6 +821,10 @@ body[data-theme="cute"] .shop-subtitle{
 
   .delivery-note-note-input{
     flex-basis:140px;
+  }
+
+  .delivery-note-bulk-select-row{
+    grid-template-columns:minmax(0, 1fr);
   }
 }
 
@@ -4334,6 +4350,8 @@ Object.assign(window, {
   prepareDeliveryNoteImageExport,
   openDeliveryNoteExportImage,
   downloadDeliveryNoteExportImage,
+  selectAllDeliveryNoteItems,
+  clearAllDeliveryNoteItems,
   toggleDeliveryNoteItem,
   updateDeliveryNoteItemQty,
   updateDeliveryNoteItemNote,
@@ -12725,6 +12743,25 @@ function toggleDeliveryNoteItem(key, checked) {
   renderDeliveryNoteSheet();
 }
 
+function setAllDeliveryNoteItemsSelected(selected) {
+  const noteState = getDeliveryNoteState();
+  (Array.isArray(noteState.matchedOrders) ? noteState.matchedOrders : []).forEach(order => {
+    (Array.isArray(order?.items) ? order.items : []).forEach((item, index) => {
+      const key = getDeliveryNoteItemKey(order, item, index);
+      noteState.selectedItems[key] = !!selected;
+    });
+  });
+  renderDeliveryNoteSheet();
+}
+
+function selectAllDeliveryNoteItems() {
+  setAllDeliveryNoteItemsSelected(true);
+}
+
+function clearAllDeliveryNoteItems() {
+  setAllDeliveryNoteItemsSelected(false);
+}
+
 function updateDeliveryNoteItemQty(key, value) {
   const noteState = getDeliveryNoteState();
   noteState.itemQty[key] = String(value || "");
@@ -14855,7 +14892,6 @@ function renderDeliveryNoteMatchedOrders() {
     const key = normalizePoNumberForCompare(order?.poNumber);
     duplicateCounts.set(key, (duplicateCounts.get(key) || 0) + 1);
   });
-
   return `
     ${noteState.error ? `<div class="card"><div class="error-text">${esc(noteState.error)}</div></div>` : ""}
     <div class="helper-text" style="margin:12px 0">
@@ -14900,7 +14936,17 @@ function renderDeliveryNoteMatchedOrders() {
           </div>
           ${
             items.length
-              ? `<div class="delivery-note-items">${items.map((item, index) => renderDeliveryNoteItemRow(order, item, index)).join("")}</div>`
+              ? `
+                <div class="delivery-note-bulk-select-row">
+                  <button class="btn btn-outline" type="button" onclick="selectAllDeliveryNoteItems()">
+                    ${t("selectAllDeliveryNoteItems", "เลือกทั้งหมด")}
+                  </button>
+                  <button class="btn btn-outline" type="button" onclick="clearAllDeliveryNoteItems()">
+                    ${t("clearAllDeliveryNoteItems", "ยกเลิกทั้งหมด")}
+                  </button>
+                </div>
+                <div class="delivery-note-items">${items.map((item, index) => renderDeliveryNoteItemRow(order, item, index)).join("")}</div>
+              `
               : `<div class="empty-state">${t("noItemsInOrder", "ออเดอร์นี้ไม่มีรายการสินค้า")}</div>`
           }
         </div>
