@@ -580,36 +580,45 @@ body[data-theme="cute"] .shop-subtitle{
   margin-bottom: 14px;
 }
 
-#adminDeliveryNoteSheet{
+#adminDeliveryNoteSheet,
+#adminBillingNoteSheet{
   width:100%;
   max-width:100vw;
   overflow-x:hidden;
 }
 
 #adminDeliveryNoteSheet,
-#adminDeliveryNoteSheet *{
+#adminDeliveryNoteSheet *,
+#adminBillingNoteSheet,
+#adminBillingNoteSheet *{
   box-sizing:border-box;
 }
 
 #adminDeliveryNoteSheet .card,
 #adminDeliveryNoteSheet .delivery-note-items,
-#adminDeliveryNoteSheet .delivery-note-item-card{
+#adminDeliveryNoteSheet .delivery-note-item-card,
+#adminBillingNoteSheet .card,
+#adminBillingNoteSheet .billing-note-items,
+#adminBillingNoteSheet .billing-note-item-card{
   width:100%;
   max-width:100%;
   min-width:0;
   overflow-wrap:anywhere;
 }
 
-#adminDeliveryNoteSheet .action-row{
+#adminDeliveryNoteSheet .action-row,
+#adminBillingNoteSheet .action-row{
   flex-wrap:wrap;
 }
 
-#adminDeliveryNoteSheet .action-row .btn{
+#adminDeliveryNoteSheet .action-row .btn,
+#adminBillingNoteSheet .action-row .btn{
   flex:1 1 160px;
   min-width:0;
 }
 
-.delivery-note-item-head{
+.delivery-note-item-head,
+.billing-note-item-head{
   display:flex;
   gap:10px;
   align-items:flex-start;
@@ -618,13 +627,15 @@ body[data-theme="cute"] .shop-subtitle{
   min-width:0;
 }
 
-.delivery-note-item-head input[type="checkbox"]{
+.delivery-note-item-head input[type="checkbox"],
+.billing-note-item-head input[type="checkbox"]{
   flex:0 0 auto;
   width:auto;
   margin-top:4px;
 }
 
-.delivery-note-item-main{
+.delivery-note-item-main,
+.billing-note-item-main{
   display:flex;
   gap:10px;
   align-items:flex-start;
@@ -633,14 +644,16 @@ body[data-theme="cute"] .shop-subtitle{
   max-width:100%;
 }
 
-.delivery-note-thumb-col{
+.delivery-note-thumb-col,
+.billing-note-thumb-col{
   flex:0 0 46px;
   width:46px;
   max-width:46px;
   text-align:center;
 }
 
-.delivery-note-thumb-col img{
+.delivery-note-thumb-col img,
+.billing-note-thumb-col img{
   width:42px;
   max-width:100%;
   height:42px;
@@ -649,7 +662,8 @@ body[data-theme="cute"] .shop-subtitle{
   margin:0 auto;
 }
 
-.delivery-note-item-info{
+.delivery-note-item-info,
+.billing-note-item-info{
   flex:1 1 auto;
   min-width:0;
   max-width:100%;
@@ -657,12 +671,14 @@ body[data-theme="cute"] .shop-subtitle{
   word-break:break-word;
 }
 
-.delivery-note-item-sku{
+.delivery-note-item-sku,
+.billing-note-item-sku{
   display:block;
   line-height:1.2;
 }
 
-.delivery-note-item-name{
+.delivery-note-item-name,
+.billing-note-item-name{
   display:-webkit-box;
   -webkit-line-clamp:2;
   -webkit-box-orient:vertical;
@@ -670,7 +686,8 @@ body[data-theme="cute"] .shop-subtitle{
   line-height:1.25;
 }
 
-.delivery-note-item-controls{
+.delivery-note-item-controls,
+.billing-note-item-controls{
   display:flex;
   flex-wrap:wrap;
   align-items:center;
@@ -679,7 +696,8 @@ body[data-theme="cute"] .shop-subtitle{
   padding-left:34px;
 }
 
-.delivery-note-item-control{
+.delivery-note-item-control,
+.billing-note-item-control{
   display:flex;
   align-items:center;
   gap:6px;
@@ -688,40 +706,47 @@ body[data-theme="cute"] .shop-subtitle{
   font-size:13px;
 }
 
-.delivery-note-item-control input{
+.delivery-note-item-control input,
+.billing-note-item-control input{
   min-height:36px;
   padding:8px 10px;
   border-radius:12px;
 }
 
-.delivery-note-qty-input{
+.delivery-note-qty-input,
+.billing-note-qty-input{
   width:72px;
   flex:0 0 72px;
 }
 
-.delivery-note-note-control{
+.delivery-note-note-control,
+.billing-note-note-control{
   flex:1 1 220px;
 }
 
-.delivery-note-note-input{
+.delivery-note-note-input,
+.billing-note-note-input{
   width:100%;
   min-width:120px;
   flex:1 1 150px;
 }
 
-.delivery-note-item-error{
+.delivery-note-item-error,
+.billing-note-item-error{
   flex:1 1 100%;
   padding-left:42px;
 }
 
-.delivery-note-bulk-select-row{
+.delivery-note-bulk-select-row,
+.billing-note-bulk-select-row{
   display:grid;
   grid-template-columns:repeat(2, minmax(0, 1fr));
   gap:8px;
   margin:10px 0;
 }
 
-.delivery-note-bulk-select-row .btn{
+.delivery-note-bulk-select-row .btn,
+.billing-note-bulk-select-row .btn{
   width:100%;
   min-width:0;
 }
@@ -783,47 +808,58 @@ body[data-theme="cute"] .shop-subtitle{
   word-break:break-word;
 }
 
-#adminDeliveryNoteSheet .form-grid{
+#adminDeliveryNoteSheet .form-grid,
+#adminBillingNoteSheet .form-grid{
   max-width:100%;
   min-width:0;
 }
 
 #adminDeliveryNoteSheet .form-group,
 #adminDeliveryNoteSheet .form-group input,
-#adminDeliveryNoteSheet textarea{
+#adminDeliveryNoteSheet textarea,
+#adminBillingNoteSheet .form-group,
+#adminBillingNoteSheet .form-group input,
+#adminBillingNoteSheet textarea{
   max-width:100%;
   min-width:0;
 }
 
 @media (max-width:480px){
-  #adminDeliveryNoteSheet{
+  #adminDeliveryNoteSheet,
+  #adminBillingNoteSheet{
     padding-left:max(12px, env(safe-area-inset-left, 0px));
     padding-right:max(12px, env(safe-area-inset-right, 0px));
   }
 
-  #adminDeliveryNoteSheet .card{
+  #adminDeliveryNoteSheet .card,
+  #adminBillingNoteSheet .card{
     padding:12px;
   }
 
-  #adminDeliveryNoteSheet .form-grid{
+  #adminDeliveryNoteSheet .form-grid,
+  #adminBillingNoteSheet .form-grid{
     display:grid;
     grid-template-columns:minmax(0, 1fr);
     gap:10px;
   }
 
-  .delivery-note-item-main{
+  .delivery-note-item-main,
+  .billing-note-item-main{
     gap:8px;
   }
 
-  .delivery-note-item-controls{
+  .delivery-note-item-controls,
+  .billing-note-item-controls{
     padding-left:0;
   }
 
-  .delivery-note-note-input{
+  .delivery-note-note-input,
+  .billing-note-note-input{
     flex-basis:140px;
   }
 
-  .delivery-note-bulk-select-row{
+  .delivery-note-bulk-select-row,
+  .billing-note-bulk-select-row{
     grid-template-columns:minmax(0, 1fr);
   }
 }
@@ -4344,6 +4380,12 @@ Object.assign(window, {
   renderBillingNoteSheet,
   searchBillingNotePo,
   resetBillingNoteBuilderState,
+  selectAllBillingNoteItems,
+  clearAllBillingNoteItems,
+  toggleBillingNoteItem,
+  updateBillingNoteItemQty,
+  updateBillingNoteItemNote,
+  updateBillingNotePoNote,
   openDeliveryNoteSheet,
   closeDeliveryNoteSheet,
   renderDeliveryNoteSheet,
@@ -12494,6 +12536,117 @@ function isBillingNoteApprovedOrder(order) {
   return String(order?.status || "").trim().toUpperCase() === "APPROVED";
 }
 
+function getBillingNoteItemKeyFromParts(orderId, productId, index) {
+  return [
+    String(orderId || "").trim(),
+    String(productId || "").trim(),
+    Number(index) || 0
+  ].join("::");
+}
+
+function getBillingNoteItemKey(order, item, index) {
+  return getBillingNoteItemKeyFromParts(
+    order?.orderId,
+    item?.productId,
+    index
+  );
+}
+
+function getBillingNoteItemQtyValue(billingState, key, item) {
+  const current = billingState.itemQty?.[key];
+  if (current !== undefined) return current;
+  return String(Number(item?.qty) || 0);
+}
+
+function toggleBillingNoteItem(orderId, productId, index, checked) {
+  const billingState = getBillingNoteState();
+  const key = getBillingNoteItemKeyFromParts(orderId, productId, index);
+  billingState.selectedItems[key] = !!checked;
+  renderBillingNoteSheet();
+}
+
+function setAllBillingNoteItemsSelected(selected) {
+  const billingState = getBillingNoteState();
+  (Array.isArray(billingState.matchedOrders) ? billingState.matchedOrders : []).forEach(order => {
+    (Array.isArray(order?.items) ? order.items : []).forEach((item, index) => {
+      const key = getBillingNoteItemKey(order, item, index);
+      billingState.selectedItems[key] = !!selected;
+    });
+  });
+  renderBillingNoteSheet();
+}
+
+function selectAllBillingNoteItems() {
+  setAllBillingNoteItemsSelected(true);
+}
+
+function clearAllBillingNoteItems() {
+  setAllBillingNoteItemsSelected(false);
+}
+
+function updateBillingNoteItemQty(orderId, productId, index, value) {
+  const billingState = getBillingNoteState();
+  const key = getBillingNoteItemKeyFromParts(orderId, productId, index);
+  billingState.itemQty[key] = String(value || "");
+}
+
+function updateBillingNoteItemNote(orderId, productId, index, value) {
+  const billingState = getBillingNoteState();
+  const key = getBillingNoteItemKeyFromParts(orderId, productId, index);
+  billingState.itemNotes[key] = String(value || "");
+}
+
+function updateBillingNotePoNote(orderId, value) {
+  const billingState = getBillingNoteState();
+  billingState.poNotes[String(orderId || "")] = String(value || "");
+}
+
+function renderBillingNoteItemRow(order, item, index) {
+  const billingState = getBillingNoteState();
+  const key = getBillingNoteItemKey(order, item, index);
+  const orderId = String(order?.orderId || "").trim();
+  const productId = String(item?.productId || "").trim() || "-";
+  const name = String(item?.name || "").trim();
+  const orderedQty = Number(item?.qty) || 0;
+  const imageUrl = getAdminPoPrintItemImage(item);
+  const checked = billingState.selectedItems[key] !== false;
+  const qtyValue = getBillingNoteItemQtyValue(billingState, key, item);
+  const imageCell = imageUrl
+    ? `<img class="billing-note-thumb" src="${escAttr(imageUrl)}" alt="${escAttr(name || productId)}" onerror="this.replaceWith(document.createTextNode('-'));">`
+    : "-";
+
+  return `
+    <div class="card compact-card billing-note-item-card">
+      <label class="billing-note-item-head">
+        <input type="checkbox"
+          ${checked ? "checked" : ""}
+          onchange="toggleBillingNoteItem(${toInlineJsStringLiteral(orderId)}, ${toInlineJsStringLiteral(productId)}, ${Number(index) || 0}, this.checked)">
+        <span class="billing-note-item-main">
+          <span class="billing-note-thumb-col">${imageCell}</span>
+          <span class="billing-note-item-info">
+            <strong class="billing-note-item-sku">${esc(productId)}</strong>
+            <span class="stock billing-note-item-name">${esc(name || "-")}</span>
+          </span>
+        </span>
+      </label>
+      <div class="billing-note-item-controls">
+        <span class="billing-note-item-control">${t("orderedQty", "จำนวนสั่ง")}: ${orderedQty}</span>
+        <label class="billing-note-item-control">
+          ${t("billingQty", "จำนวนวางบิล")}:
+          <input class="billing-note-qty-input" type="number" min="0" max="${orderedQty}" step="1"
+            value="${escAttr(qtyValue)}"
+            oninput="updateBillingNoteItemQty(${toInlineJsStringLiteral(orderId)}, ${toInlineJsStringLiteral(productId)}, ${Number(index) || 0}, this.value)">
+        </label>
+        <label class="billing-note-item-control billing-note-note-control">
+          ${t("itemNote", "หมายเหตุสินค้า")}:
+          <input class="billing-note-note-input" value="${escAttr(billingState.itemNotes[key] || "")}"
+            oninput="updateBillingNoteItemNote(${toInlineJsStringLiteral(orderId)}, ${toInlineJsStringLiteral(productId)}, ${Number(index) || 0}, this.value)">
+        </label>
+      </div>
+    </div>
+  `;
+}
+
 function renderBillingNoteMatchedOrders() {
   const billingState = getBillingNoteState();
   const orders = Array.isArray(billingState.matchedOrders) ? billingState.matchedOrders : [];
@@ -12541,6 +12694,26 @@ function renderBillingNoteMatchedOrders() {
             ${t("status", "สถานะ")}: ${esc(getAdminOrderStatusLabel(order?.status || "-"))}<br>
             ${formatUiText("billingNoteItemCount", { count: items.length }, "{count} รายการ")}
           </div>
+          <div class="form-group" style="margin-top:10px">
+            <label>${t("poNote", "หมายเหตุ PO")}</label>
+            <input value="${escAttr(billingState.poNotes[orderId] || "")}"
+              oninput="updateBillingNotePoNote(${toInlineJsStringLiteral(orderId)}, this.value)">
+          </div>
+          ${
+            items.length
+              ? `
+                <div class="billing-note-bulk-select-row">
+                  <button class="btn btn-outline" type="button" onclick="selectAllBillingNoteItems()">
+                    ${t("selectAllDeliveryNoteItems", "เลือกทั้งหมด")}
+                  </button>
+                  <button class="btn btn-outline" type="button" onclick="clearAllBillingNoteItems()">
+                    ${t("clearAllDeliveryNoteItems", "ยกเลิกทั้งหมด")}
+                  </button>
+                </div>
+                <div class="billing-note-items">${items.map((item, index) => renderBillingNoteItemRow(order, item, index)).join("")}</div>
+              `
+              : `<div class="empty-state">${t("noItemsInOrder", "ออเดอร์นี้ไม่มีรายการสินค้า")}</div>`
+          }
         </div>
       `;
     }).join("")}
@@ -12563,6 +12736,10 @@ async function searchBillingNotePo() {
   billingState.poInput = String(input?.value || billingState.poInput || "");
   const poList = parseBillingNotePoInput(billingState.poInput);
   billingState.matchedOrders = [];
+  billingState.selectedItems = {};
+  billingState.itemQty = {};
+  billingState.itemNotes = {};
+  billingState.poNotes = {};
   billingState.error = "";
   billingState.isBuilding = true;
   renderBillingNoteSheet();
@@ -12595,6 +12772,20 @@ async function searchBillingNotePo() {
           "ยังไม่พบออเดอร์ APPROVED สำหรับ PO: {po}"
         )).join(" · ")
       : "";
+
+    matchedOrders.forEach(order => {
+      const orderId = String(order?.orderId || "").trim();
+      if (orderId && billingState.poNotes[orderId] === undefined) {
+        billingState.poNotes[orderId] = "";
+      }
+
+      (Array.isArray(order?.items) ? order.items : []).forEach((item, index) => {
+        const key = getBillingNoteItemKey(order, item, index);
+        billingState.selectedItems[key] = true;
+        billingState.itemQty[key] = String(Number(item?.qty) || 0);
+        billingState.itemNotes[key] = "";
+      });
+    });
   } catch (err) {
     console.error("billing note PO search failed:", err);
     billingState.matchedOrders = [];
