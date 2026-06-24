@@ -4342,6 +4342,7 @@ Object.assign(window, {
   openBillingNoteSheet,
   closeBillingNoteSheet,
   renderBillingNoteSheet,
+  searchBillingNotePo,
   resetBillingNoteBuilderState,
   openDeliveryNoteSheet,
   closeDeliveryNoteSheet,
@@ -12475,8 +12476,137 @@ function resetBillingNoteBuilderState() {
   renderBillingNoteSheet();
 }
 
+function parseBillingNotePoInput(value) {
+  const seen = new Set();
+  return String(value || "")
+    .split(/[\s,]+/)
+    .map(item => item.trim())
+    .filter(Boolean)
+    .filter(item => {
+      const key = normalizePoNumberForCompare(item);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+function isBillingNoteApprovedOrder(order) {
+  return String(order?.status || "").trim().toUpperCase() === "APPROVED";
+}
+
+function renderBillingNoteMatchedOrders() {
+  const billingState = getBillingNoteState();
+  const orders = Array.isArray(billingState.matchedOrders) ? billingState.matchedOrders : [];
+  const hasPoQuery = parseBillingNotePoInput(billingState.poInput || "").length > 0;
+
+  if (billingState.isBuilding) {
+    return `<div class="card"><div class="loading has-lottie">${renderLottieLoading(t("billingNoteSearching", "กำลังค้นหา PO..."))}</div></div>`;
+  }
+
+  if (billingState.error && !orders.length) {
+    const message = hasPoQuery
+      ? t("billingNotePoNotFoundEmpty", "ยังไม่พบออเดอร์ APPROVED สำหรับ PO นี้")
+      : billingState.error;
+    return `<div class="card">${renderEmptyStateLottie(message, billingState.error, {
+      className: "billing-note-po-empty-state",
+      size: 112
+    })}</div>`;
+  }
+
+  if (!orders.length) {
+    return `
+      <div class="card">
+        <div class="empty-state">
+          <strong>${t("billingNote", "ใบวางบิล")}</strong><br>
+          ${t("billingNoteEmptyState", "กรอกเลข PO เพื่อสร้างใบวางบิล")}
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="helper-text" style="margin:12px 0">
+      ${formatUiText("billingNoteMatchedOrders", { count: orders.length }, "พบออเดอร์ APPROVED {count} รายการ")}
+    </div>
+    ${orders.map(order => {
+      const items = Array.isArray(order?.items) ? order.items : [];
+      const orderId = String(order?.orderId || "").trim();
+      const createdAt = getOrderDateValue(order);
+      return `
+        <div class="card">
+          <div class="admin-detail-title">${esc(order?.poNumber || "-")}</div>
+          <div class="stock">
+            ${t("orderNumber", "เลขออเดอร์")}: ${esc(orderId || "-")}<br>
+            ${t("date", "วันที่")}: ${esc(formatThaiDate(createdAt))}<br>
+            ${t("status", "สถานะ")}: ${esc(getAdminOrderStatusLabel(order?.status || "-"))}<br>
+            ${formatUiText("billingNoteItemCount", { count: items.length }, "{count} รายการ")}
+          </div>
+        </div>
+      `;
+    }).join("")}
+  `;
+}
+
+async function searchBillingNotePo() {
+  if (
+    state.mode !== "admin" ||
+    !state.admin.loggedIn ||
+    !state.admin.token ||
+    isAdminSessionExpired()
+  ) {
+    exitAdmin();
+    return;
+  }
+
+  const billingState = getBillingNoteState();
+  const input = document.getElementById("billingNotePoInput");
+  billingState.poInput = String(input?.value || billingState.poInput || "");
+  const poList = parseBillingNotePoInput(billingState.poInput);
+  billingState.matchedOrders = [];
+  billingState.error = "";
+  billingState.isBuilding = true;
+  renderBillingNoteSheet();
+
+  if (!poList.length) {
+    billingState.error = t("billingNotePoRequired", "กรุณากรอกเลข PO อย่างน้อย 1 รายการ");
+    billingState.isBuilding = false;
+    renderBillingNoteSheet();
+    return;
+  }
+
+  try {
+    if (!Array.isArray(state.admin.orders) || state.admin.orders.length === 0) {
+      const orders = await fetchOrders();
+      state.admin.orders = Array.isArray(orders) ? orders : [];
+    }
+
+    const requestedPoKeys = new Set(poList.map(normalizePoNumberForCompare));
+    const matchedOrders = (Array.isArray(state.admin.orders) ? state.admin.orders : [])
+      .filter(order => requestedPoKeys.has(normalizePoNumberForCompare(order?.poNumber)))
+      .filter(isBillingNoteApprovedOrder);
+    const matchedPoKeys = new Set(matchedOrders.map(order => normalizePoNumberForCompare(order?.poNumber)));
+    const missingPo = poList.filter(po => !matchedPoKeys.has(normalizePoNumberForCompare(po)));
+
+    billingState.matchedOrders = matchedOrders;
+    billingState.error = missingPo.length
+      ? missingPo.map(po => formatUiText(
+          "billingNotePoNotApproved",
+          { po },
+          "ยังไม่พบออเดอร์ APPROVED สำหรับ PO: {po}"
+        )).join(" · ")
+      : "";
+  } catch (err) {
+    console.error("billing note PO search failed:", err);
+    billingState.matchedOrders = [];
+    billingState.error = err.message || t("loadDataFailed", "โหลดข้อมูลไม่สำเร็จ");
+  } finally {
+    billingState.isBuilding = false;
+    renderBillingNoteSheet();
+  }
+}
+
 function renderBillingNoteSheet() {
-  getBillingNoteState();
+  const billingState = getBillingNoteState();
   adminBillingNoteSheet.innerHTML = `
     <div class="admin-sheet-topbar">
       <button class="btn btn-outline back-btn" type="button" onclick="closeBillingNoteSheet()">
@@ -12495,12 +12625,25 @@ function renderBillingNoteSheet() {
       <div class="helper-text" style="margin-top:6px">
         ${t("billingNoteShellNext", "จะใช้รูปแบบการค้นหา PO และเลือกรายการสินค้าเหมือนใบส่งของในขั้นตอนถัดไป")}
       </div>
+      <div class="form-group" style="margin-top:12px">
+        <label for="billingNotePoInput">${t("billingNotePoInput", "เลข PO สำหรับใบวางบิล")}</label>
+        <textarea
+          id="billingNotePoInput"
+          rows="4"
+          placeholder="${escAttr(t("billingNotePoPlaceholder", "กรอกเลข PO เพื่อสร้างใบวางบิล"))}"
+          oninput="state.admin.billingNote.poInput = this.value">${esc(billingState.poInput || "")}</textarea>
+      </div>
       <div class="action-row" style="margin-top:12px;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary" type="button" onclick="searchBillingNotePo()">
+          ${billingState.isBuilding ? t("billingNoteSearching", "กำลังค้นหา PO...") : t("searchPo", "ค้นหา PO")}
+        </button>
         <button class="btn btn-outline" type="button" onclick="resetBillingNoteBuilderState()">
           ${t("resetDeliveryNote", "ล้างค่า / เริ่มใหม่")}
         </button>
       </div>
     </div>
+
+    <div id="billingNoteResults">${renderBillingNoteMatchedOrders()}</div>
   `;
 }
 
