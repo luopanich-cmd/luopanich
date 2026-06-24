@@ -751,6 +751,27 @@ body[data-theme="cute"] .shop-subtitle{
   min-width:0;
 }
 
+.billing-note-total-summary{
+  margin-top:12px;
+  padding:12px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:16px;
+  background:rgba(255,255,255,.08);
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  text-align:right;
+}
+
+.billing-note-total-summary strong{
+  font-size:20px;
+}
+
+.billing-note-total-text{
+  color:var(--muted);
+  font-size:13px;
+}
+
 .lottie-loading-ui,
 .delivery-note-export-loading-visual{
   display:flex;
@@ -861,6 +882,10 @@ body[data-theme="cute"] .shop-subtitle{
   .delivery-note-bulk-select-row,
   .billing-note-bulk-select-row{
     grid-template-columns:minmax(0, 1fr);
+  }
+
+  .billing-note-total-summary{
+    text-align:left;
   }
 }
 
@@ -12558,6 +12583,114 @@ function getBillingNoteItemQtyValue(billingState, key, item) {
   return String(Number(item?.qty) || 0);
 }
 
+function getBillingNoteItemQtyNumber(billingState, key, item) {
+  const value = Number(getBillingNoteItemQtyValue(billingState, key, item));
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function getBillingNoteSalePrice(item) {
+  const value = Number(item?.price || 0);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function calculateBillingNoteLineTotal(item, qty) {
+  return getBillingNoteSalePrice(item) * (Number(qty) || 0);
+}
+
+function calculateBillingNoteOrderTotal(order) {
+  const billingState = getBillingNoteState();
+  return (Array.isArray(order?.items) ? order.items : []).reduce((sum, item, index) => {
+    const key = getBillingNoteItemKey(order, item, index);
+    if (billingState.selectedItems[key] === false) return sum;
+    const qty = getBillingNoteItemQtyNumber(billingState, key, item);
+    return sum + calculateBillingNoteLineTotal(item, qty);
+  }, 0);
+}
+
+function formatBillingNoteMoney(value) {
+  const cents = Math.round((Number(value) || 0) * 100);
+  const sign = cents < 0 ? "-" : "";
+  const absCents = Math.abs(cents);
+  const whole = Math.floor(absCents / 100);
+  const satang = absCents % 100;
+  return `฿${sign}${whole.toLocaleString("th-TH")}${satang ? `.${String(satang).padStart(2, "0")}` : ".-"}`;
+}
+
+function billingNoteNumberToThaiText(value) {
+  const digits = ["ศูนย์", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า"];
+  const positions = ["", "สิบ", "ร้อย", "พัน", "หมื่น", "แสน"];
+  const number = Math.floor(Math.abs(Number(value) || 0));
+  if (number === 0) return digits[0];
+  if (number >= 1000000) {
+    const million = Math.floor(number / 1000000);
+    const rest = number % 1000000;
+    return `${billingNoteNumberToThaiText(million)}ล้าน${rest ? billingNoteNumberToThaiText(rest) : ""}`;
+  }
+
+  const text = String(number);
+  let result = "";
+  for (let i = 0; i < text.length; i += 1) {
+    const digit = Number(text[i]);
+    if (!digit) continue;
+    const position = text.length - i - 1;
+    if (position === 1) {
+      if (digit === 1) {
+        result += "สิบ";
+      } else if (digit === 2) {
+        result += "ยี่สิบ";
+      } else {
+        result += `${digits[digit]}สิบ`;
+      }
+    } else if (position === 0 && digit === 1 && text.length > 1) {
+      result += "เอ็ด";
+    } else {
+      result += `${digits[digit]}${positions[position] || ""}`;
+    }
+  }
+  return result;
+}
+
+function billingNoteAmountToThaiText(value) {
+  const cents = Math.round((Number(value) || 0) * 100);
+  const absCents = Math.abs(cents);
+  const baht = Math.floor(absCents / 100);
+  const satang = absCents % 100;
+  const prefix = cents < 0 ? "ลบ" : "";
+  if (baht === 0 && satang === 0) return "ศูนย์บาทถ้วน";
+  const bahtText = `${prefix}${billingNoteNumberToThaiText(baht)}บาท`;
+  return satang ? `${bahtText}${billingNoteNumberToThaiText(satang)}สตางค์` : `${bahtText}ถ้วน`;
+}
+
+function refreshBillingNoteOrderTotals(orderId) {
+  const billingState = getBillingNoteState();
+  const order = (Array.isArray(billingState.matchedOrders) ? billingState.matchedOrders : [])
+    .find(candidate => String(candidate?.orderId || "").trim() === String(orderId || "").trim());
+  if (!order) return;
+
+  (Array.isArray(order?.items) ? order.items : []).forEach((item, index) => {
+    const key = getBillingNoteItemKey(order, item, index);
+    const qty = getBillingNoteItemQtyNumber(billingState, key, item);
+    const lineTotal = billingState.selectedItems[key] === false ? 0 : calculateBillingNoteLineTotal(item, qty);
+    document.querySelectorAll("[data-billing-note-line-total]").forEach(node => {
+      if (node.dataset.billingNoteItemKey === key) {
+        node.textContent = formatBillingNoteMoney(lineTotal);
+      }
+    });
+  });
+
+  const total = calculateBillingNoteOrderTotal(order);
+  document.querySelectorAll("[data-billing-note-net-total]").forEach(node => {
+    if (node.dataset.billingNoteOrderId === String(orderId || "").trim()) {
+      node.textContent = formatBillingNoteMoney(total);
+    }
+  });
+  document.querySelectorAll("[data-billing-note-baht-text]").forEach(node => {
+    if (node.dataset.billingNoteOrderId === String(orderId || "").trim()) {
+      node.textContent = `(${billingNoteAmountToThaiText(total)})`;
+    }
+  });
+}
+
 function toggleBillingNoteItem(orderId, productId, index, checked) {
   const billingState = getBillingNoteState();
   const key = getBillingNoteItemKeyFromParts(orderId, productId, index);
@@ -12588,6 +12721,7 @@ function updateBillingNoteItemQty(orderId, productId, index, value) {
   const billingState = getBillingNoteState();
   const key = getBillingNoteItemKeyFromParts(orderId, productId, index);
   billingState.itemQty[key] = String(value || "");
+  refreshBillingNoteOrderTotals(orderId);
 }
 
 function updateBillingNoteItemNote(orderId, productId, index, value) {
@@ -12611,6 +12745,9 @@ function renderBillingNoteItemRow(order, item, index) {
   const imageUrl = getAdminPoPrintItemImage(item);
   const checked = billingState.selectedItems[key] !== false;
   const qtyValue = getBillingNoteItemQtyValue(billingState, key, item);
+  const qtyNumber = getBillingNoteItemQtyNumber(billingState, key, item);
+  const salePrice = getBillingNoteSalePrice(item);
+  const lineTotal = checked ? calculateBillingNoteLineTotal(item, qtyNumber) : 0;
   const imageCell = imageUrl
     ? `<img class="billing-note-thumb" src="${escAttr(imageUrl)}" alt="${escAttr(name || productId)}" onerror="this.replaceWith(document.createTextNode('-'));">`
     : "-";
@@ -12631,12 +12768,17 @@ function renderBillingNoteItemRow(order, item, index) {
       </label>
       <div class="billing-note-item-controls">
         <span class="billing-note-item-control">${t("orderedQty", "จำนวนสั่ง")}: ${orderedQty}</span>
+        <span class="billing-note-item-control">${t("salePrice", "ราคาขาย")}: ${formatBillingNoteMoney(salePrice)}</span>
         <label class="billing-note-item-control">
           ${t("billingQty", "จำนวนวางบิล")}:
           <input class="billing-note-qty-input" type="number" min="0" max="${orderedQty}" step="1"
             value="${escAttr(qtyValue)}"
             oninput="updateBillingNoteItemQty(${toInlineJsStringLiteral(orderId)}, ${toInlineJsStringLiteral(productId)}, ${Number(index) || 0}, this.value)">
         </label>
+        <span class="billing-note-item-control">
+          ${t("billingNoteLineTotal", "รวม")}:
+          <strong data-billing-note-line-total data-billing-note-item-key="${escAttr(key)}">${formatBillingNoteMoney(lineTotal)}</strong>
+        </span>
         <label class="billing-note-item-control billing-note-note-control">
           ${t("itemNote", "หมายเหตุสินค้า")}:
           <input class="billing-note-note-input" value="${escAttr(billingState.itemNotes[key] || "")}"
@@ -12685,6 +12827,7 @@ function renderBillingNoteMatchedOrders() {
       const items = Array.isArray(order?.items) ? order.items : [];
       const orderId = String(order?.orderId || "").trim();
       const createdAt = getOrderDateValue(order);
+      const orderTotal = calculateBillingNoteOrderTotal(order);
       return `
         <div class="card">
           <div class="admin-detail-title">${esc(order?.poNumber || "-")}</div>
@@ -12711,6 +12854,11 @@ function renderBillingNoteMatchedOrders() {
                   </button>
                 </div>
                 <div class="billing-note-items">${items.map((item, index) => renderBillingNoteItemRow(order, item, index)).join("")}</div>
+                <div class="billing-note-total-summary">
+                  <span>${t("netTotal", "ยอดรวมสุทธิ")}</span>
+                  <strong data-billing-note-net-total data-billing-note-order-id="${escAttr(orderId)}">${formatBillingNoteMoney(orderTotal)}</strong>
+                  <span class="billing-note-total-text" data-billing-note-baht-text data-billing-note-order-id="${escAttr(orderId)}">(${esc(billingNoteAmountToThaiText(orderTotal))})</span>
+                </div>
               `
               : `<div class="empty-state">${t("noItemsInOrder", "ออเดอร์นี้ไม่มีรายการสินค้า")}</div>`
           }
