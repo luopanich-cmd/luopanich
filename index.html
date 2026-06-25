@@ -13234,19 +13234,23 @@ function buildBillingNotePrintPageHtml(page, pageIndex, pageCount, context) {
     <main class="billing-note-print-page${page.isFinal ? " is-final-page" : ""}">
       <div class="billing-note-content-frame">
         <header class="doc-header">
-          <div class="company">
+          <div class="billing-note-logo-row">
             <img class="billing-logo" src="${escAttr(context.logoUrl)}" alt="LUOPARICH" onerror="this.remove()">
-            <div>
-              <div class="company-name-th">${esc(context.company.nameTh)}</div>
-              <div class="company-name-en">${esc(context.company.nameEn)}</div>
-              <div class="company-small">${esc(context.company.taxId)}</div>
-              <div class="company-small">${esc(context.company.address)}</div>
-            </div>
           </div>
-          <div class="doc-title-block">
-            <div class="doc-title">${esc(context.title)}</div>
-            <div class="print-time">${esc(context.printDateTime)}</div>
-            <div class="page-count">หน้า ${pageIndex + 1}/${pageCount}</div>
+          <div class="billing-note-header-main">
+            <div class="company">
+              <div>
+                <div class="company-name-th">${esc(context.company.nameTh)}</div>
+                <div class="company-name-en">${esc(context.company.nameEn)}</div>
+                <div class="company-small">${esc(context.company.taxId)}</div>
+                <div class="company-small">${esc(context.company.address)}</div>
+              </div>
+            </div>
+            <div class="doc-title-block">
+              <div class="doc-title">${esc(context.title)}</div>
+              <div class="print-time">${esc(context.printDateTime)}</div>
+              <div class="page-count">หน้า ${pageIndex + 1}/${pageCount}</div>
+            </div>
           </div>
         </header>
         ${renderBillingNoteInfoRow(page.rows, context)}
@@ -13346,9 +13350,9 @@ function buildPaginatedBillingNotePrintHtml(data, options = {}) {
         .billing-note-print-page {
           width:186mm;
           max-width:186mm;
-          min-height:244mm;
+          min-height:260mm;
           margin:0 auto;
-          padding:8mm;
+          padding:7mm 8mm 5mm;
           background:#fff;
           display:flex;
           flex-direction:column;
@@ -13365,7 +13369,7 @@ function buildPaginatedBillingNotePrintHtml(data, options = {}) {
           max-width:210mm;
           min-height:0;
           height:auto;
-          padding:10mm 12mm 12mm;
+          padding:8mm 12mm 8mm;
           margin:0 auto 12px;
         }
         .billing-note-content-frame {
@@ -13378,26 +13382,35 @@ function buildPaginatedBillingNotePrintHtml(data, options = {}) {
           overflow:visible;
         }
         .doc-header {
-          display:grid;
-          grid-template-columns:minmax(0, 1fr) auto;
-          align-items:start;
-          gap:16px;
-          padding-bottom:12px;
+          display:flex;
+          flex-direction:column;
+          gap:6px;
+          padding-bottom:8px;
           border-bottom:2px solid #111827;
           break-inside:avoid;
           page-break-inside:avoid;
         }
+        .billing-note-logo-row {
+          display:flex;
+          justify-content:center;
+          align-items:center;
+          min-height:140px;
+        }
+        .billing-note-header-main {
+          display:grid;
+          grid-template-columns:minmax(0, 1fr) auto;
+          align-items:start;
+          gap:16px;
+        }
         .company {
           display:flex;
           align-items:flex-start;
-          gap:12px;
           min-width:0;
         }
         .billing-logo {
-          width:54px;
-          height:54px;
+          width:136px;
+          height:136px;
           object-fit:contain;
-          flex:0 0 54px;
           display:block;
         }
         .company-name-th { font-size:17px; font-weight:900; line-height:1.2; }
