@@ -13079,11 +13079,7 @@ function getBillingNoteCustomerInfo() {
 
 function getBillingNotePaymentInfo() {
   return {
-    title: "หมายเหตุ",
-    subtitle: "ช่องทางการชำระเงิน",
-    accountName: "ชื่อบัญชี : นายสุนิลทร สีแก้วน้ำใส",
-    bankName: "ชื่อธนาคาร : ธนาคารกรุงไทย",
-    accountNumber: "เลขที่บัญชี : 264-0-56085-9"
+    note: "โอนเข้าบัญชี บริษัท แอลยูโอพาริช จำกัด เท่านั้น"
   };
 }
 
@@ -13187,11 +13183,7 @@ function renderBillingNoteCustomerBlock(customer) {
 function renderBillingNotePaymentBlock(payment) {
   return `
     <section class="billing-note-payment-card">
-      <div class="billing-note-section-label">${esc(payment.title)}</div>
-      <div class="billing-note-payment-title">${esc(payment.subtitle)}</div>
-      <div>${esc(payment.accountName)}</div>
-      <div>${esc(payment.bankName)}</div>
-      <div>${esc(payment.accountNumber)}</div>
+      <div class="billing-note-payment-title">${esc(payment.note)}</div>
     </section>
   `;
 }
@@ -13681,11 +13673,7 @@ function buildBillingNoteCopyText(data) {
   lines.push(`${t("netTotal", "ยอดรวมสุทธิ")}: ${formatBillingNoteDocumentMoney(data.netTotal)}`);
   lines.push(`(${data.bahtText})`);
   lines.push("");
-  lines.push(payment.title);
-  lines.push(payment.subtitle);
-  lines.push(payment.accountName);
-  lines.push(payment.bankName);
-  lines.push(payment.accountNumber);
+  lines.push(payment.note);
   return lines.join("\n").trim();
 }
 
