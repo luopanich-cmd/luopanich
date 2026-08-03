@@ -2229,6 +2229,18 @@ textarea:focus-visible {
   color: var(--text-soft);
 }
 
+.display-extra-qty {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.14);
+  color: #b45309;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
 .variant-size-options{
   display:grid;
   grid-template-columns:1fr;
@@ -7757,6 +7769,45 @@ function getVariantGroupTotalStock(group) {
   return (group?.variants || []).reduce((sum, variant) => sum + (Number(variant.stock) || 0), 0);
 }
 
+function normalizeDisplayExtraQty(value) {
+  const number = Number(value);
+  return Number.isInteger(number) && number > 0 ? number : 0;
+}
+
+function formatDisplayQtyNumber(value) {
+  return Number(value || 0).toLocaleString("th-TH");
+}
+
+function getProductDisplayExtraQty(product) {
+  if (product?.isVariantGroup) {
+    return (product.variants || []).reduce(
+      (sum, variant) => sum + normalizeDisplayExtraQty(variant.displayExtraQty),
+      0
+    );
+  }
+  return normalizeDisplayExtraQty(product?.displayExtraQty);
+}
+
+function renderDisplayExtraQty(product) {
+  const extraQty = getProductDisplayExtraQty(product);
+  return extraQty > 0
+    ? `<span class="display-extra-qty">+${formatDisplayQtyNumber(extraQty)}</span>`
+    : "";
+}
+
+function formatStockWithDisplayExtra(product, stockValue) {
+  const stock = Number(stockValue) || 0;
+  return `${formatDisplayQtyNumber(stock)}${renderDisplayExtraQty(product)}`;
+}
+
+function formatStockWithDisplayExtraText(product, stockValue) {
+  const stock = Number(stockValue) || 0;
+  const extraQty = getProductDisplayExtraQty(product);
+  return extraQty > 0
+    ? `${formatDisplayQtyNumber(stock)} +${formatDisplayQtyNumber(extraQty)}`
+    : formatDisplayQtyNumber(stock);
+}
+
 function getSelectedVariantFromGroup(group) {
   if (!group?.isVariantGroup) return null;
   const selectedId = state.viewerVariantSelections[group.groupKey];
@@ -7779,10 +7830,11 @@ function getViewerVariantSummaryText(group, mode = "card") {
   const value = selectedVariant.variantValue || "-";
   const productId = selectedVariant.productId || "-";
   const stock = Number(selectedVariant.stock) || 0;
+  const stockText = formatStockWithDisplayExtraText(selectedVariant, stock);
 
   return mode === "detail"
-    ? `${t("selectSize", "เลือกไซส์")}: ${value} · SKU ${productId} · ${t("remaining", "เหลือ")} ${stock}`
-    : `${t("selected", "เลือก")}: ${value} · SKU ${productId} · ${t("remaining", "เหลือ")} ${stock}`;
+    ? `${t("selectSize", "เลือกไซส์")}: ${value} · SKU ${productId} · ${t("remaining", "เหลือ")} ${stockText}`
+    : `${t("selected", "เลือก")}: ${value} · SKU ${productId} · ${t("remaining", "เหลือ")} ${stockText}`;
 }
 
 function updateViewerVariantSelectionDom(groupKey) {
@@ -8201,12 +8253,12 @@ function renderProducts(){
           <div class="sku">${t("productGroup", "กลุ่ม")}: ${escapeHTML(p.parentProductId)}</div>
           <div class="price">${t("price", "ราคา")}: ${escapeHTML(getVariantGroupPriceLabel(p))}</div>
           <div class="variant-group-summary">
-            ${t("selectSize", "เลือกไซส์")} · ${t("totalStock", "สต็อกรวม")} ${getVariantGroupTotalStock(p)}
+            ${t("selectSize", "เลือกไซส์")} · ${t("totalStock", "สต็อกรวม")} ${formatStockWithDisplayExtra(p, getVariantGroupTotalStock(p))}
           </div>
           ${renderVariantSizeOptions(p)}
           ${
             selectedVariant
-              ? `<div class="variant-selected-summary" data-variant-selected-summary="${escAttr(p.groupKey)}" data-variant-summary-mode="card">${t("selected", "เลือก")}: ${escapeHTML(selectedVariant.variantValue || "-")} · SKU ${escapeHTML(selectedVariant.productId || "-")} · ${t("remaining", "เหลือ")} ${Number(selectedVariant.stock) || 0}</div>`
+              ? `<div class="variant-selected-summary" data-variant-selected-summary="${escAttr(p.groupKey)}" data-variant-summary-mode="card">${t("selected", "เลือก")}: ${escapeHTML(selectedVariant.variantValue || "-")} · SKU ${escapeHTML(selectedVariant.productId || "-")} · ${t("remaining", "เหลือ")} ${formatStockWithDisplayExtra(selectedVariant, selectedVariant.stock)}</div>`
               : `<div class="variant-selected-summary" data-variant-selected-summary="${escAttr(p.groupKey)}" data-variant-summary-mode="card">${t("selectSizeFirst", "กรุณาเลือกไซส์ก่อน")}</div>`
           }
           <button class="btn btn-primary variant-add-btn" type="button"
@@ -8229,7 +8281,7 @@ function renderProducts(){
         <div class="price">${t("price", "ราคา")}: ฿${Number(p.price).toLocaleString()}</div>
 
         <div class="meta">
-          <span class="qty">${t("quantity", "จำนวน")}: ${Number(p.stock) || 0}</span>
+          <span class="qty">${t("quantity", "จำนวน")}: ${formatStockWithDisplayExtra(p, p.stock)}</span>
           <span class="status ${statusClass}">
             ${statusText}
           </span>
@@ -8366,12 +8418,12 @@ function renderProductSheet(){
       >
 
       <div class="price">${esc(getVariantGroupPriceLabel(p))}</div>
-      <div class="stock">${t("totalStock", "สต็อกรวม")} ${getVariantGroupTotalStock(p)} ${t("pieceUnit", "ชิ้น")}</div>
+      <div class="stock">${t("totalStock", "สต็อกรวม")} ${formatStockWithDisplayExtra(p, getVariantGroupTotalStock(p))} ${t("pieceUnit", "ชิ้น")}</div>
 
       <div class="variant-selected-summary" data-variant-selected-summary="${escAttr(p.groupKey)}" data-variant-summary-mode="detail">
         ${t("selectSize", "เลือกไซส์")}:
         ${selectedVariant
-          ? `${esc(selectedVariant.variantValue || "-")} · SKU ${esc(selectedVariant.productId || "-")} · ${t("remaining", "เหลือ")} ${Number(selectedVariant.stock) || 0}`
+          ? `${esc(selectedVariant.variantValue || "-")} · SKU ${esc(selectedVariant.productId || "-")} · ${t("remaining", "เหลือ")} ${formatStockWithDisplayExtra(selectedVariant, selectedVariant.stock)}`
           : t("selectSizeFirst", "กรุณาเลือกไซส์ก่อน")}
       </div>
       ${renderVariantSizeOptions(p)}
@@ -8426,7 +8478,7 @@ function renderProductSheet(){
  >
 
     <div class="price">฿${Number(p.price) || 0}</div>
-    <div class="stock">${t("remainingStock", "คงเหลือ")} ${Number(p.stock) || 0} ${t("pieceUnit", "ชิ้น")}</div>
+    <div class="stock">${t("remainingStock", "คงเหลือ")} ${formatStockWithDisplayExtra(p, p.stock)} ${t("pieceUnit", "ชิ้น")}</div>
     ${renderViewerCopyInfoSection()}
     
      ${
@@ -17409,6 +17461,7 @@ function openAddProduct(force = false){
   const safeDraftPrice = escAttr(draft.price || "");
   const safeDraftCostPrice = escAttr(draft.costPrice || "");
   const safeDraftStock = escAttr(draft.stock || "");
+  const safeDraftDisplayExtraQty = escAttr(draft.displayExtraQty || "");
   const safeNote = esc(draft.note || "");
   const draftVariant = {
     parentProductId: draft.parentProductId || "",
@@ -17471,6 +17524,12 @@ function openAddProduct(force = false){
     <div class="form-group">
       <label>${t("quantity", "จำนวน")}</label>
       <input id="addStock" type="number" value="${safeDraftStock}" placeholder="0">
+    </div>
+
+    <div class="form-group">
+      <label>จำนวนที่แสดงเพิ่ม (ไม่กระทบสต็อกจริง)</label>
+      <input id="addDisplayExtraQty" type="number" min="0" step="1" value="${safeDraftDisplayExtraQty}" placeholder="0">
+      <div class="helper-text">แสดงเป็น +ตัวเลข ข้างจำนวนสินค้าเท่านั้น เช่น จำนวน: 20 +100</div>
     </div>
 
     <!-- 🔴 สถานะสินค้า (เพื่อแจ้งลูกค้า) -->
@@ -17601,6 +17660,8 @@ function closeAddProduct(){
    document.getElementById("addPrice").value = "";
    document.getElementById("addCostPrice").value = "";
    document.getElementById("addStock").value = "";
+   const displayExtraInput = document.getElementById("addDisplayExtraQty");
+   if (displayExtraInput) displayExtraInput.value = "";
    document.getElementById("addStatus").value = "ready";
    if (document.getElementById("addNote")) {
      document.getElementById("addNote").value = "";
@@ -17617,6 +17678,7 @@ function closeAddProduct(){
      price: "",
      costPrice: "",
      stock: "",
+     displayExtraQty: "",
      status: "ready",
      note: "",
      parentProductId: "",
@@ -17908,6 +17970,7 @@ function openProductEdit(p){
   const safeEditPrice = escAttr(latestProduct.price ?? "");
   const safeEditCostPrice = escAttr(latestProduct.costPrice ?? "");
   const safeEditStock = escAttr(latestProduct.stock ?? "");
+  const safeEditDisplayExtraQty = escAttr(latestProduct.displayExtraQty ?? "");
   const safeEditNote = esc(latestProduct.note || "");
   const safeEditDetailsText = esc(latestProduct.detailsText || "");
   const editVariant = {
@@ -17985,6 +18048,12 @@ function openProductEdit(p){
     <div class="form-group">
       <label>${t("quantity", "จำนวน")}</label>
       <input id="editStock" type="number" value="${safeEditStock}">
+    </div>
+
+    <div class="form-group">
+      <label>จำนวนที่แสดงเพิ่ม (ไม่กระทบสต็อกจริง)</label>
+      <input id="editDisplayExtraQty" type="number" min="0" step="1" value="${safeEditDisplayExtraQty}">
+      <div class="helper-text">แสดงเป็น +ตัวเลข ข้างจำนวนสินค้าเท่านั้น ไม่ใช้ในการตัดสต็อกหรือรับออเดอร์</div>
     </div>
 
     <div class="form-group">
@@ -18372,6 +18441,9 @@ async function submitProductEdit(){
   const rawCostPrice = document.getElementById("editCostPrice").value.trim();
   const costPrice = rawCostPrice === "" ? null : Number(rawCostPrice);
   const stock  = Number(document.getElementById("editStock").value);
+  const displayExtraQty = normalizeDisplayExtraQty(
+    document.getElementById("editDisplayExtraQty")?.value
+  );
   let status = normalizeProductStatus(
     document.getElementById("editStatus").value
   );
@@ -18468,6 +18540,7 @@ async function submitProductEdit(){
     form.append("price", price);
     form.append("costPrice", costPrice);
     form.append("stock", stock);
+    form.append("displayExtraQty", displayExtraQty);
     form.append("status", status);
     form.append("image", imageUrl);
     form.append("note", note);
@@ -18729,14 +18802,17 @@ async function submitAddProduct(btn){
     const rawCostPrice = document.getElementById("addCostPrice").value.trim();
     const costPrice = rawCostPrice === "" ? null : Number(rawCostPrice);
     const stock     = Number(document.getElementById("addStock").value);
- let status      = normalizeProductStatus(
-   document.getElementById("addStatus").value
- );
- const note      = document.getElementById("addNote")?.value.trim() || "";
- const variantMetadata = getProductVariantFormValues("add");
- const continueMode =
-   document.getElementById("addContinueMode")?.checked === true;   
- const active    = true; // 🔒 เพิ่มสินค้าใหม่ = ยังขายอยู่เสมอ
+    const displayExtraQty = normalizeDisplayExtraQty(
+      document.getElementById("addDisplayExtraQty")?.value
+    );
+    let status      = normalizeProductStatus(
+      document.getElementById("addStatus").value
+    );
+    const note      = document.getElementById("addNote")?.value.trim() || "";
+    const variantMetadata = getProductVariantFormValues("add");
+    const continueMode =
+      document.getElementById("addContinueMode")?.checked === true;
+    const active    = true; // 🔒 เพิ่มสินค้าใหม่ = ยังขายอยู่เสมอ
 
     /* ================= VALIDATE ================= */
 
@@ -18796,6 +18872,7 @@ async function submitAddProduct(btn){
     form.append("price", price);
     form.append("costPrice", costPrice);
     form.append("stock", stock);
+    form.append("displayExtraQty", displayExtraQty);
   form.append("active", active);
     form.append("status", status);
     form.append("image", imageUrl);
@@ -18817,6 +18894,7 @@ async function submitAddProduct(btn){
    price,
    costPrice,
    stock,
+   displayExtraQty,
    status,
    note,
    ...variantMetadata
@@ -18832,6 +18910,10 @@ async function submitAddProduct(btn){
    document.getElementById("addPrice").value = state.smartAddDraft.price ?? "";
    document.getElementById("addCostPrice").value = state.smartAddDraft.costPrice ?? "";
    document.getElementById("addStock").value = state.smartAddDraft.stock ?? "";
+   const addDisplayExtraInput = document.getElementById("addDisplayExtraQty");
+   if (addDisplayExtraInput) {
+     addDisplayExtraInput.value = state.smartAddDraft.displayExtraQty ?? "";
+   }
    document.getElementById("addStatus").value = state.smartAddDraft.status ?? "ready";
    document.getElementById("addNote").value = state.smartAddDraft.note ?? "";
    PRODUCT_VARIANT_FIELDS.forEach(field => {
