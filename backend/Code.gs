@@ -111,6 +111,9 @@ const PRODUCT_OPTIONAL_VARIANT_HEADERS = Object.freeze([
   "displayName",
   "variantSortOrder"
 ]);
+const PRODUCT_OPTIONAL_DISPLAY_HEADERS = Object.freeze([
+  "displayExtraQty"
+]);
 
 function ensurePartnerCatalogSheets() {
   const lock = LockService.getScriptLock();
@@ -246,7 +249,10 @@ function ensureProductsVariantHeaders_(ss) {
     .getRange(1, 1, 1, lastColumn)
     .getValues()[0]
     .map(header => String(header || "").trim());
-  const missingHeaders = PRODUCT_OPTIONAL_VARIANT_HEADERS.filter(
+  const optionalHeaders = PRODUCT_OPTIONAL_DISPLAY_HEADERS.concat(
+    PRODUCT_OPTIONAL_VARIANT_HEADERS
+  );
+  const missingHeaders = optionalHeaders.filter(
     header => headers.indexOf(header) === -1
   );
 
@@ -269,6 +275,33 @@ function getProductVariantColumnMap_(headers) {
     col[header] = sourceHeaders.indexOf(header);
   });
   return col;
+}
+
+function parseProductDisplayExtraQty_(value) {
+  const raw = String(value ?? "").trim();
+  if (raw === "") return 0;
+  const number = Number(raw);
+  return Number.isInteger(number) && number > 0 ? number : 0;
+}
+
+function getProductDisplayExtraQty_(row, headers) {
+  const sourceHeaders = Array.isArray(headers) ? headers : [];
+  const columnIndex = sourceHeaders.indexOf("displayExtraQty");
+  if (columnIndex === -1) return 0;
+  return parseProductDisplayExtraQty_(row && row[columnIndex]);
+}
+
+function writeProductDisplayExtraQty_(sheet, rowNumber, value, headers) {
+  if (!sheet || !rowNumber) return;
+  const sourceHeaders = Array.isArray(headers) && headers.length
+    ? headers
+    : ensureProductsVariantHeaders_(getSS()).headers;
+  const columnIndex = sourceHeaders.indexOf("displayExtraQty");
+  if (columnIndex === -1) return;
+  const displayExtraQty = parseProductDisplayExtraQty_(value);
+  sheet.getRange(rowNumber, columnIndex + 1).setValue(
+    displayExtraQty > 0 ? displayExtraQty : ""
+  );
 }
 
 function getProductVariantMetadata_(row, col) {
@@ -2387,6 +2420,7 @@ function getProducts() {
         name,
         price,
         stock,
+        displayExtraQty: getProductDisplayExtraQty_(r, headers),
         image,
         active,
         status,
@@ -2427,6 +2461,7 @@ function getAdminProducts() {
     detailsText: headers.indexOf("detailsText"),
     compareImages: headers.indexOf("compareImages"),
     costPrice: headers.indexOf("costPrice"),
+    displayExtraQty: headers.indexOf("displayExtraQty"),
     parentProductId: headers.indexOf("parentProductId"),
     variantType: headers.indexOf("variantType"),
     variantValue: headers.indexOf("variantValue"),
@@ -2451,6 +2486,9 @@ function getAdminProducts() {
         name: String(col.name > -1 ? r[col.name] : r[1] || "").trim(),
         price: Number(col.price > -1 ? r[col.price] : r[2]) || 0,
         stock: Number(col.stock > -1 ? r[col.stock] : r[3]) || 0,
+        displayExtraQty: parseProductDisplayExtraQty_(
+          col.displayExtraQty > -1 ? r[col.displayExtraQty] : ""
+        ),
         image:
           typeof rawImage === "string" && rawImage.startsWith("http")
             ? rawImage.trim()
@@ -4155,6 +4193,9 @@ function updateProduct(e, auth) {
     const rawCostPrice = String(e.parameter.costPrice ?? "").trim();
     const costPrice = rawCostPrice === "" ? null : Number(rawCostPrice);
     const stock  = Number(e.parameter.stock);
+    const displayExtraQty = parseProductDisplayExtraQty_(
+      e.parameter.displayExtraQty
+    );
     const image  = String(e.parameter.image || "").trim();
     const status = String(e.parameter.status || "").trim();
     const note   = String(e.parameter.note || "").trim();
@@ -4237,6 +4278,12 @@ function updateProduct(e, auth) {
             sh.getRange(i + 1, 11).setValue(detailsText);   // K: detailsText
             sh.getRange(i + 1, 12).setValue(compareImages); // L: compareImages
             sh.getRange(i + 1, 13).setValue(costPrice);     // M: costPrice
+            writeProductDisplayExtraQty_(
+              sh,
+              i + 1,
+              displayExtraQty,
+              productHeaders
+            );
             writeProductVariantMetadata_(
               sh,
               i + 1,
@@ -5096,6 +5143,9 @@ function addProduct(e, auth) {
   const rawCostPrice = String(e.parameter.costPrice ?? "").trim();
   const costPrice = rawCostPrice === "" ? null : Number(rawCostPrice);
   const stock  = Number(e.parameter.stock);
+  const displayExtraQty = parseProductDisplayExtraQty_(
+    e.parameter.displayExtraQty
+  );
   const active = true; // สินค้าใหม่เปิดขายเสมอ
   const image  = String(e.parameter.image || "").trim();
   let   status = String(e.parameter.status || "ready").trim();
@@ -5166,6 +5216,12 @@ function addProduct(e, auth) {
         sh,
         createdRowNumber,
         variantMetadata,
+        productHeaders
+      );
+      writeProductDisplayExtraQty_(
+        sh,
+        createdRowNumber,
+        displayExtraQty,
         productHeaders
       );
 
