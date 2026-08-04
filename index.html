@@ -4481,6 +4481,11 @@ const state = {
   search: "",
   viewerSearchOpen: false,
   products: [],
+  productLoad: {
+    status: "idle",
+    error: "",
+    requestId: 0
+  },
   selectedProduct: null,
   qty: 1,
   cart: [],
@@ -5810,6 +5815,8 @@ const UI_TEXT = {
     pendingDeliveryTitle: "Pending delivery",
     loading: "Loading...",
     loadFailed: "Could not load data",
+    productLoadFailedRetry: "Could not load products. Please try again.",
+    productLoadRetryButton: "Load products again",
     processing: "Processing...",
     imagePreview: "Image preview",
     closeImagePreview: "Close image preview",
@@ -6929,6 +6936,11 @@ function isAuthError(message = "") {
 
 /* ================= API LAYER ================= */
 const API_URL="https://script.google.com/macros/s/AKfycbzx9WlWXUqZ9OM_R0tO9wJvw79RPWIn40iakCPNuPDLBmvcuHXkqp9EMPoRiuMRnaM2Wg/exec";
+const PRODUCT_FETCH_TIMEOUT_MS = 30000;
+const PRODUCT_LOAD_RETRY_DELAYS = [800, 1800];
+
+let activeProductRefreshPromise = null;
+let productRefreshRequestSeq = 0;
 
 let adminLogoutPromise = null;
 
@@ -6967,7 +6979,7 @@ const fetchProducts = async () => {
   const res = await fetchWithTimeout(
    `${API_URL}?action=products`,
    {},
-   15000
+   PRODUCT_FETCH_TIMEOUT_MS
  );
   const json = await res.json();
 
@@ -7048,8 +7060,60 @@ function sortProducts(products) {
   );
 }
   
-async function refreshProducts() {
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function renderProductSkeletonList() {
+  const skeleton = Array.from({ length: 6 }).map(() => `
+    <div class="skeleton-card" aria-hidden="true">
+      <div class="skeleton-row">
+        <div class="skeleton-thumb"></div>
+        <div class="skeleton-lines">
+          <div class="skeleton-line w70"></div>
+          <div class="skeleton-line w45"></div>
+          <div class="skeleton-line w30"></div>
+        </div>
+      </div>
+    </div>
+  `).join("");
+
+  return `<div class="skeleton-list">${skeleton}</div>`;
+}
+
+async function fetchProductListWithRetry(fetcher, retryDelays = PRODUCT_LOAD_RETRY_DELAYS) {
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= retryDelays.length; attempt++) {
+    try {
+      return await fetcher();
+    } catch (err) {
+      lastError = err;
+
+      if (attempt >= retryDelays.length) break;
+
+      console.warn(
+        `fetchProducts retry ${attempt + 1}/${retryDelays.length}`,
+        err
+      );
+      await wait(retryDelays[attempt]);
+    }
+  }
+
+  throw lastError || new Error(t("loadProductsFailed", "ไม่สามารถโหลดข้อมูลสินค้าได้"));
+}
+
+async function refreshProducts({ retry = true, throwOnError = false } = {}) {
+  if (activeProductRefreshPromise) {
+    return activeProductRefreshPromise;
+  }
+
+  const requestId = ++productRefreshRequestSeq;
+  activeProductRefreshPromise = (async () => {
   const app = document.getElementById("app");
+  state.productLoad.status = "loading";
+  state.productLoad.error = "";
+  state.productLoad.requestId = requestId;
 
   // ✅ Premium Skeleton เฉพาะตอน "ยังไม่มีรายการ" (ลดอาการวูบ/กระพริบ)
   if (app && (!Array.isArray(state.products) || state.products.length === 0)) {
@@ -7075,26 +7139,46 @@ async function refreshProducts() {
       state.admin?.token &&
       !isAdminSessionExpired();
 
-    const list = useAdminProducts
-      ? await fetchAdminProducts()
-      : await fetchProducts();
+    const fetcher = useAdminProducts
+      ? fetchAdminProducts
+      : fetchProducts;
+
+    const list = retry
+      ? await fetchProductListWithRetry(fetcher)
+      : await fetcher();
+
+    if (requestId !== productRefreshRequestSeq) {
+      return state.products;
+    }
    
     state.products = sortProducts(list);
+    state.productLoad.status = "success";
+    state.productLoad.error = "";
    
     renderProducts();
+    return state.products;
   } catch (err) {
     console.error("refreshProducts failed:", err);
-    if (app) {
-      app.innerHTML = `
-        <div role="alert" style="
-          text-align:center;
-          color:#d93025;
-          margin-top:40px;
-          font-size:15px;
-        ">
-          ไม่สามารถโหลดรายการสินค้าได้
-        </div>
-      `;
+    if (requestId === productRefreshRequestSeq) {
+      state.productLoad.status = "error";
+      state.productLoad.error = err?.message || t("loadProductsFailed", "ไม่สามารถโหลดข้อมูลสินค้าได้");
+      renderProducts();
+    }
+
+    if (throwOnError) throw err;
+    return state.products;
+  }
+  })();
+
+  try {
+    return await activeProductRefreshPromise;
+  } finally {
+    if (state.productLoad.requestId === requestId && state.productLoad.status === "loading") {
+      state.productLoad.status = "idle";
+    }
+
+    if (activeProductRefreshPromise) {
+      activeProductRefreshPromise = null;
     }
   }
 }
@@ -8141,6 +8225,32 @@ function renderViewerCopyInfoSection() {
   `;
 }
   
+function renderProductLoadErrorState() {
+  const message = escapeHtml(
+    t("productLoadFailedRetry", "โหลดสินค้าไม่สำเร็จ กรุณากดโหลดใหม่อีกครั้ง")
+  );
+  const retryLabel = escapeHtml(
+    t("productLoadRetryButton", "โหลดสินค้าอีกครั้ง")
+  );
+
+  return `
+    <div class="empty-state-lottie-ui product-empty-state product-load-error" role="alert">
+      <dotlottie-player class="empty-state-lottie-player"
+        src="assets/empty-state-animation.lottie"
+        background="transparent"
+        speed="1"
+        loop
+        autoplay
+        style="width:118px;height:118px"></dotlottie-player>
+      <strong>${message}</strong>
+      <button class="btn btn-primary" type="button" style="margin-top:16px;width:auto"
+        onclick="refreshProducts()">
+        ${retryLabel}
+      </button>
+    </div>
+  `;
+}
+
 function renderProducts(){
   const app = document.getElementById("app");
 
@@ -8165,6 +8275,16 @@ function renderProducts(){
         ไม่สามารถโหลดรายการสินค้าได้
       </div>
     `;
+    return;
+  }
+
+  if (state.productLoad?.status === "loading" && state.products.length === 0) {
+    app.innerHTML = renderProductSkeletonList();
+    return;
+  }
+
+  if (state.productLoad?.status === "error" && state.products.length === 0) {
+    app.innerHTML = renderProductLoadErrorState();
     return;
   }
 
@@ -25729,7 +25849,9 @@ const __domReady = new Promise((resolve) => {
 
     // ✅ RENDER
     renderHeader();
-    renderProducts();
+    if (state.productLoad?.status !== "error") {
+      renderProducts();
+    }
     if (typeof renderBadge === "function") {
       if (typeof renderBadge === "function") renderBadge();
     }
